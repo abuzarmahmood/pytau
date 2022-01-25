@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import mode
 
-from ephys_data import ephys_data
+from .utils import EphysData
 
 
 def get_state_firing(spike_array, tau_array):
@@ -41,7 +41,7 @@ def get_state_firing(spike_array, tau_array):
 
 
 class _firing():
-    """Helper class to handle processing for firing rate using "ephys_data"
+    """Helper class to handle processing for firing rate using "EphysData"
     """
 
     def __init__(self, tau_instance, processed_spikes, metadata):
@@ -55,8 +55,8 @@ class _firing():
         self.tau = tau_instance
         self.processed_spikes = processed_spikes
         self.metadata = metadata
-        self._ephys_data = ephys_data(self.metadata['data']['data_dir'])
-        temp_spikes = self._ephys_data.return_region_spikes(
+        self._EphysData = EphysData(self.metadata['data']['data_dir'])
+        temp_spikes = self._EphysData.return_region_spikes(
             self.metadata['data']['region_name'])
         self.raw_spikes = temp_spikes[self.metadata['data']['taste_num']]
         self.state_firing = get_state_firing(self.processed_spikes,

@@ -13,9 +13,9 @@ from glob import glob
 import numpy as np
 import pandas as pd
 
-import changepoint_model
-import changepoint_preprocess
-from ephys_data import ephys_data
+from . import changepoint_model
+from . import changepoint_preprocess
+from .utils import EphysData
 
 MODEL_SAVE_DIR = '/media/bigdata/firing_space_plot/changepoint_mcmc/saved_models'
 MODEL_DATABASE_PATH = os.path.join(MODEL_SAVE_DIR, 'model_database.csv')
@@ -66,8 +66,8 @@ class FitHandler():
 
         # =============== Save relevant arguments ===============
         self.data_dir = data_dir
-        self.ephys_data = ephys_data(self.data_dir)
-        #self.data = self.ephys_data.get_spikes({"bla","gc","all"})
+        self.EphysData = EphysData(self.data_dir)
+        #self.data = self.EphysData.get_spikes({"bla","gc","all"})
 
         self.taste_num = taste_num
         self.region_name = region_name
@@ -231,9 +231,9 @@ class FitHandler():
     ########################################
 
     def load_spike_trains(self):
-        """Helper function to load spike trains from data_dir using ephys_data module
+        """Helper function to load spike trains from data_dir using EphysData module
         """
-        full_spike_array = self.ephys_data.return_region_spikes(
+        full_spike_array = self.EphysData.return_region_spikes(
             self.region_name)
         if isinstance(self.taste_num, int):
             self.data = full_spike_array[self.taste_num]
@@ -494,8 +494,7 @@ class DatabaseHandler():
         """Collects information regarding data and current "experiment"
 
         Raises:
-            Exception: If 'external_metadata' has not been ingested,
-            that needs to be done first
+            Exception: If 'external_metadata' has not been ingested, that needs to be done first
 
         Returns:
             dict: Dictionary of metadata given to FitHandler class
