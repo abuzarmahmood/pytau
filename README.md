@@ -1,42 +1,35 @@
-  ___        _   _ _            
- / _ \ _   _| |_| (_)_ __   ___ 
-| | | | | | | __| | | '_ \ / _ \
-| |_| | |_| | |_| | | | | |  __/
- \___/ \__,_|\__|_|_|_| |_|\___|
-==================================================
-                                
+# PyTau
+
+## Outline
+
 - Perform inter-region transition correlations on models fit to each taste 
     individually
 
- ____        _           ___            
-|  _ \  __ _| |_ __ _   / _ \ _ __ __ _ 
-| | | |/ _` | __/ _` | | | | | '__/ _` |
-| |_| | (_| | || (_| | | |_| | | | (_| |
-|____/ \__,_|\__\__,_|  \___/|_|  \__, |
-                                  |___/ 
-==================================================
+## Data Organization
+
 - Models stored in CENTRAL LOCATION and accessed by indexing an info file,
     which also contains model parameters and metadata
 - Metadata also stored in model file to be able to recreate info file in case
     something happens
 
 Database for models fit:
-    - Columns : 
-        -   Model save path
-        -   Animal Name
-        -   Session date
-        -   Taste Name
-        -   Region Name
-        -   Experiment name (user-given name to separate batches of fits)
-        -   Fit Date
 
-        -   Model parameters:
-            - Model Type (See below) 
-            - Data Type (Shuffled, simulated, actual)
-            - States Num
-            - Fit steps
-            - Time lims
-            - Bin Width
+- Columns:
+  - Model save path
+  - Animal Name
+  - Session date
+  - Taste Name
+  - Region Name
+  - Experiment name (user-given name to separate batches of fits)
+  - Fit Date
+
+  - Model parameters:
+    - Model Type (See below)
+    - Data Type (Shuffled, simulated, actual)
+    - States Num
+    - Fit steps
+    - Time lims
+    - Bin Width
 
 Data stored in models:
     - Model
@@ -48,19 +41,13 @@ Data stored in models:
     - Model and data details/parameters (as above)
 
 - Considering we might want to compare different model types:
-    - Unconstrained sequantial
-    - Baised transition priors, sequential
-    - Hard padding between transitions, sequential
-    - Joint region model
+  - Unconstrained sequantial
+  - Baised transition priors, sequential
+  - Hard padding between transitions, sequential
+  - Joint region model
     We need to have a standardized pipeline for fitting and retrieving these models
 
- ____  _            _ _            
-|  _ \(_)_ __   ___| (_)_ __   ___ 
-| |_) | | '_ \ / _ \ | | '_ \ / _ \
-|  __/| | |_) |  __/ | | | | |  __/
-|_|   |_| .__/ \___|_|_|_| |_|\___|
-        |_|                        
-==================================================
+## Pipeline
 
 -- Filelist:
 
