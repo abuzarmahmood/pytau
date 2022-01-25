@@ -6,6 +6,9 @@ theme:
   palette:
     primary: "blue"
     accent: "grey"
+  features:
+      - toc.integrate
+      - navigation.sections
 
 plugins:
   - search

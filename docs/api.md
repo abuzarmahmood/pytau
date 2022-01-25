@@ -1,17 +1,17 @@
 # References
 
-## Analysis functions
+## <<**Analysis functions**>>
 
 ::: pytau.changepoint_analysis
 
-## I/O functions
+## <<**I/O functions**>>
 
 ::: pytau.changepoint_io
 
-## Model building functions
+## <<**Model building functions**>>
 
 ::: pytau.changepoint_model
 
-## Preprocessing functions
+## <<**Preprocessing functions**>>
 
 ::: pytau.changepoint_preprocess
