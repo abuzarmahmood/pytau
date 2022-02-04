@@ -12,8 +12,11 @@ of Poisson Likelihood Changepoint for spike trains.
 #              |_|                   
 ########################################
 import pymc3 as pm
+import theano
 import theano.tensor as tt
 import numpy as np
+import os
+import time
 
 ############################################################
 #  ____                _         __  __           _      _ 
@@ -22,6 +25,25 @@ import numpy as np
 #| |___| | |  __/ (_| | ||  __/ | |  | | (_) | (_| |  __/ |
 # \____|_|  \___|\__,_|\__\___| |_|  |_|\___/ \__,_|\___|_|
 ############################################################
+
+def theano_lock_present():
+    """
+    Check if theano compilation lock is present
+    """
+    return os.path.exists(os.path.join(theano.config.compiledir, 'lock_dir'))
+
+def compile_wait():
+    """
+    Function to allow waiting while a model is already fitting
+    Wait twice because lock blips out between steps
+    10 secs of waiting shouldn't be a problem for long fits (~mins)
+    """
+    while theano_lock_present():
+        print('Lock present...waiting')
+        time.sleep(5)
+    while theano_lock_present():
+        print('Lock present...waiting')
+        time.sleep(5)
 
 def single_taste_poisson(
         spike_array,
