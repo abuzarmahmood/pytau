@@ -61,7 +61,7 @@ class FitHandler():
         # =============== Check for exceptions ===============
         if experiment_name is None:
             raise Exception('Please specify an experiment name')
-        if not isinstance(taste_num, (int, str)):
+        if not (isinstance(taste_num,int) or taste_num == 'all'):
             raise Exception('taste_num must be an integer or "all"')
 
         # =============== Save relevant arguments ===============
@@ -108,6 +108,7 @@ class FitHandler():
                               bin_width,
                               data_transform,
                               file_path=None):
+
         """Load given params as "preprocess_params" attribute
 
         Args:
@@ -133,6 +134,7 @@ class FitHandler():
                          fit,
                          samples,
                          file_path=None):
+
         """Load given params as "model_params" attribute
 
         Args:
@@ -180,9 +182,10 @@ class FitHandler():
         if isinstance(self.taste_num, int):
             self.set_preprocessor(
                 changepoint_preprocess.preprocess_single_taste)
-        if isinstance(self.taste_num, str):
+        elif self.taste_num == 'all':
             self.set_preprocessor(changepoint_preprocess.preprocess_all_taste)
-        raise Exception("Something went wrong")
+        else:
+            raise Exception("Something went wrong")
 
     def set_model_template(self, model_template):
         """Manually set model_template for data e.g.
@@ -205,9 +208,10 @@ class FitHandler():
         """
         if isinstance(self.taste_num, int):
             self.set_model_template(changepoint_model.single_taste_poisson)
-        if isinstance(self.taste_num, str):
+        elif self.taste_num == 'all':
             self.set_model_template(changepoint_model.all_taste_poisson)
-        raise Exception("Something went wrong")
+        else:
+            raise Exception("Something went wrong")
 
     def set_inference(self, inference_func):
         """Manually set inference function for model fit e.g.
@@ -233,11 +237,10 @@ class FitHandler():
     def load_spike_trains(self):
         """Helper function to load spike trains from data_dir using EphysData module
         """
-        full_spike_array = self.EphysData.return_region_spikes(
-            self.region_name)
+        full_spike_array = self.EphysData.return_region_spikes(self.region_name)
         if isinstance(self.taste_num, int):
             self.data = full_spike_array[self.taste_num]
-        if isinstance(self.taste_num, str):
+        if self.taste_num == 'all':
             self.data = full_spike_array
         print(f'Loading spike trains from {self.database_handler.data_basename}, '
               f'dig_in {self.taste_num}')
@@ -273,8 +276,8 @@ class FitHandler():
         # In future iterations, before fitting model,
         # check that a similar entry doesn't exist
 
-        print(
-            f'Generating Model, model func: <{self.model_template.__name__}>')
+        changepoint_model.compile_wait()
+        print(f'Generating Model, model func: <{self.model_template.__name__}>')
         self.model = self.model_template(self.preprocessed_data,
                                          self.model_params['states'])
 
@@ -290,6 +293,7 @@ class FitHandler():
         if 'inference_func' not in dir(self):
             self.inference_func_selector()
 
+        changepoint_model.compile_wait()
         print('Running inference, inference func: '
               f'<{self.inference_func.__name__}>')
         temp_outs = self.inference_func(self.model,
@@ -350,8 +354,9 @@ class FitHandler():
 
         self.database_handler.write_to_database()
 
-        print('Saving inference output to '
-              f'{self.database_handler.model_save_dir}')
+        print('Saving inference output to : \n'
+                f'{self.database_handler.model_save_dir}' 
+                "\n" + "================================" + '\n')
 
 
 class DatabaseHandler():

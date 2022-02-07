@@ -57,7 +57,7 @@ class _firing():
         self.metadata = metadata
         self._EphysData = EphysData(self.metadata['data']['data_dir'])
         temp_spikes = self._EphysData.return_region_spikes(
-            self.metadata['data']['region_name'])
+                            self.metadata['data']['region_name'])
         self.raw_spikes = temp_spikes[self.metadata['data']['taste_num']]
         self.state_firing = get_state_firing(self.processed_spikes,
                                              self.tau.raw_mode_tau)
@@ -123,14 +123,3 @@ class PklHandler():
         self.tau = _tau(self.tau_array, self.metadata)
         self.firing = _firing(self.tau, self.processed_spikes, self.metadata)
 
-
-# ###########################################################################
-# ## LOAD DATA
-# ###########################################################################
-
-# FIT_PKL = '/media/bigdata/firing_space_plot/changepoint_mcmc/'\
-#         'saved_models/natasha_gc_binary/natasha_gc_binary_0296f33c.info'
-
-# model_dat = PklHandler(FIT_PKL)
-# print(model_dat.tau.scaled_mode_tau.shape)
-# print(model_dat.firing.state_firing.shape)
