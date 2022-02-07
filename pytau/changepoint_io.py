@@ -13,9 +13,12 @@ from glob import glob
 import numpy as np
 import pandas as pd
 
-from . import changepoint_model
-from . import changepoint_preprocess
-from .utils import EphysData
+#from . import changepoint_model
+#from . import changepoint_preprocess
+#from .utils import EphysData
+import changepoint_model
+import changepoint_preprocess
+from utils import EphysData
 
 MODEL_SAVE_DIR = '/media/bigdata/firing_space_plot/changepoint_mcmc/saved_models'
 MODEL_DATABASE_PATH = os.path.join(MODEL_SAVE_DIR, 'model_database.csv')
@@ -88,16 +91,6 @@ class FitHandler():
             print('PREPROCESS_PARAMS will have to be set')
         else:
             self.set_preprocess_params(file_path=preprocess_params_path)
-
-        # Attributes to be set later
-        self.preprocessor = None
-        self.model_template = None
-        self.inference_func = None
-        self.data = None
-        self.preprocessed_data = None
-        self.model = None
-        self.inference_outs = None
-
 
     ########################################
     # SET PARAMS
