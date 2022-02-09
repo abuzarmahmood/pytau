@@ -513,8 +513,29 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#pytau.changepoint_model.all_taste_poisson" class="md-nav__link">
+    all_taste_poisson()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pytau.changepoint_model.compile_wait" class="md-nav__link">
+    compile_wait()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#pytau.changepoint_model.single_taste_poisson" class="md-nav__link">
     single_taste_poisson()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pytau.changepoint_model.theano_lock_present" class="md-nav__link">
+    theano_lock_present()
   </a>
   
 </li>
@@ -893,7 +914,7 @@ DatabaseHandler        </code>
                                             <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">all_na</span> <span class="o">=</span> <span class="p">[</span><span class="nb">all</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_database</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()]</span>
             <span class="k">if</span> <span class="n">all_na</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;{sum(all_na)} rows found with all NA, removing...&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">all_na</span><span class="p">)</span><span class="si">}</span><span class="s1"> rows found with all NA, removing...&#39;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">fit_database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_database</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">how</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Fit database does not exist yet&#39;</span><span class="p">)</span>
@@ -917,7 +938,7 @@ DatabaseHandler        </code>
         <span class="sd">&quot;&quot;&quot;Remove duplicated rows from database</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">dup_inds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_duplicates</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Removing {sum(dup_inds)} duplicate rows&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Removing </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">dup_inds</span><span class="p">)</span><span class="si">}</span><span class="s1"> duplicate rows&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fit_database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_database</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">dup_inds</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">check_mismatched_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -935,8 +956,8 @@ DatabaseHandler        </code>
                               <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span>
                                   <span class="bp">self</span><span class="o">.</span><span class="n">fit_database</span><span class="p">[</span><span class="s1">&#39;exp.save_path&#39;</span><span class="p">]))</span>
                               <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">]</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;{sum(mismatch_from_database)} mismatches from database&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-              <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;{sum(mismatch_from_file)} mismatches from files&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">mismatch_from_database</span><span class="p">)</span><span class="si">}</span><span class="s2"> mismatches from database&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+              <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">mismatch_from_file</span><span class="p">)</span><span class="si">}</span><span class="s2"> mismatches from files&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mismatch_from_database</span><span class="p">,</span> <span class="n">mismatch_from_file</span><span class="p">,</span> <span class="n">file_list</span>
 
     <span class="k">def</span> <span class="nf">clear_mismatched_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -967,7 +988,7 @@ DatabaseHandler        </code>
         <span class="n">current_date</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_database_path</span><span class="p">,</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">database_backup_dir</span><span class="p">,</span>
-                                 <span class="sa">f</span><span class="s2">&quot;database_backup_</span><span class="si">{current_date}</span><span class="s2">&quot;</span><span class="p">))</span>
+                                 <span class="sa">f</span><span class="s2">&quot;database_backup_</span><span class="si">{</span><span class="n">current_date</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fit_database</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_database_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">set_run_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">,</span> <span class="n">experiment_name</span><span class="p">,</span> <span class="n">taste_num</span><span class="p">,</span> <span class="n">region_name</span><span class="p">):</span>
@@ -1121,7 +1142,7 @@ DatabaseHandler        </code>
                                         <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">all_na</span> <span class="o">=</span> <span class="p">[</span><span class="nb">all</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_database</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()]</span>
         <span class="k">if</span> <span class="n">all_na</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;{sum(all_na)} rows found with all NA, removing...&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">all_na</span><span class="p">)</span><span class="si">}</span><span class="s1"> rows found with all NA, removing...&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fit_database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_database</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">how</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Fit database does not exist yet&#39;</span><span class="p">)</span>
@@ -1324,8 +1345,8 @@ list: all files in save directory</p></td>
                           <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span>
                               <span class="bp">self</span><span class="o">.</span><span class="n">fit_database</span><span class="p">[</span><span class="s1">&#39;exp.save_path&#39;</span><span class="p">]))</span>
                           <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;{sum(mismatch_from_database)} mismatches from database&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-          <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;{sum(mismatch_from_file)} mismatches from files&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">mismatch_from_database</span><span class="p">)</span><span class="si">}</span><span class="s2"> mismatches from database&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+          <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">mismatch_from_file</span><span class="p">)</span><span class="si">}</span><span class="s2"> mismatches from files&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">mismatch_from_database</span><span class="p">,</span> <span class="n">mismatch_from_file</span><span class="p">,</span> <span class="n">file_list</span>
 </code></pre></div>
         </details>
@@ -1398,7 +1419,7 @@ list: all files in save directory</p></td>
     <span class="sd">&quot;&quot;&quot;Remove duplicated rows from database</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">dup_inds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_duplicates</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Removing {sum(dup_inds)} duplicate rows&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Removing </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">dup_inds</span><span class="p">)</span><span class="si">}</span><span class="s1"> duplicate rows&#39;</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">fit_database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_database</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">dup_inds</span><span class="p">]</span>
 </code></pre></div>
         </details>
@@ -1691,7 +1712,7 @@ pandas series : Indices of duplicated rows</p></td>
     <span class="n">current_date</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
     <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_database_path</span><span class="p">,</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">database_backup_dir</span><span class="p">,</span>
-                             <span class="sa">f</span><span class="s2">&quot;database_backup_</span><span class="si">{current_date}</span><span class="s2">&quot;</span><span class="p">))</span>
+                             <span class="sa">f</span><span class="s2">&quot;database_backup_</span><span class="si">{</span><span class="n">current_date</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">fit_database</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_database_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
 </code></pre></div>
         </details>
@@ -1773,7 +1794,7 @@ FitHandler        </code>
         <span class="c1"># =============== Check for exceptions ===============</span>
         <span class="k">if</span> <span class="n">experiment_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Please specify an experiment name&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">taste_num</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">taste_num</span><span class="p">,</span><span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">taste_num</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;taste_num must be an integer or &quot;all&quot;&#39;</span><span class="p">)</span>
 
         <span class="c1"># =============== Save relevant arguments ===============</span>
@@ -1801,16 +1822,6 @@ FitHandler        </code>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_preprocess_params</span><span class="p">(</span><span class="n">file_path</span><span class="o">=</span><span class="n">preprocess_params_path</span><span class="p">)</span>
 
-        <span class="c1"># Attributes to be set later</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">preprocessor</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_template</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inference_func</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">preprocessed_data</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inference_outs</span> <span class="o">=</span> <span class="kc">None</span>
-
-
     <span class="c1">########################################</span>
     <span class="c1"># SET PARAMS</span>
     <span class="c1">########################################</span>
@@ -1820,6 +1831,7 @@ FitHandler        </code>
                               <span class="n">bin_width</span><span class="p">,</span>
                               <span class="n">data_transform</span><span class="p">,</span>
                               <span class="n">file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
         <span class="sd">&quot;&quot;&quot;Load given params as &quot;preprocess_params&quot; attribute</span>
 
 <span class="sd">        Args:</span>
@@ -1845,6 +1857,7 @@ FitHandler        </code>
                          <span class="n">fit</span><span class="p">,</span>
                          <span class="n">samples</span><span class="p">,</span>
                          <span class="n">file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
         <span class="sd">&quot;&quot;&quot;Load given params as &quot;model_params&quot; attribute</span>
 
 <span class="sd">        Args:</span>
@@ -1892,9 +1905,10 @@ FitHandler        </code>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_preprocessor</span><span class="p">(</span>
                 <span class="n">changepoint_preprocess</span><span class="o">.</span><span class="n">preprocess_single_taste</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_preprocessor</span><span class="p">(</span><span class="n">changepoint_preprocess</span><span class="o">.</span><span class="n">preprocess_all_taste</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Something went wrong&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Something went wrong&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">set_model_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_template</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Manually set model_template for data e.g.</span>
@@ -1917,9 +1931,10 @@ FitHandler        </code>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_model_template</span><span class="p">(</span><span class="n">changepoint_model</span><span class="o">.</span><span class="n">single_taste_poisson</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_model_template</span><span class="p">(</span><span class="n">changepoint_model</span><span class="o">.</span><span class="n">all_taste_poisson</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Something went wrong&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Something went wrong&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">set_inference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inference_func</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Manually set inference function for model fit e.g.</span>
@@ -1945,14 +1960,13 @@ FitHandler        </code>
     <span class="k">def</span> <span class="nf">load_spike_trains</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Helper function to load spike trains from data_dir using EphysData module</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">full_spike_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">EphysData</span><span class="o">.</span><span class="n">return_region_spikes</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">region_name</span><span class="p">)</span>
+        <span class="n">full_spike_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">EphysData</span><span class="o">.</span><span class="n">return_region_spikes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">full_spike_array</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">full_spike_array</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Loading spike trains from </span><span class="si">{self.database_handler.data_basename}</span><span class="s1">, &#39;</span>
-              <span class="sa">f</span><span class="s1">&#39;dig_in </span><span class="si">{self.taste_num}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Loading spike trains from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">database_handler</span><span class="o">.</span><span class="n">data_basename</span><span class="si">}</span><span class="s1">, &#39;</span>
+              <span class="sa">f</span><span class="s1">&#39;dig_in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">preprocess_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Perform data preprocessing</span>
@@ -1966,7 +1980,7 @@ FitHandler        </code>
         <span class="k">if</span> <span class="s1">&#39;preprocessor&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">preprocess_selector</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Preprocessing spike trains, &#39;</span>
-              <span class="sa">f</span><span class="s1">&#39;preprocessing func: &lt;</span><span class="si">{self.preprocessor.__name__}</span><span class="s1">&gt;&#39;</span><span class="p">)</span>
+              <span class="sa">f</span><span class="s1">&#39;preprocessing func: &lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">preprocessor</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&gt;&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">preprocessed_data</span> <span class="o">=</span> \
             <span class="bp">self</span><span class="o">.</span><span class="n">preprocessor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">preprocess_params</span><span class="p">)</span>
 
@@ -1985,8 +1999,8 @@ FitHandler        </code>
         <span class="c1"># In future iterations, before fitting model,</span>
         <span class="c1"># check that a similar entry doesn&#39;t exist</span>
 
-        <span class="nb">print</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;Generating Model, model func: &lt;</span><span class="si">{self.model_template.__name__}</span><span class="s1">&gt;&#39;</span><span class="p">)</span>
+        <span class="n">changepoint_model</span><span class="o">.</span><span class="n">compile_wait</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Generating Model, model func: &lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model_template</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&gt;&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">preprocessed_data</span><span class="p">,</span>
                                          <span class="bp">self</span><span class="o">.</span><span class="n">model_params</span><span class="p">[</span><span class="s1">&#39;states&#39;</span><span class="p">])</span>
 
@@ -2002,8 +2016,9 @@ FitHandler        </code>
         <span class="k">if</span> <span class="s1">&#39;inference_func&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">inference_func_selector</span><span class="p">()</span>
 
+        <span class="n">changepoint_model</span><span class="o">.</span><span class="n">compile_wait</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Running inference, inference func: &#39;</span>
-              <span class="sa">f</span><span class="s1">&#39;&lt;</span><span class="si">{self.inference_func.__name__}</span><span class="s1">&gt;&#39;</span><span class="p">)</span>
+              <span class="sa">f</span><span class="s1">&#39;&lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">inference_func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&gt;&#39;</span><span class="p">)</span>
         <span class="n">temp_outs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
                                         <span class="bp">self</span><span class="o">.</span><span class="n">model_params</span><span class="p">[</span><span class="s1">&#39;fit&#39;</span><span class="p">],</span>
                                         <span class="bp">self</span><span class="o">.</span><span class="n">model_params</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">])</span>
@@ -2062,8 +2077,9 @@ FitHandler        </code>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">database_handler</span><span class="o">.</span><span class="n">write_to_database</span><span class="p">()</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Saving inference output to &#39;</span>
-              <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{self.database_handler.model_save_dir}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Saving inference output to : </span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">database_handler</span><span class="o">.</span><span class="n">model_save_dir</span><span class="si">}</span><span class="s1">&#39;</span> 
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;================================&quot;</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 </code></pre></div>
         </details>
 
@@ -2202,7 +2218,7 @@ FitHandler        </code>
     <span class="c1"># =============== Check for exceptions ===============</span>
     <span class="k">if</span> <span class="n">experiment_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Please specify an experiment name&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">taste_num</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">taste_num</span><span class="p">,</span><span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">taste_num</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;taste_num must be an integer or &quot;all&quot;&#39;</span><span class="p">)</span>
 
     <span class="c1"># =============== Save relevant arguments ===============</span>
@@ -2229,15 +2245,6 @@ FitHandler        </code>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;PREPROCESS_PARAMS will have to be set&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_preprocess_params</span><span class="p">(</span><span class="n">file_path</span><span class="o">=</span><span class="n">preprocess_params_path</span><span class="p">)</span>
-
-    <span class="c1"># Attributes to be set later</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">preprocessor</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">model_template</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">inference_func</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">preprocessed_data</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">inference_outs</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div>
         </details>
     </div>
@@ -2280,8 +2287,8 @@ FitHandler        </code>
     <span class="c1"># In future iterations, before fitting model,</span>
     <span class="c1"># check that a similar entry doesn&#39;t exist</span>
 
-    <span class="nb">print</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s1">&#39;Generating Model, model func: &lt;</span><span class="si">{self.model_template.__name__}</span><span class="s1">&gt;&#39;</span><span class="p">)</span>
+    <span class="n">changepoint_model</span><span class="o">.</span><span class="n">compile_wait</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Generating Model, model func: &lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model_template</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&gt;&#39;</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">preprocessed_data</span><span class="p">,</span>
                                      <span class="bp">self</span><span class="o">.</span><span class="n">model_params</span><span class="p">[</span><span class="s1">&#39;states&#39;</span><span class="p">])</span>
 </code></pre></div>
@@ -2342,14 +2349,13 @@ FitHandler        </code>
           <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">load_spike_trains</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Helper function to load spike trains from data_dir using EphysData module</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">full_spike_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">EphysData</span><span class="o">.</span><span class="n">return_region_spikes</span><span class="p">(</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">region_name</span><span class="p">)</span>
+    <span class="n">full_spike_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">EphysData</span><span class="o">.</span><span class="n">return_region_spikes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region_name</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">full_spike_array</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="p">]</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">full_spike_array</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Loading spike trains from </span><span class="si">{self.database_handler.data_basename}</span><span class="s1">, &#39;</span>
-          <span class="sa">f</span><span class="s1">&#39;dig_in </span><span class="si">{self.taste_num}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Loading spike trains from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">database_handler</span><span class="o">.</span><span class="n">data_basename</span><span class="si">}</span><span class="s1">, &#39;</span>
+          <span class="sa">f</span><span class="s1">&#39;dig_in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </code></pre></div>
         </details>
     </div>
@@ -2401,9 +2407,10 @@ FitHandler        </code>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_model_template</span><span class="p">(</span><span class="n">changepoint_model</span><span class="o">.</span><span class="n">single_taste_poisson</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_model_template</span><span class="p">(</span><span class="n">changepoint_model</span><span class="o">.</span><span class="n">all_taste_poisson</span><span class="p">)</span>
-    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Something went wrong&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Something went wrong&quot;</span><span class="p">)</span>
 </code></pre></div>
         </details>
     </div>
@@ -2443,7 +2450,7 @@ FitHandler        </code>
     <span class="k">if</span> <span class="s1">&#39;preprocessor&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">preprocess_selector</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Preprocessing spike trains, &#39;</span>
-          <span class="sa">f</span><span class="s1">&#39;preprocessing func: &lt;</span><span class="si">{self.preprocessor.__name__}</span><span class="s1">&gt;&#39;</span><span class="p">)</span>
+          <span class="sa">f</span><span class="s1">&#39;preprocessing func: &lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">preprocessor</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&gt;&#39;</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">preprocessed_data</span> <span class="o">=</span> \
         <span class="bp">self</span><span class="o">.</span><span class="n">preprocessor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">preprocess_params</span><span class="p">)</span>
 </code></pre></div>
@@ -2501,9 +2508,10 @@ go through preprocess selector</p>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_preprocessor</span><span class="p">(</span>
             <span class="n">changepoint_preprocess</span><span class="o">.</span><span class="n">preprocess_single_taste</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">taste_num</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_preprocessor</span><span class="p">(</span><span class="n">changepoint_preprocess</span><span class="o">.</span><span class="n">preprocess_all_taste</span><span class="p">)</span>
-    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Something went wrong&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Something went wrong&quot;</span><span class="p">)</span>
 </code></pre></div>
         </details>
     </div>
@@ -2543,8 +2551,9 @@ go through preprocess selector</p>
     <span class="k">if</span> <span class="s1">&#39;inference_func&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">inference_func_selector</span><span class="p">()</span>
 
+    <span class="n">changepoint_model</span><span class="o">.</span><span class="n">compile_wait</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Running inference, inference func: &#39;</span>
-          <span class="sa">f</span><span class="s1">&#39;&lt;</span><span class="si">{self.inference_func.__name__}</span><span class="s1">&gt;&#39;</span><span class="p">)</span>
+          <span class="sa">f</span><span class="s1">&#39;&lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">inference_func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&gt;&#39;</span><span class="p">)</span>
     <span class="n">temp_outs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
                                     <span class="bp">self</span><span class="o">.</span><span class="n">model_params</span><span class="p">[</span><span class="s1">&#39;fit&#39;</span><span class="p">],</span>
                                     <span class="bp">self</span><span class="o">.</span><span class="n">model_params</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">])</span>
@@ -2590,8 +2599,9 @@ go through preprocess selector</p>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">database_handler</span><span class="o">.</span><span class="n">write_to_database</span><span class="p">()</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Saving inference output to &#39;</span>
-          <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{self.database_handler.model_save_dir}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Saving inference output to : </span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">database_handler</span><span class="o">.</span><span class="n">model_save_dir</span><span class="si">}</span><span class="s1">&#39;</span> 
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;================================&quot;</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 </code></pre></div>
         </details>
     </div>
@@ -2712,6 +2722,7 @@ go through preprocess selector</p>
                      <span class="n">fit</span><span class="p">,</span>
                      <span class="n">samples</span><span class="p">,</span>
                      <span class="n">file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
     <span class="sd">&quot;&quot;&quot;Load given params as &quot;model_params&quot; attribute</span>
 
 <span class="sd">    Args:</span>
@@ -2850,6 +2861,7 @@ go through preprocess selector</p>
                           <span class="n">bin_width</span><span class="p">,</span>
                           <span class="n">data_transform</span><span class="p">,</span>
                           <span class="n">file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
     <span class="sd">&quot;&quot;&quot;Load given params as &quot;preprocess_params&quot; attribute</span>
 
 <span class="sd">    Args:</span>
@@ -3079,6 +3091,172 @@ model.obs.observations: processed array on which fit was run</p></td>
 
 
 
+<h2 class="doc doc-heading" id="pytau.changepoint_model.all_taste_poisson">
+<code class="highlight language-python"><span class="n">all_taste_poisson</span><span class="p">(</span><span class="n">spike_array</span><span class="p">,</span> <span class="n">states</span><span class="p">)</span></code>
+
+
+</h2>
+
+    <div class="doc doc-contents ">
+
+      <p><strong> Model to fit changepoint to single taste </strong>
+** Largely taken from "_v1/poisson_all_tastes_changepoint_model.py"</p>
+<p>spike_array :: Shape : tastes, trials, neurons, time_bins
+states :: number of states to include in the model </p>
+
+        <details class="quote">
+          <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">all_taste_poisson</span><span class="p">(</span>
+        <span class="n">spike_array</span><span class="p">,</span>
+        <span class="n">states</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    ** Model to fit changepoint to single taste **</span>
+<span class="sd">    ** Largely taken from &quot;_v1/poisson_all_tastes_changepoint_model.py&quot;</span>
+
+<span class="sd">    spike_array :: Shape : tastes, trials, neurons, time_bins</span>
+<span class="sd">    states :: number of states to include in the model </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># If model already doesn&#39;t exist, then create new one</span>
+    <span class="c1">#spike_array = this_dat_binned</span>
+    <span class="c1"># Unroll arrays along taste axis</span>
+    <span class="c1">#spike_array_long = np.reshape(spike_array,(-1,*spike_array.shape[-2:]))</span>
+    <span class="n">spike_array_long</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">spike_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> 
+
+    <span class="c1"># Find mean firing for initial values</span>
+    <span class="n">tastes</span> <span class="o">=</span> <span class="n">spike_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="n">spike_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">nrns</span> <span class="o">=</span> <span class="n">spike_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">trials</span> <span class="o">=</span> <span class="n">spike_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">split_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">spike_array</span><span class="p">,</span><span class="n">states</span><span class="p">,</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># Cut all to the same size</span>
+    <span class="n">min_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">split_list</span><span class="p">])</span>
+    <span class="n">split_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,:</span><span class="n">min_val</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">split_list</span><span class="p">])</span>
+    <span class="n">mean_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">split_array</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">mean_vals</span> <span class="o">+=</span> <span class="mf">0.01</span> <span class="c1"># To avoid zero starting prob</span>
+    <span class="n">mean_nrn_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mean_vals</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c1"># Find evenly spaces switchpoints for initial values</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">spike_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="c1"># Index</span>
+    <span class="n">array_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">spike_array_long</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">even_switches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">idx</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">states</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">even_switches_normal</span> <span class="o">=</span> <span class="n">even_switches</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">even_switches</span><span class="p">)</span>
+
+    <span class="n">taste_label</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">spike_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">spike_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">trial_num</span> <span class="o">=</span> <span class="n">array_idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Being constructing model</span>
+    <span class="k">with</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">()</span> <span class="k">as</span> <span class="n">model</span><span class="p">:</span>
+
+        <span class="c1"># Hierarchical firing rates</span>
+        <span class="c1"># Refer to model diagram</span>
+        <span class="c1"># Mean firing rate of neuron AT ALL TIMES</span>
+        <span class="n">lambda_nrn</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Exponential</span><span class="p">(</span><span class="s1">&#39;lambda_nrn&#39;</span><span class="p">,</span>
+                                    <span class="mi">1</span><span class="o">/</span><span class="n">mean_nrn_vals</span><span class="p">,</span>
+                                    <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">mean_vals</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="c1"># Priors for each state, derived from each neuron</span>
+        <span class="c1"># Mean firing rate of neuron IN EACH STATE (averaged across tastes)</span>
+        <span class="n">lambda_state</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Exponential</span><span class="p">(</span><span class="s1">&#39;lambda_state&#39;</span><span class="p">,</span>
+                                      <span class="n">lambda_nrn</span><span class="p">,</span>
+                                      <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">mean_vals</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+        <span class="c1"># Mean firing rate of neuron PER STATE PER TASTE</span>
+        <span class="n">lambda_latent</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Exponential</span><span class="p">(</span><span class="s1">&#39;lambda&#39;</span><span class="p">,</span>
+                                       <span class="n">lambda_state</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span>
+                                       <span class="n">testval</span><span class="o">=</span><span class="n">mean_vals</span><span class="p">,</span>
+                                       <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">mean_vals</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+        <span class="c1"># Changepoint time variable</span>
+        <span class="c1"># INDEPENDENT TAU FOR EVERY TRIAL</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">HalfNormal</span><span class="p">(</span><span class="s1">&#39;a_tau&#39;</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">states</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">HalfNormal</span><span class="p">(</span><span class="s1">&#39;b_tau&#39;</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">states</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Stack produces states x trials --&gt; That gets transposed</span>
+        <span class="c1"># to trials x states and gets sorted along states (axis=-1)</span>
+        <span class="c1"># Sort should work the same way as the Ordered transform --&gt;</span>
+        <span class="c1"># see rv_sort_test.ipynb</span>
+        <span class="n">tau_latent</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Beta</span><span class="p">(</span><span class="s1">&#39;tau_latent&#39;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span>
+                             <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">trial_num</span><span class="p">,</span> <span class="n">states</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                             <span class="n">testval</span><span class="o">=</span><span class="n">tt</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">even_switches_normal</span><span class="p">[</span><span class="mi">1</span><span class="p">:(</span><span class="n">states</span><span class="p">)],</span>
+                                             <span class="p">(</span><span class="n">array_idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">)))</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">tau</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s1">&#39;tau&#39;</span><span class="p">,</span>
+                               <span class="n">idx</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">+</span> <span class="p">(</span><span class="n">idx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">idx</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">*</span> <span class="n">tau_latent</span><span class="p">)</span>
+
+        <span class="n">weight_stack</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span>
+            <span class="n">idx</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span><span class="o">-</span><span class="n">tau</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span>
+        <span class="n">weight_stack</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">tastes</span><span class="o">*</span><span class="n">trials</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">length</span><span class="p">)),</span> <span class="n">weight_stack</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">inverse_stack</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">weight_stack</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
+        <span class="n">inverse_stack</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">inverse_stack</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">tastes</span><span class="o">*</span><span class="n">trials</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">length</span><span class="p">))],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">weight_stack</span> <span class="o">=</span> <span class="n">weight_stack</span><span class="o">*</span><span class="n">inverse_stack</span>
+        <span class="n">weight_stack</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">weight_stack</span><span class="p">[:,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:],</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nrns</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">lambda_latent</span> <span class="o">=</span> <span class="n">lambda_latent</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">lambda_latent</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">lambda_latent</span><span class="p">,</span> <span class="n">trials</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">lambda_latent</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span>
+            <span class="n">lambda_latent</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">length</span><span class="p">))</span>
+        <span class="n">lambda_latent</span> <span class="o">=</span> <span class="n">lambda_latent</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">lambda_</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">lambda_latent</span> <span class="o">*</span> <span class="n">weight_stack</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">observation</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Poisson</span><span class="p">(</span><span class="s2">&quot;obs&quot;</span><span class="p">,</span> <span class="n">lambda_</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="n">spike_array_long</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-function">
+
+
+
+<h2 class="doc doc-heading" id="pytau.changepoint_model.compile_wait">
+<code class="highlight language-python"><span class="n">compile_wait</span><span class="p">()</span></code>
+
+
+</h2>
+
+    <div class="doc doc-contents ">
+
+      <p>Function to allow waiting while a model is already fitting
+Wait twice because lock blips out between steps
+10 secs of waiting shouldn't be a problem for long fits (~mins)
+And wait a random time in the beginning to stagger fits</p>
+
+        <details class="quote">
+          <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">compile_wait</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to allow waiting while a model is already fitting</span>
+<span class="sd">    Wait twice because lock blips out between steps</span>
+<span class="sd">    10 secs of waiting shouldn&#39;t be a problem for long fits (~mins)</span>
+<span class="sd">    And wait a random time in the beginning to stagger fits</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">theano_lock_present</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Lock present...waiting&#39;</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">theano_lock_present</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Lock present...waiting&#39;</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-function">
+
+
+
 <h2 class="doc doc-heading" id="pytau.changepoint_model.single_taste_poisson">
 <code class="highlight language-python"><span class="n">single_taste_poisson</span><span class="p">(</span><span class="n">spike_array</span><span class="p">,</span> <span class="n">states</span><span class="p">)</span></code>
 
@@ -3176,18 +3354,47 @@ model.obs.observations: processed array on which fit was run</p></td>
                                <span class="n">idx</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">+</span> <span class="p">(</span><span class="n">idx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">idx</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">*</span> <span class="n">tau_latent</span><span class="p">)</span>
 
         <span class="n">weight_stack</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span>
-            <span class="n">idx</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span><span class="o">-</span><span class="n">tau</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span>
+                        <span class="n">idx</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span><span class="o">-</span><span class="n">tau</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span>
         <span class="n">weight_stack</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">trials</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">length</span><span class="p">)),</span> <span class="n">weight_stack</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">trials</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">length</span><span class="p">)),</span> <span class="n">weight_stack</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">inverse_stack</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">weight_stack</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
         <span class="n">inverse_stack</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">inverse_stack</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">trials</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">length</span><span class="p">))],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                        <span class="p">[</span><span class="n">inverse_stack</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">trials</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">length</span><span class="p">))],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">weight_stack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">weight_stack</span><span class="p">,</span> <span class="n">inverse_stack</span><span class="p">)</span>
 
         <span class="n">lambda_</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="n">weight_stack</span><span class="p">,</span> <span class="n">lambda_latent</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
         <span class="n">observation</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Poisson</span><span class="p">(</span><span class="s2">&quot;obs&quot;</span><span class="p">,</span> <span class="n">lambda_</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="n">spike_array</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">model</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-function">
+
+
+
+<h2 class="doc doc-heading" id="pytau.changepoint_model.theano_lock_present">
+<code class="highlight language-python"><span class="n">theano_lock_present</span><span class="p">()</span></code>
+
+
+</h2>
+
+    <div class="doc doc-contents ">
+
+      <p>Check if theano compilation lock is present</p>
+
+        <details class="quote">
+          <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">theano_lock_present</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if theano compilation lock is present</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">theano</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">compiledir</span><span class="p">,</span> <span class="s1">&#39;lock_dir&#39;</span><span class="p">))</span>
 </code></pre></div>
         </details>
     </div>
@@ -3328,20 +3535,26 @@ model.obs.observations: processed array on which fit was run</p></td>
 <span class="sd">        (4D Numpy Array): Of processed data</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">accepted_transforms</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;shuffled&#39;</span><span class="p">,</span> <span class="s1">&#39;simulated&#39;</span><span class="p">,</span> <span class="s1">&#39;None&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">accepted_transforms</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;trial_shuffled&#39;</span><span class="p">,</span><span class="s1">&#39;spike_shuffled&#39;</span><span class="p">,</span><span class="s1">&#39;simulated&#39;</span><span class="p">,</span><span class="s1">&#39;None&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">data_transform</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">accepted_transforms</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;data_transform must be of type </span><span class="si">{accepted_transforms}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="sa">f</span><span class="s1">&#39;data_transform must be of type </span><span class="si">{</span><span class="n">accepted_transforms</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
     <span class="c1">##################################################</span>
     <span class="c1"># Create shuffled data</span>
     <span class="c1">##################################################</span>
     <span class="c1"># Shuffle neurons across trials FOR SAME TASTE</span>
 
-    <span class="k">if</span> <span class="n">data_transform</span> <span class="o">==</span> <span class="s1">&#39;shuffled&#39;</span><span class="p">:</span>
-        <span class="n">transformed_dat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">permutation</span><span class="p">(</span><span class="n">neuron</span><span class="p">)</span>
-                                    <span class="k">for</span> <span class="n">neuron</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">spike_array</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)])</span>
-        <span class="n">transformed_dat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">transformed_dat</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">data_transform</span> <span class="o">==</span> <span class="s1">&#39;trial_shuffled&#39;</span><span class="p">:</span>
+        <span class="n">transformed_dat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">neuron</span><span class="p">)</span> \
+                    <span class="k">for</span> <span class="n">neuron</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">spike_array</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">)])</span>
+        <span class="n">transformed_dat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">transformed_dat</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">data_transform</span> <span class="o">==</span> <span class="s1">&#39;spike_shuffled&#39;</span><span class="p">:</span>
+        <span class="n">transformed_dat</span> <span class="o">=</span> <span class="n">spike_array</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> 
+        <span class="n">transformed_dat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> \
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">transformed_dat</span><span class="p">])</span>
+        <span class="n">transformed_dat</span> <span class="o">=</span> <span class="n">transformed_dat</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> 
 
     <span class="c1">##################################################</span>
     <span class="c1"># Create simulated data</span>
@@ -3349,28 +3562,27 @@ model.obs.observations: processed array on which fit was run</p></td>
     <span class="c1"># Inhomogeneous poisson process using mean firing rates</span>
 
     <span class="k">elif</span> <span class="n">data_transform</span> <span class="o">==</span> <span class="s1">&#39;simulated&#39;</span><span class="p">:</span>
-        <span class="n">mean_firing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">spike_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">mean_firing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">spike_array</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">mean_firing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">mean_firing</span><span class="p">[:,</span><span class="kc">None</span><span class="p">],</span> <span class="n">spike_array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
         <span class="c1"># Simulate spikes</span>
-        <span class="n">transformed_dat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">mean_firing</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">mean_firing</span>
-             <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">spike_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span><span class="o">*</span><span class="mi">1</span>
+        <span class="n">transformed_dat</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">spike_array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">mean_firing</span> <span class="p">)</span><span class="o">*</span><span class="mi">1</span>
 
     <span class="c1">##################################################</span>
     <span class="c1"># Null Transform Case</span>
     <span class="c1">##################################################</span>
-    <span class="k">elif</span> <span class="n">data_transform</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">data_transform</span> <span class="o">==</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">data_transform</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span>
         <span class="n">transformed_dat</span> <span class="o">=</span> <span class="n">spike_array</span>
 
     <span class="c1">##################################################</span>
     <span class="c1"># Bin Data</span>
     <span class="c1">##################################################</span>
-    <span class="n">this_dat_binned</span> <span class="o">=</span> \
-        <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">transformed_dat</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">time_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">time_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span>
-               <span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">transformed_dat</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">bin_width</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">this_dat_binned</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transformed_dat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)(</span><span class="n">this_dat_binned</span><span class="p">)</span>
+    <span class="n">spike_binned</span> <span class="o">=</span> \
+            <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">transformed_dat</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">time_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">time_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span>\
+            <span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">transformed_dat</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">bin_width</span><span class="p">),</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">spike_binned</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)(</span><span class="n">spike_binned</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">this_dat_binned</span>
+    <span class="k">return</span> <span class="n">spike_binned</span>
 </code></pre></div>
         </details>
     </div>
@@ -3487,7 +3699,7 @@ model.obs.observations: processed array on which fit was run</p></td>
     <span class="n">accepted_transforms</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;shuffled&#39;</span><span class="p">,</span> <span class="s1">&#39;simulated&#39;</span><span class="p">,</span> <span class="s1">&#39;None&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">data_transform</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">accepted_transforms</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;data_transform must be of type </span><span class="si">{accepted_transforms}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="sa">f</span><span class="s1">&#39;data_transform must be of type </span><span class="si">{</span><span class="n">accepted_transforms</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
     <span class="c1">##################################################</span>
     <span class="c1"># Create shuffled data</span>
@@ -3495,7 +3707,7 @@ model.obs.observations: processed array on which fit was run</p></td>
     <span class="c1"># Shuffle neurons across trials FOR SAME TASTE</span>
 
     <span class="k">if</span> <span class="n">data_transform</span> <span class="o">==</span> <span class="s1">&#39;shuffled&#39;</span><span class="p">:</span>
-        <span class="n">transformed_dat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">permutation</span><span class="p">(</span><span class="n">neuron</span><span class="p">)</span>
+        <span class="n">transformed_dat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">neuron</span><span class="p">)</span> \
                                     <span class="k">for</span> <span class="n">neuron</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">spike_array</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)])</span>
         <span class="n">transformed_dat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">transformed_dat</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
