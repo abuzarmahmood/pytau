@@ -9,11 +9,14 @@ import pandas as pd
 import numpy as np
 import argparse
 
-parser = argparse.ArgumentParser(description = 'Run single fit with parameters from file')
-parser.add_argument('param_path_file',  help = 'JSON file containing parameters for fit')
+parser = argparse.ArgumentParser(
+        description = 'Run single fit with parameters from file')
+parser.add_argument(
+        'param_path_file',  help = 'JSON file containing parameters for fit')
 args = parser.parse_args()
 #parallel_temp_path = '/media/bigdata/pytau/pytau/v2/parallel_temp'
 
+#job_file_path = '/media/bigdata/projects/pytau/pytau/utils/batch_utils/parallel_temp/job0001.json'
 job_file_path = args.param_path_file
 #job_file_path = sys.argv[1] 
 input_params = pd.read_json(f'{job_file_path}').T
@@ -28,7 +31,8 @@ def fit_func(input_params):
     # Define arguments/parameters
     model_parameters_keys = ['states','fit','samples']
     preprocess_parameters_keys = ['time_lims','bin_width','data_transform']
-    FitHandler_kwargs_keys = ['data_dir','taste_num','region_name','experiment_name']
+    FitHandler_kwargs_keys = ['data_dir','taste_num',
+                            'region_name','experiment_name']
 
     model_parameters = dict(zip(model_parameters_keys, 
                             input_params[model_parameters_keys].iloc[0]))
