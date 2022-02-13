@@ -37,13 +37,15 @@ def compile_wait():
     Function to allow waiting while a model is already fitting
     Wait twice because lock blips out between steps
     10 secs of waiting shouldn't be a problem for long fits (~mins)
+    And wait a random time in the beginning to stagger fits
     """
+    time.sleep(np.random.random()*10)
     while theano_lock_present():
         print('Lock present...waiting')
-        time.sleep(5)
+        time.sleep(10)
     while theano_lock_present():
         print('Lock present...waiting')
-        time.sleep(5)
+        time.sleep(10)
 
 def single_taste_poisson(
         spike_array,
@@ -101,6 +103,106 @@ def single_taste_poisson(
 
     return model
 
+def var_sig_exp_tt(x,b):
+    """
+    x -->
+    b -->
+    """
+    return 1/(1+tt.exp(-tt.exp(b)*x))
+
+def var_sig_tt(x,b):
+    """
+    x -->
+    b -->
+    """
+    return 1/(1+tt.exp(-b*x))
+
+def single_taste_poisson_varsig(
+        spike_array,
+        states):
+    """Model for changepoint on single taste
+        **Uses variables sigmoid slope inferred from data
+
+    ** Largely taken from "non_hardcoded_changepoint_test_3d.ipynb"
+    ** Note : This model does not have hierarchical structure for emissions
+
+    Args:
+        spike_array (3D Numpy array): trials x neurons x time
+        states (int): Number of states to model
+
+    Returns:
+        pymc3 model: Model class containing graph to run inference on
+    """
+
+    mean_vals = np.array([np.mean(x, axis=-1)
+                          for x in np.array_split(spike_array, states, axis=-1)]).T
+    mean_vals = np.mean(mean_vals, axis=1)
+    mean_vals += 0.01  # To avoid zero starting prob
+
+    lambda_test_vals = np.diff(mean_vals, axis=-1)
+    even_switches = np.linspace(0,1,states+1)[1:-1]
+
+    nrns = spike_array.shape[1]
+    trials = spike_array.shape[0]
+    idx = np.arange(spike_array.shape[-1])
+    length = idx.max() + 1
+
+    with pm.Model() as model:
+        
+        # Sigmoid slope
+        sig_b = pm.Normal('sig_b', -1,2, shape = states-1)
+        
+        # Initial value
+        s0 = pm.Exponential('state0', 
+                            1/(np.mean(mean_vals)),
+                            shape = nrns,
+                            testval = mean_vals[:,0])
+        
+        # Changes to lambda
+        lambda_diff = pm.Normal('lambda_diff', 
+                                mu = 0, sigma = 10, 
+                                shape = (nrns,states-1), 
+                                testval = lambda_test_vals)
+
+        # This is only here to be extracted at the end of sampling
+        # NOT USED DIRECTLY IN MODEL
+        lambda_fin = pm.Deterministic('lambda',
+                        tt.concatenate([s0[:,np.newaxis],lambda_diff],axis=-1)
+                        )
+        
+        # Changepoint positions
+        a = pm.HalfCauchy('a_tau', 10, shape = states - 1)
+        b = pm.HalfCauchy('b_tau', 10, shape = states - 1)
+        
+        tau_latent = pm.Beta('tau_latent', a, b, 
+                            testval = even_switches,
+                            shape = (trials, states-1)).sort(axis=-1)    
+        tau = pm.Deterministic('tau', 
+                idx.min() + (idx.max() - idx.min()) * tau_latent)
+        
+        # Mechanical manipulations to generate firing rates
+        idx_temp = np.tile(idx[np.newaxis,np.newaxis,:], (trials, states-1,1))
+        tau_temp = tt.tile(tau[:,:,np.newaxis], (1,1,len(idx)))
+        sig_b_temp = tt.tile(sig_b[np.newaxis,:,np.newaxis], (trials,1,len(idx)))
+
+        weight_stack = var_sig_exp_tt(idx_temp-tau_temp,sig_b_temp)
+        weight_stack_temp = tt.tile(weight_stack[:,np.newaxis,:,:], (1,nrns,1,1))
+
+        s0_temp = tt.tile(s0[np.newaxis,:,np.newaxis,np.newaxis], (trials,1,states-1, len(idx)))
+        lambda_diff_temp = tt.tile(lambda_diff[np.newaxis,:,:,np.newaxis], (trials,1,1, len(idx)))
+
+        # Calculate lambda
+        lambda_ =  pm.Deterministic('lambda_',
+                        tt.sum(s0_temp + (weight_stack_temp*lambda_diff_temp),axis=2))
+        # Bound lambda to prevent the diffs from making it negative
+        # Don't let it go down to zero otherwise we have trouble with probabilities
+        lambda_bounded = pm.Deterministic("lambda_bounded", 
+                tt.switch(lambda_>=0.01, lambda_, 0.01))
+        
+        # Add observations
+        observation = pm.Poisson("obs", lambda_bounded, observed=spike_array)
+
+    return model
 
 def all_taste_poisson(
         spike_array,
@@ -240,3 +342,29 @@ def advi_fit(model, fit, samples):
     tau_samples = trace['tau']
 
     return model, approx, lambda_stack, tau_samples, model.obs.observations
+
+def mcmc_fit(model, samples):
+    """Convenience function to perform ADVI fit on model
+
+    Args:
+        model (pymc3 model): model object to run inference on
+        samples (int): Number of samples to draw using MCMC 
+
+    Returns:
+        model: original model on which inference was run,
+        trace:  samples drawn from MCMC,
+        lambda_stack: array containing lambda (emission) values,
+        tau_samples,: array containing samples from changepoint distribution
+        model.obs.observations: processed array on which fit was run
+    """
+
+    with model:
+        sampler_kwargs = {'cores' :1, 'chains':4}
+        trace = pm.sample(draws=samples, **sampler_kwargs)
+        trace = trace[::10]
+
+    # Extract relevant variables from trace
+    lambda_stack = trace['lambda'].swapaxes(0, 1)
+    tau_samples = trace['tau']
+
+    return model, trace, lambda_stack, tau_samples, model.obs.observations
