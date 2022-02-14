@@ -25,16 +25,19 @@ def preprocess_single_taste(spike_array,
         spike_array (3D Numpy array): trials x neurons x time
         time_lims (List/Tuple/Numpy Array): 2-element object indicating limits of array
         bin_width (int): Width to use for binning
-        data_transform (str): Data-type to return {actual, shuffled, simulated}
+        data_transform (str): Data-type to return 
+                            {actual, trial_shuffled, spike_shuffled, simulated}
 
     Raises:
-        Exception: If transforms do not belong to ['shuffled','simulated','None',None]
+        Exception: If transforms do not belong to 
+        ['trial_shuffled','spike_shuffled','simulated','None',None]
 
     Returns:
         (3D Numpy Array): Of processed data
     """
 
-    accepted_transforms = ['shuffled', 'simulated', 'None', None]
+    accepted_transforms = ['trial_shuffled','spike_shuffled',
+            'simulated','None',None]
     if data_transform not in accepted_transforms:
         raise Exception(
             f'data_transform must be of type {accepted_transforms}')
@@ -44,11 +47,16 @@ def preprocess_single_taste(spike_array,
     ##################################################
     # Shuffle neurons across trials FOR SAME TASTE
 
-    if data_transform == 'shuffled':
+    if data_transform == 'trial_shuffled':
         transformed_dat = np.array([np.random.permutation(neuron) \
                                     for neuron in np.swapaxes(spike_array, 1, 0)])
         transformed_dat = np.swapaxes(transformed_dat, 0, 1)
 
+    if data_transform == 'spike_shuffled':
+        transformed_dat = np.moveaxis(spike_array,-1,0) 
+        transformed_dat = np.stack([np.random.permutation(x) \
+                for x in transformed_dat])
+        transformed_dat = np.moveaxis(transformed_dat,0,-1) 
     ##################################################
     # Create simulated data
     ##################################################
