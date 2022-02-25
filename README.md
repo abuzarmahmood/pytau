@@ -1,5 +1,8 @@
 # PyTau
 
+## API Documentation
+https://abuzarmahmood.github.io/pytau/
+
 ## Outline
 
 - Perform inter-region transition correlations on models fit to each taste 
