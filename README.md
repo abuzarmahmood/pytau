@@ -1,5 +1,8 @@
 # PyTau
 
+## API Documentation
+https://abuzarmahmood.github.io/pytau/
+
 ## Outline
 
 - Perform inter-region transition correlations on models fit to each taste 
@@ -49,7 +52,7 @@ Data stored in models:
 
 ## Pipeline
 
--- Filelist:
+### Filelist
 
 1) Model file
     - Invoked to generate model and perform inference
