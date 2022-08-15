@@ -46,3 +46,5 @@ Thumbs.db
 *build/
 *pytau.egg-info/
 *site/
+*.csv
+*.svg
