@@ -512,6 +512,250 @@ def all_taste_poisson_varsig_fixed(
 # def single_taste_poisson_hard_padding_tau(spike_array,states):
 #     pass
 
+
+def single_taste_poisson_trial_switch(
+        spike_array,
+        switch_components,
+        states):
+
+    """
+    Assuming only emissions change across trials
+    Changepoint distribution remains constant
+
+    spike_array :: trials x nrns x time
+    states :: number of states to include in the model 
+    """
+
+    trial_num, nrn_num, time_bins = spike_array.shape
+
+    with pm.Model() as model:
+        
+        # Define Emissions
+        
+        # nrns
+        nrn_lambda = pm.Exponential('nrn_lambda', 10, shape = (nrn_num))
+        
+        # nrns x switch_comps
+        trial_lambda = pm.Exponential('trial_lambda', 
+                                    nrn_lambda.dimshuffle(0,'x'), 
+                                    shape = (nrn_num, switch_components))
+        
+        # nrns x switch_comps x states
+        state_lambda = pm.Exponential('state_lambda',
+                                    trial_lambda.dimshuffle(0,1,'x'),
+                                    shape = (nrn_num, switch_components, states))
+        
+        # Define Changepoints
+        # Assuming distribution of changepoints remains
+        # the same across all trials
+
+        a = pm.HalfCauchy('a_tau', 3., shape = states - 1)
+        b = pm.HalfCauchy('b_tau', 3., shape = states - 1)
+        
+        even_switches = np.linspace(0,1,states+1)[1:-1]
+        tau_latent = pm.Beta('tau_latent', a, b, 
+                            testval = even_switches,
+                            shape = (trial_num,states-1)).sort(axis=-1)    
+        
+        # Trials x Changepoints
+        tau = pm.Deterministic('tau', time_bins * tau_latent)
+        
+        # Define trial switches
+        # Will have same structure as regular changepoints
+        
+        even_trial_switches = np.linspace(0,1,switch_components+1)[1:-1]
+        tau_trial_latent = pm.Beta('tau_trial_latent', 1, 1, 
+                            testval = even_trial_switches,
+                            shape = (switch_components-1)).sort(axis=-1)    
+        
+        # Trial_changepoints
+        tau_trial = pm.Deterministic('tau_trial', trial_num * tau_trial_latent)
+        
+        trial_idx = np.arange(trial_num)
+        trial_selector = tt.nnet.sigmoid(trial_idx[np.newaxis,:] - tau_trial.dimshuffle(0,'x'))
+        
+        trial_selector = tt.concatenate([np.ones((1,trial_num)),trial_selector],axis=0)
+        inverse_trial_selector = 1 - trial_selector[1:,:]
+        inverse_trial_selector = tt.concatenate([inverse_trial_selector, 
+                                                np.ones((1,trial_num))],axis=0)
+
+        # First, we can "select" sets of emissions depending on trial_changepoints 
+        # switch_comps x trials
+        trial_selector = np.multiply(trial_selector,inverse_trial_selector)
+        
+        # state_lambda: nrns x switch_comps x states
+        
+        # selected_trial_lambda : nrns x states x trials
+        selected_trial_lambda = pm.Deterministic('selected_trial_lambda',
+                                tt.sum(
+                                # "nrns" x switch_comps x "states" x trials
+                                trial_selector.dimshuffle('x',0,'x',1) * state_lambda.dimshuffle(0,1,2,'x'),
+                                axis=1)
+                                                )
+        
+        # Then, we can select state_emissions for every trial
+        idx = np.arange(time_bins)
+        
+        # tau : Trials x Changepoints
+        weight_stack = tt.nnet.sigmoid(idx[np.newaxis,:]-tau[:,:,np.newaxis])
+        weight_stack = tt.concatenate([np.ones((trial_num,1,time_bins)),weight_stack],axis=1)
+        inverse_stack = 1 - weight_stack[:,1:]
+        inverse_stack = tt.concatenate([inverse_stack, np.ones((trial_num,1,time_bins))],axis=1)
+
+        # Trials x states x Time
+        weight_stack = np.multiply(weight_stack,inverse_stack)
+        
+        # Convert selected_trial_lambda : nrns x trials x states x "time"
+        
+        # nrns x trials x time
+        lambda_ = tt.sum(selected_trial_lambda.dimshuffle(0,2,1,'x') * weight_stack.dimshuffle('x',0,1,2),
+                        axis = 2)
+        
+        # Convert to : trials x nrns x time
+        lambda_ = lambda_.dimshuffle(1,0,2)
+        
+        # Add observations
+        observation = pm.Poisson("obs", lambda_, observed=spike_array)
+    
+    return model
+
+
+def all_taste_poisson_trial_switch(
+        spike_array,
+        switch_components,
+        states):
+
+    """
+    Assuming only emissions change across trials
+    Changepoint distribution remains constant
+
+    spike_array :: Tastes x trials x nrns x time_bins
+    states :: number of states to include in the model 
+    """
+
+    tastes, trial_num, nrn_num, time_bins = spike_array.shape
+
+    with pm.Model() as model:
+        
+        # Define Emissions
+        # =================================================
+        
+        # nrns
+        nrn_lambda = pm.Exponential('nrn_lambda', 10, shape = (nrn_num))
+        
+        # tastes x nrns
+        taste_lambda = pm.Exponential('taste_lambda', 
+                                    nrn_lambda.dimshuffle('x',0),
+                                    shape = (tastes, nrn_num))
+        
+        # tastes x nrns x switch_comps
+        trial_lambda = pm.Exponential('trial_lambda', 
+                                    taste_lambda.dimshuffle(0,1,'x'), 
+                                    shape = (tastes, nrn_num, switch_components))
+        
+        # tastes x nrns x switch_comps x states
+        state_lambda = pm.Exponential('state_lambda',
+                                    trial_lambda.dimshuffle(0,1,2,'x'),
+                                    shape = (tastes, nrn_num, switch_components, states))
+        
+        # Define Changepoints
+        # =================================================
+        # Assuming distribution of changepoints remains
+        # the same across all trials
+
+        a = pm.HalfCauchy('a_tau', 3., shape = states - 1)
+        b = pm.HalfCauchy('b_tau', 3., shape = states - 1)
+        
+        even_switches = np.linspace(0,1,states+1)[1:-1]
+        tau_latent = pm.Beta('tau_latent', a, b, 
+                            testval = even_switches,
+                            shape = (tastes, trial_num, states-1)).sort(axis=-1)    
+        
+        # Tasets x Trials x Changepoints
+        tau = pm.Deterministic('tau', time_bins * tau_latent)
+        
+        # Define trial switches
+        # Will have same structure as regular changepoints
+        
+        #a_trial = pm.HalfCauchy('a_trial', 3., shape = switch_components - 1)
+        #b_trial = pm.HalfCauchy('b_trial', 3., shape = switch_components - 1)
+        
+        even_trial_switches = np.linspace(0,1,switch_components+1)[1:-1]
+        tau_trial_latent = pm.Beta('tau_trial_latent', 1, 1, 
+                            testval = even_trial_switches,
+                            shape = (switch_components-1)).sort(axis=-1)    
+        
+        # Trial_changepoints
+        # =================================================
+        tau_trial = pm.Deterministic('tau_trial', trial_num * tau_trial_latent)
+        
+        trial_idx = np.arange(trial_num)
+        trial_selector = tt.nnet.sigmoid(trial_idx[np.newaxis,:] - tau_trial.dimshuffle(0,'x'))
+        
+        trial_selector = tt.concatenate([np.ones((1,trial_num)),trial_selector],axis=0)
+        inverse_trial_selector = 1 - trial_selector[1:,:]
+        inverse_trial_selector = tt.concatenate([inverse_trial_selector, 
+                                                np.ones((1,trial_num))],axis=0)
+
+        # switch_comps x trials
+        trial_selector = np.multiply(trial_selector,inverse_trial_selector)
+        
+        # state_lambda: tastes x nrns x switch_comps x states
+        
+        # selected_trial_lambda : tastes x nrns x states x trials
+        selected_trial_lambda = pm.Deterministic('selected_trial_lambda',
+                                tt.sum(
+                                # "tastes" x "nrns" x switch_comps x "states" x trials
+                                trial_selector.dimshuffle('x','x',0,'x',1) * state_lambda.dimshuffle(0,1,2,3,'x'),
+                                axis=2)
+                                                )
+        
+        # First, we can "select" sets of emissions depending on trial_changepoints 
+        # =================================================
+        trial_idx = np.arange(trial_num)
+        trial_selector = tt.nnet.sigmoid(trial_idx[np.newaxis,:] - tau_trial.dimshuffle(0,'x'))
+        
+        trial_selector = tt.concatenate([np.ones((1,trial_num)),trial_selector],axis=0)
+        inverse_trial_selector = 1 - trial_selector[1:,:]
+        inverse_trial_selector = tt.concatenate([inverse_trial_selector, 
+                                                np.ones((1,trial_num))],axis=0)
+
+        # switch_comps x trials
+        trial_selector = np.multiply(trial_selector,inverse_trial_selector)
+        
+        
+        # Then, we can select state_emissions for every trial
+        # =================================================
+        
+        idx = np.arange(time_bins)
+        
+        # tau : Tastes x Trials x Changepoints
+        weight_stack = tt.nnet.sigmoid(idx[np.newaxis,:]-tau[:,:,:,np.newaxis])
+        weight_stack = tt.concatenate([np.ones((tastes,trial_num,1,time_bins)),weight_stack],axis=2)
+        inverse_stack = 1 - weight_stack[:,:,1:]
+        inverse_stack = tt.concatenate([inverse_stack, np.ones((tastes,trial_num,1,time_bins))],axis=2)
+
+        # Tastes x Trials x states x Time
+        weight_stack = np.multiply(weight_stack,inverse_stack)
+        
+        # Putting everything together
+        # =================================================
+        
+        # selected_trial_lambda :           tastes x nrns x states x trials
+        # Convert selected_trial_lambda --> tastes x trials x nrns x states x "time"
+        
+        # weight_stack :           tastes x trials x states x time
+        # Convert weight_stack --> tastes x trials x "nrns" x states x time
+        
+        # tastes x trials x nrns x time
+        lambda_ = tt.sum(selected_trial_lambda.dimshuffle(0,3,1,2,'x') * weight_stack.dimshuffle(0,1,'x',2,3),
+                        axis = 3)
+        
+        # Add observations
+        observation = pm.Poisson("obs", lambda_, observed=spike_array)
+
+    return model
+
 ######################################################################
 #|  _ \ _   _ _ __   |_ _|_ __  / _| ___ _ __ ___ _ __   ___ ___
 #| |_) | | | | '_ \   | || '_ \| |_ / _ \ '__/ _ \ '_ \ / __/ _ \
