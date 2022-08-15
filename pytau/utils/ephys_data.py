@@ -155,9 +155,10 @@ class EphysData():
         if 'spikes' not in dir(self):
             self.get_spikes()
         if self.laser_exists:
-            self.on_spikes = np.array([taste[laser > 0] for taste, laser in
+            self.laser_spikes = {}
+            self.laser_spikes['on'] = np.array([taste[laser > 0] for taste, laser in
                                        zip(self.spikes, self.laser_durations)])
-            self.off_spikes = np.array([taste[laser == 0] for taste, laser in
+            self.laser_spikes['off'] = np.array([taste[laser == 0] for taste, laser in
                                         zip(self.spikes, self.laser_durations)])
         else:
             raise Exception('No laser trials in this experiment')
@@ -222,7 +223,7 @@ class EphysData():
         self.region_units = [np.where(region_ind_vec == x)[0]
                              for x in np.unique(region_ind_vec)]
 
-    def return_region_spikes(self, region_name='all'):
+    def return_region_spikes(self, region_name='all', laser = None):
         """Use metadata to return spike trains by region
 
         Args:
@@ -235,10 +236,18 @@ class EphysData():
         Returns:
             Numpy array: Array containing spike trains for specified region
         """
+        if laser not in [None, 'on','off']:
+            raise Exception('laser must be from ["on","off"]')
         if 'region_names' not in dir(self):
             self.get_region_units()
         if self.spikes is None:
             self.get_spikes()
+
+        if laser is not None:
+            self.separate_laser_spikes()
+            this_spikes = self.laser_spikes[laser] 
+        else:
+            this_spikes = self.spikes
 
         if region_name != 'all':
             region_ind = [num for num, x in enumerate(self.region_names)
@@ -249,7 +258,9 @@ class EphysData():
                                 '\n' + f"===> {self.region_names, 'all'}")
 
             this_region_units = self.region_units[region_ind[0]]
-            region_spikes = [x[:, this_region_units] for x in self.spikes]
+            #region_spikes = [x[:, this_region_units] for x in self.spikes]
+            region_spikes = [x[:, this_region_units] for x in this_spikes]
             return np.array(region_spikes)
 
-        return np.array(self.spikes)
+        return np.array(this_spikes)
+        #return np.array(self.spikes)

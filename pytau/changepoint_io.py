@@ -40,6 +40,7 @@ class FitHandler():
                  data_dir,
                  taste_num,
                  region_name,
+                 laser_type = None,
                  experiment_name=None,
                  model_params_path=None,
                  preprocess_params_path=None,
@@ -61,12 +62,15 @@ class FitHandler():
 
         Raises:
             Exception: If "experiment_name" is None
+            Exception: If "laser_type" is not in [None, 'on', 'off']
             Exception: If "taste_num" is not integer or "all"
         """
 
         # =============== Check for exceptions ===============
         if experiment_name is None:
             raise Exception('Please specify an experiment name')
+        if laser_type not in [None, 'on','off']:
+            raise Exception('laser_type must be from [None, "on","off"]')
         if not (isinstance(taste_num,int) or taste_num == 'all'):
             raise Exception('taste_num must be an integer or "all"')
 
@@ -76,12 +80,21 @@ class FitHandler():
         #self.data = self.EphysData.get_spikes({"bla","gc","all"})
 
         self.taste_num = taste_num
+        self.laser_type = laser_type
         self.region_name = region_name
         self.experiment_name = experiment_name
 
         data_handler_init_kwargs = dict(zip(
-            ['data_dir', 'experiment_name', 'taste_num', 'region_name'],
-            [data_dir, experiment_name, taste_num, region_name]))
+            [   'data_dir', 
+                'experiment_name', 
+                'taste_num', 
+                'laser_type',
+                'region_name'],
+            [   data_dir, 
+                experiment_name, 
+                taste_num, 
+                laser_type,
+                region_name]))
         self.database_handler = DatabaseHandler()
         self.database_handler.set_run_params(**data_handler_init_kwargs)
 
@@ -238,13 +251,15 @@ class FitHandler():
     def load_spike_trains(self):
         """Helper function to load spike trains from data_dir using EphysData module
         """
-        full_spike_array = self.EphysData.return_region_spikes(self.region_name)
+        full_spike_array = self.EphysData.return_region_spikes(
+                region_name = self.region_name,
+                laser = self.laser_type)
         if isinstance(self.taste_num, int):
             self.data = full_spike_array[self.taste_num]
         if self.taste_num == 'all':
             self.data = full_spike_array
         print(f'Loading spike trains from {self.database_handler.data_basename}, '
-              f'dig_in {self.taste_num}')
+              f'dig_in {self.taste_num}, laser {str(self.laser_type)}')
 
     def preprocess_data(self):
         """Perform data preprocessing
@@ -454,7 +469,13 @@ class DatabaseHandler():
                                  f"database_backup_{current_date}"))
         self.fit_database.to_csv(self.model_database_path, mode='w')
 
-    def set_run_params(self, data_dir, experiment_name, taste_num, region_name):
+    def set_run_params(
+            self, 
+            data_dir, 
+            experiment_name, 
+            taste_num, 
+            laser_type,
+            region_name):
         """Store metadata related to inference run
 
         Args:
@@ -463,6 +484,8 @@ class DatabaseHandler():
                     (for metedata). Defaults to None.
             taste_num (int): Index of taste to perform fit on (Corresponds to
                     INDEX of taste in spike array, not actual dig_ins)
+            laser_type (None or str): None, 'on', or 'off' (For a laser session, 
+                    which set of trials are wanted, None indicated return all trials)
             region_name (str): Region on which to perform fit on
                     (must match regions in .info file)
         """
@@ -485,6 +508,7 @@ class DatabaseHandler():
         self.fit_date = date.today().strftime("%m-%d-%y")
 
         self.taste_num = taste_num
+        self.laser_type = laser_type
         self.region_name = region_name
 
         self.fit_exists = None
@@ -516,12 +540,14 @@ class DatabaseHandler():
              'animal_name',
              'session_date',
              'taste_num',
+             'laser_type',
              'region_name'],
             [self.data_dir,
              self.data_basename,
              self.animal_name,
              self.session_date,
              self.taste_num,
+             self.laser_type,
              self.region_name]))
 
         exp_details = dict(zip(
