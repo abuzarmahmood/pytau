@@ -13,12 +13,15 @@ from glob import glob
 import numpy as np
 import pandas as pd
 
-#from . import changepoint_model
-#from . import changepoint_preprocess
-#from .utils import EphysData
-import changepoint_model
-import changepoint_preprocess
-from utils import EphysData
+from . import changepoint_model
+from . import changepoint_preprocess
+from .utils import EphysData
+#import changepoint_model
+#import changepoint_preprocess
+#from utils import EphysData
+
+import pymc3
+import theano
 
 MODEL_SAVE_DIR = '/media/bigdata/firing_space_plot/changepoint_mcmc/saved_models'
 MODEL_DATABASE_PATH = os.path.join(MODEL_SAVE_DIR, 'model_database.csv')
@@ -126,6 +129,7 @@ class FitHandler():
                          states,
                          fit,
                          samples,
+                         model_kwargs = None,
                          file_path=None):
 
         """Load given params as "model_params" attribute
@@ -134,13 +138,15 @@ class FitHandler():
             states (int): Number of states to use in model
             fit (int): Iterations to use for model fitting (given ADVI fit)
             samples (int): Number of samples to return from fitten model
+            model_kwargs (dict) : Additional paramters for model
             file_path (str, optional): Path to json file containing
                     preprocess parameters. Defaults to None.
         """
 
         if file_path is None:
             self.model_params = \
-                dict(zip(['states', 'fit', 'samples'], [states, fit, samples]))
+                dict(zip(['states', 'fit', 'samples', 'model_kwargs'], 
+                    [states, fit, samples, model_kwargs]))
         else:
             # Load json and save dict
             pass
@@ -200,7 +206,9 @@ class FitHandler():
 
         """
         if isinstance(self.taste_num, int):
-            self.set_model_template(changepoint_model.single_taste_poisson)
+            #self.set_model_template(changepoint_model.single_taste_poisson_varsig)
+            self.set_model_template(
+                    changepoint_model.single_taste_poisson)
         elif self.taste_num == 'all':
             self.set_model_template(changepoint_model.all_taste_poisson)
         else:
@@ -272,7 +280,8 @@ class FitHandler():
         changepoint_model.compile_wait()
         print(f'Generating Model, model func: <{self.model_template.__name__}>')
         self.model = self.model_template(self.preprocessed_data,
-                                         self.model_params['states'])
+                                         self.model_params['states'],
+                                         **self.model_params['model_kwargs'])
 
     def run_inference(self):
         """Perform inference on data
@@ -525,9 +534,17 @@ class DatabaseHandler():
              self.model_save_path,
              self.fit_date]))
 
+        module_details = dict(zip(
+            ['pymc3_version',
+             'theano_version'],
+            [pymc3.__version__,
+                theano.__version__]
+            ))
+
         temp_ext_met = self.external_metadata
         temp_ext_met['data'] = data_details
         temp_ext_met['exp'] = exp_details
+        temp_ext_met['module'] = module_details
 
         return temp_ext_met
 
@@ -535,6 +552,8 @@ class DatabaseHandler():
         """Write out metadata to database
         """
         agg_metadata = self.aggregate_metadata()
+        # Convert model_kwargs to str so that they are save appropriately
+        agg_metadata['model']['model_kwargs'] = str(agg_metadata['model']['model_kwargs'])
         flat_metadata = pd.json_normalize(agg_metadata)
         if not os.path.isfile(self.model_database_path):
             flat_metadata.to_csv(self.model_database_path, mode='a')
