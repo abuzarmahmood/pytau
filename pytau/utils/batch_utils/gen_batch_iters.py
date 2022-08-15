@@ -17,8 +17,12 @@ def entry_checker(msg, check_func, fail_response):
             print(fail_response)
     return msg_input, continue_bool
 
-parallel_temp_path = '/media/bigdata/projects/pytau/pytau/utils/batch_utils/parallel_temp'
-dir_list_path = '/media/bigdata/projects/pytau/pytau/data/bla_dirs.txt'
+parallel_temp_path = '/media/bigdata/projects/pytau/pytau/utils'\
+        '/batch_utils/parallel_temp'
+#dir_list_path = '/media/bigdata/projects/pytau/pytau/data/fin_inter_list_3_14_22.txt'
+#dir_list_path = '/media/bigdata/projects/pytau/pytau/data/all_gc_dirs.txt'
+#dir_list_path = '/media/bigdata/projects/pytau/pytau/data/bla_dirs.txt'
+dir_list_path = '/media/bigdata/firing_space_plot/NM_gape_analysis/fin_NM_emg_dat.txt'
 ########################################
 ## Specify Things HERE
 ########################################
@@ -32,23 +36,26 @@ dir_list = [x.strip() for x in open(dir_list_path,'r').readlines()]
 # Exp params
 # NOTE :: EVERYTHING needs to be a list
 # Except time_lims which has to be a list of lists
-exp_model_parameters = {'states' :      [i for i in range(8,11)],
-                        'fit' :         [40000],
-                        'samples' :     [20000]
+exp_model_parameters = {'states' :      [4],
+                        'fit' :         [80000],
+                        'samples' :     [20000],
+                        'model_kwargs' : [{'None':None}]
                         }
 
 exp_preprocess_parameters = {   
                         'time_lims' :   [ [2000,4000] ],
                         'bin_width' :   [50],
-                        'data_transform' : ['None','spike_shuffled',
-                                            'trial_shuffled', 'simulated']
+                        'data_transform' : ['None']#,
+                                            #'spike_shuffled',
+                                            #'trial_shuffled']
                         }
 
 exp_fit_handler_kwargs = {
                         'data_dir' :    dir_list,
-                        'taste_num' :   ['all'],
-                        'region_name' : ['bla'],
-                        'experiment_name' : ['par_test']
+                        'taste_num' :   [0,1,2,3],
+                        'region_name' : ['gc'],
+                        'laser_type' : ['off'],
+                        'experiment_name' : ['NM_EMG']
                         }
 
 ########################################
@@ -63,11 +70,11 @@ iter_frame = pd.DataFrame(iter_list)
 unique_vals = []
 unique_keys = []
 for col in iter_frame:
-    unique_vals.append(np.unique(iter_frame[col]))
+    unique_vals.append(np.unique(iter_frame[col].astype('str')))
 
+print(f"Total iterations : {iter_frame.shape[0]}" + "\n")
 for name,vals in zip(param_dict.keys(), unique_vals):
     if len(vals) > 1:
-        print(f"Total iterations : {iter_frame.shape[0]}" + "\n")
         print(str({name:vals}) + "\n")
         unique_keys.append(name)
 
@@ -82,4 +89,6 @@ else:
 
 for num, this_row in iter_frame.iterrows():
     temp_frame = pd.DataFrame(this_row)
-    temp_frame.to_json(os.path.join(parallel_temp_path, f'job{num:04}.json'))
+    temp_frame.to_json(
+            os.path.join(parallel_temp_path, f'job{num:04}.json'),
+            indent = 4)
