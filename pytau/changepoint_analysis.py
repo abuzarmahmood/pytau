@@ -58,7 +58,11 @@ class _firing():
         self._EphysData = EphysData(self.metadata['data']['data_dir'])
         temp_spikes = self._EphysData.return_region_spikes(
                             self.metadata['data']['region_name'])
-        self.raw_spikes = temp_spikes[self.metadata['data']['taste_num']]
+        taste_num = self.metadata['data']['taste_num']
+        if  taste_num != 'all':
+            self.raw_spikes = temp_spikes[taste_num]
+        else:
+            self.raw_spikes = temp_spikes
         self.state_firing = get_state_firing(self.processed_spikes,
                                              self.tau.raw_mode_tau)
 
