@@ -1,0 +1,2 @@
+In pytau/config/MODEL_SAVE_DIR.params, change the directory 
+where you want to save the model data.
