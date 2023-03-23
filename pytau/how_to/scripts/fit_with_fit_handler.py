@@ -1,7 +1,7 @@
 ## Import modules
-from pytau.changepoint_io import FitHandler
 base_dir = '/media/bigdata/projects/pytau'
 sys.path.append(base_dir)
+from pytau.changepoint_io import FitHandler
 
 # Specify params for fit
 model_parameters = dict(

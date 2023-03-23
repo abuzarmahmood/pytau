@@ -4,6 +4,7 @@ import numpy as np
 import sys
 sys.path.append('/media/bigdata/projects/pytau')
 import pytau
+from pytau.changepoint_model import single_taste_poisson, advi_fit
 
 # Load spikes
 spikes = ...
@@ -18,7 +19,7 @@ model = pytau.changepoint_model.single_taste_poisson(spike_array, n_states)
 with model:
     inference = pm.ADVI('full-rank') # ADVI is preferred over MCMC due to speed
     approx = pm.fit(n=n_fit, method=inference)
-    trace = approx.sample(draws=samples)
+    trace = approx.sample(draws=n_samples)
 
 # Plot ELBO over iterations, should be flat by the end
 fig,ax = plt.subplots(1,2,figsize=(15,5))
