@@ -26,7 +26,11 @@ import theano
 MODULE_DIR = os.path.dirname(__file__)
 PARAMS_PATH = os.path.join(MODULE_DIR, 'config', 'MODEL_SAVE_DIR.params')
 MODEL_SAVE_DIR = open(PARAMS_PATH, 'r').read().strip()
-print('MODEL_SAVE_DIR', MODEL_SAVE_DIR)
+if not os.path.exists(MODEL_SAVE_DIR):
+    os.makedirs(MODEL_SAVE_DIR)
+    print('Created directory: {}'.format(MODEL_SAVE_DIR))
+else:
+    print('Using directory: {}'.format(MODEL_SAVE_DIR))
 MODEL_DATABASE_PATH = os.path.join(MODEL_SAVE_DIR, 'model_database.csv')
 
 
@@ -134,9 +138,11 @@ class FitHandler():
         """
 
         if file_path is None:
-            self.preprocess_params = \
-                dict(zip(['time_lims', 'bin_width', 'data_transform'],
+            preprocess_params_dict = dict(zip(['time_lims', 'bin_width', 'data_transform'],
                          [time_lims, bin_width, data_transform]))
+            self.preprocess_params = preprocess_params_dict
+            print('Set preprocess params to: {}'.format(preprocess_params_dict))
+                
         else:
             # Load json and save dict
             pass
@@ -160,9 +166,11 @@ class FitHandler():
         """
 
         if file_path is None:
-            self.model_params = \
-                dict(zip(['states', 'fit', 'samples', 'model_kwargs'], 
+            model_params_dict = dict(zip(['states', 'fit', 'samples', 'model_kwargs'], 
                     [states, fit, samples, model_kwargs]))
+            self.model_params = model_params_dict
+            print('Set model params to: {}'.format(model_params_dict))
+                
         else:
             # Load json and save dict
             pass
