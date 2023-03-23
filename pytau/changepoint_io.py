@@ -23,7 +23,10 @@ from .utils import EphysData
 import pymc3
 import theano
 
-MODEL_SAVE_DIR = '/media/bigdata/firing_space_plot/changepoint_mcmc/saved_models'
+MODULE_DIR = os.path.dirname(__file__)
+PARAMS_PATH = os.path.join(MODULE_DIR, 'config', 'MODEL_SAVE_DIR.params')
+MODEL_SAVE_DIR = open(PARAMS_PATH, 'r').read().strip()
+print('MODEL_SAVE_DIR', MODEL_SAVE_DIR)
 MODEL_DATABASE_PATH = os.path.join(MODEL_SAVE_DIR, 'model_database.csv')
 
 
