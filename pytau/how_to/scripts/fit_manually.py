@@ -52,7 +52,7 @@ mode_tau = np.squeeze(stats.mode(int_tau, axis=0)[0])
 scaled_mode_tau = (mode_tau*bin_width)+time_lims[0]
 
 # Plot ELBO over iterations, should be flat by the end
-fig, ax = plotting.plot_elbo_history(approx, n_fit)
+fig, ax = plotting.plot_elbo_history(approx)
 plt.show()
 
 # Overlay raster plot with states

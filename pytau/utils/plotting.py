@@ -10,7 +10,7 @@ from ..changepoint_analysis import (
         calc_significant_neurons_firing,
         calc_significant_neurons_snippets)
 
-def plot_elbo_history(fit_model, n_fit, final_window=0.05):
+def plot_elbo_history(fit_model, final_window=0.05):
     """
     Plot the ELBO history of a fitted model.
     """
@@ -19,6 +19,7 @@ def plot_elbo_history(fit_model, n_fit, final_window=0.05):
     ax[0].set_ylabel('ELBO')
     ax[0].set_xlabel('Iteration');
 
+    n_fit = len(fit_model.hist)
     ind = int(n_fit - n_fit*0.05)
     last_iters = fit_model.hist[ind:]
     ax[1].plot(-last_iters, alpha=.3)

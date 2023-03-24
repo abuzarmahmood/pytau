@@ -1,7 +1,10 @@
 ## Import modules
 base_dir = '/media/bigdata/projects/pytau'
+import sys
 sys.path.append(base_dir)
 from pytau.changepoint_io import FitHandler
+import pylab as plt
+from pytau.utils import plotting
 
 # Specify params for fit
 model_parameters = dict(
@@ -44,16 +47,6 @@ inference_outs = handler.inference_outs
 # tau : Inferred changepoints
 # data : Data used for inference
 
-# From saved pkl file
-from changepoint_analysis import PklHandler
-this_handler = PklHandler('/path/to/pkl/file')
-# Can access following attributes
-# Raw Int tau : All tau samples in terms of indices of array given ==> this_handler.tau.raw_int_tau
-# Raw mode tau : Mode of samples in terms of indices of array given ==> this_handler.tau.raw_mode_tau
-# Scaled Tau : All tau samples scaled to stimulus delivery ==> this_handler.tau.scaled_tau
-# Int Scaled Tau : Integer values of "Scaled Tau" ==> this_handler.tau.scaled_int_tau
-# Mode Scale Tau : Mode of Int Scaled Tau ==> this_handler.tau.scaled_mode_tau
-
 # Can also get path to pkl file from model database
 from pytau.changepoint_io import DatabaseHandler
 fit_database = DatabaseHandler()
@@ -62,10 +55,10 @@ fit_database.clear_mismatched_paths()
 
 # Get fits for a particular experiment
 dframe = fit_database.fit_database
-wanted_exp_name = 'bla_population_elbo_repeat'
+wanted_exp_name = 'pytau_test'
 wanted_frame = dframe.loc[dframe['exp.exp_name'] == wanted_exp_name] 
 # Pull out a single data_directory
-data_dir = wanted_frame['data.data_dir'].iloc[0]
+pkl_path = wanted_frame['exp.save_path'].iloc[0]
 
 ## Information saved in model database 
 # preprocess.time_lims
@@ -91,3 +84,48 @@ data_dir = wanted_frame['data.data_dir'].iloc[0]
 # exp.fit_date
 # module.pymc3_version
 # module.theano_version
+
+# From saved pkl file
+from pytau.changepoint_analysis import PklHandler
+this_handler = PklHandler(pkl_path)
+# Can access following attributes
+# Tau:
+#   Raw Int tau : All tau samples in terms of indices of array given ==> this_handler.tau.raw_int_tau
+#   Raw mode tau : Mode of samples in terms of indices of array given ==> this_handler.tau.raw_mode_tau
+#   Scaled Tau : All tau samples scaled to stimulus delivery ==> this_handler.tau.scaled_tau
+#   Int Scaled Tau : Integer values of "Scaled Tau" ==> this_handler.tau.scaled_int_tau
+#   Mode Scale Tau : Mode of Int Scaled Tau ==> this_handler.tau.scaled_mode_tau
+# Firing:
+#   Raw spikes : Pulled using EphysData ==> this_handler.firing.raw_spikes 
+#   Mean firing rate per state : this_handler.firing.state_firing
+#   Snippets around each transition : this_handler.firing.transition_snips
+#   Significance of changes in state firing : this_handler.firing.anova_p_val_array
+#   Significance of changes in firing across transitions : this_handler.firing.pairwise_p_val_array
+# Metadata
+this_handler.pretty_metadata
+
+# Plotting
+fit_model = this_handler.data['model_data']['approx']
+spike_train = this_handler.firing.raw_spikes
+scaled_mode_tau = this_handler.tau.scaled_mode_tau
+
+# Plot ELBO over iterations, should be flat by the end
+fig, ax = plotting.plot_elbo_history(fit_model)
+plt.show()
+
+# Overlay raster plot with states
+fig, ax = plotting.plot_changepoint_raster(
+    spike_train, scaled_mode_tau, [1500, 4000])
+plt.show()
+
+# Overview of changepoint positions
+fig, ax = plotting.plot_changepoint_overview(scaled_mode_tau, [1500, 4000])
+plt.show()
+
+# Aligned spiking
+fig, ax = plotting.plot_aligned_state_firing(spike_train, scaled_mode_tau, 300)
+plt.show()
+
+# Plot mean firing rates per state
+fig, ax = plotting.plot_state_firing_rates(spike_train, scaled_mode_tau)
+plt.show()

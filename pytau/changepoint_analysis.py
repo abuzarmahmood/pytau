@@ -146,7 +146,7 @@ class _firing():
             self.raw_spikes = temp_spikes
         self.state_firing = get_state_firing(self.processed_spikes,
                                              self.tau.raw_mode_tau)
-        self.transition_snips = get_transition_snippets(self.raw_spikes,
+        self.transition_snips = get_transition_snips(self.raw_spikes,
                                                         self.tau.scaled_mode_tau)
         self.anova_p_val_array, self.anova_significant_neurons = \
             calc_significant_neurons_firing(self.state_firing)
