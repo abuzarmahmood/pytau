@@ -10,6 +10,34 @@ from scipy.stats import mode
 
 from .utils import EphysData
 
+def get_transition_snips(spike_array, tau_array, window_radius = 300):
+    """Get snippets of activty around changepoints for each trial
+
+    Args:
+        spike_array (3D Numpy array): trials x nrns x bins
+        tau_array (2D Numpy array): trials x switchpoints
+
+    Returns:
+        Numpy array: Transition snippets : trials x nrns x bins x transitions
+
+    Make sure none of the snippets are outside the bounds of the data
+    """
+    # Get snippets of activity around changepoints for each trial
+    n_trials, n_neurons, n_bins = spike_array.shape
+    n_transitions = tau_array.shape[1]
+    transition_snips = np.zeros((n_trials, n_neurons, 2*window_radius, n_transitions))
+    window_lims = np.stack([tau_array - window_radius, tau_array + window_radius], axis=-1)
+
+    # Make sure no lims are outside the bounds of the data
+    if (window_lims < 0).sum(axis=None) or (window_lims > n_bins).sum(axis=None):
+        raise ValueError('Transition window extends outside data bounds')
+
+    # Pull out snippets
+    for trial in range(n_trials):
+        for transition in range(n_transitions):
+            transition_snips[trial, :, :, transition] = \
+                spike_array[trial, :, window_lims[trial, transition, 0]:window_lims[trial, transition, 1]]
+    return transition_snips
 
 def get_state_firing(spike_array, tau_array):
     """Calculate firing rates within states given changepoint positions on data
