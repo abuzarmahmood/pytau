@@ -2,43 +2,67 @@
 
 import numpy as np
 import sys
-sys.path.append('/media/bigdata/projects/pytau')
-import pytau
+pytau_base_dir = '/media/bigdata/projects/pytau'
+sys.path.append(pytau_base_dir)
+from glob import glob
+from pytau.changepoint_preprocess import preprocess_single_taste
 from pytau.changepoint_model import single_taste_poisson, advi_fit
+from pytau.utils import plotting 
+import os
+import tables
+from scipy import stats
+import pylab as plt
+
+# Write to MODEL_SAVE_DIR.params
+param_file_path = f'{pytau_base_dir}/pytau/config/MODEL_SAVE_DIR.params'
+save_model_path = f'{pytau_base_dir}/pytau/how_to/examples/saved_models'
+with open(param_file_path, 'w') as f:
+    f.write(save_model_path)
+
+# Find hf5 file
+h5_path = glob(os.path.join(pytau_base_dir,'**','*.h5'), recursive=True)[0]
 
 # Load spikes
-spikes = ...
+wanted_dig_in_ind = 0
+with tables.open_file(h5_path,'r') as hf5:
+    dig_in_list = hf5.list_nodes('/spike_trains')
+    wanted_dig_in = dig_in_list[wanted_dig_in_ind]
+    spike_train = wanted_dig_in.spike_array[:]
 
 # Reshape + Bin Spikes
-binned_spike_array = ... # shape = (n_trials, n_neurons, n_bins)
+time_lims = [2000,4000]
+bin_width = 50
+binned_spike_array = preprocess_single_taste(
+        spike_array = spike_train, 
+        time_lims = time_lims,
+        bin_width = bin_width,
+        data_transform = None)
 
 # Create and fit model
 n_fit = 40000
 n_samples = 20000
-model = pytau.changepoint_model.single_taste_poisson(spike_array, n_states)
-with model:
-    inference = pm.ADVI('full-rank') # ADVI is preferred over MCMC due to speed
-    approx = pm.fit(n=n_fit, method=inference)
-    trace = approx.sample(draws=n_samples)
-
-# Plot ELBO over iterations, should be flat by the end
-fig,ax = plt.subplots(1,2,figsize=(15,5))
-ax[0].plot(-approx.hist, alpha=.3)
-ax[0].set_ylabel('ELBO')
-ax[0].set_xlabel('iteration');
-
-ind = int(n_fit - n_fit*0.05)
-last_iters = approx.hist[ind:]
-ax[1].plot(-last_iters, alpha=.3)
-x = np.arange(len(last_iters))
-binned_iters = np.reshape(last_iters, (-1, 100)).mean(axis=-1)
-binned_x = x[::100]
-ax[1].plot(binned_x, -binned_iters)
-ax[1].set_title('Final 5% of iterations')
-ax[1].set_ylabel('ELBO')
-ax[1].set_xlabel('iteration');
+n_states = 4
+model = single_taste_poisson(binned_spike_array, n_states)
+model, approx, lambda_stack, tau_samples, fit_data  = \
+        advi_fit(model = model, fit = n_fit, samples = n_samples)
 
 # Extract changepoint values
-tau_stack = trace['tau']
-int_tau = np.vectorize(np.int)(tau_stack)
+int_tau = np.vectorize(np.int)(tau_samples)
 mode_tau = np.squeeze(stats.mode(int_tau,axis=0)[0])
+scaled_mode_tau = (mode_tau*bin_width)+time_lims[0]
+
+# Plot ELBO over iterations, should be flat by the end
+fig,ax = plotting.plot_elbo_history(approx, n_fit)
+plt.show()
+
+# Overlay raster plot with states
+fig,ax = plotting.plot_changepoint_raster(spike_train, scaled_mode_tau, [1500, 4000])
+plt.show()
+
+# Overview of changepoint positions
+fig,ax = plotting.plot_changepoint_overview(scaled_mode_tau, [1500,4000])
+plt.show()
+
+# Aligned spiking
+fig,ax = plotting.plot_aligned_state_firing(spike_train, scaled_mode_tau, 300)
+plt.show()
