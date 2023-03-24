@@ -103,7 +103,8 @@ def plot_changepoint_overview(tau, plot_lims):
         1. Convert changepoints to state durations and plot heatmap of state durations
         2. Histogram of changepoint values for each changepoint
     """
-    n_trials, n_states = tau.shape
+    n_trials, n_transitions = tau.shape
+    n_states = n_transitions + 1
     state_durations = np.zeros((n_trials, plot_lims[1])) 
     for trial in range(n_trials):
         for state in range(n_states):
@@ -121,8 +122,8 @@ def plot_changepoint_overview(tau, plot_lims):
     ax[0].set_xlabel('State')
     ax[0].set_title('State durations')
 
-    for state in range(n_states):
-        ax[1].hist(tau[:, state], bins=10, alpha=0.5, label='State {}'.format(state))
+    for transition in range(n_transitions):
+        ax[1].hist(tau[:, transition], bins=10, alpha=0.5, label='Transition {}'.format(transition))
     ax[1].set_xlabel('Time')
     ax[1].set_ylabel('Count')
     ax[1].legend()
