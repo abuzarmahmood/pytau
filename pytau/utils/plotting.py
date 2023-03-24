@@ -4,8 +4,11 @@ Plotting functionality for PyTau output.
 
 import matplotlib.pyplot as plt
 import numpy as np
-from ..changepoint_analysis import get_transition_snips
-
+from ..changepoint_analysis import (
+        get_transition_snips, 
+        get_state_firing, 
+        calc_significant_neurons_firing,
+        calc_significant_neurons_snippets)
 
 def plot_elbo_history(fit_model, n_fit, final_window=0.05):
     """
@@ -47,7 +50,7 @@ def raster(spike_array, ax=None, color='k', alpha=0.5):
     spike_inds = np.where(spike_array)
     ax.scatter(*spike_inds[::-1], marker='|', color=color, alpha=alpha)
     ax.set_xlim([0, n_bins])
-    ax.set_ylim([0, n_neurons])
+    ax.set_ylim([-0.5, n_neurons-0.5])
     return fig, ax
 
 def plot_changepoint_raster(spike_array, tau, plot_lims=None):
@@ -132,11 +135,13 @@ def plot_aligned_state_firing(spike_array, tau, window_radius=300):
 
     Plot the average firing rate for each neuron across trials for 'window_radius'
     around each changepoint.
+    Highlight significant neurons with yellow patch
     Output figure with shape 1 x n_states
     """
     n_trials, n_neurons, n_bins=spike_array.shape
     n_transitions=tau.shape[1] 
     transitions_firing=get_transition_snips(spike_array, tau, window_radius)
+    p_val_array, significant_neurons = calc_significant_neurons_snippets(transitions_firing)
     fig, ax=plt.subplots(1, n_transitions, figsize=(15, 5),
                          sharex=True, sharey=True)
     for transitions in range(n_transitions):
@@ -145,4 +150,49 @@ def plot_aligned_state_firing(spike_array, tau, window_radius=300):
         ax[transitions].set_xlabel('Time')
         ax[transitions].set_ylabel('Neuron')
         ax[transitions].axvline(window_radius, color='r')
+        for neuron in range(n_neurons):
+            if significant_neurons[neuron, transitions]: 
+                ax[transitions].axhspan(neuron-0.5, neuron+0.5,
+                                        color='y', alpha=0.5, zorder = 10)
     return fig, ax
+
+def plot_state_firing_rates(spike_array, tau):
+    """Stacked subplots of bar plots with error bars and significance markers 
+    for each neuron per state
+    Also highlight significant neurons with yellow patch
+    
+    spike_array : array of shape (n_trials, n_neurons, n_bins)
+    tau : array of shape (n_trials, n_transitions) with changepoint values
+    """
+    # shape (n_trials, n_states, n_neurons)
+    state_firing_rates = get_state_firing(spike_array, tau)
+    # shape (n_states, n_neurons)
+    mean_state_firing, std_state_firing = state_firing_rates.mean(axis=0), state_firing_rates.std(axis=0)
+    p_val_array, significant_neurons = calc_significant_neurons_firing(state_firing_rates)
+    n_trials, n_states, n_neurons = state_firing_rates.shape
+    fig, ax = plt.subplots(n_states, 1, 
+                           figsize=(10, 3*n_states), sharex=True, sharey=True)
+    for state in range(n_states):
+        ax[state].bar(np.arange(n_neurons), mean_state_firing[state],
+                      yerr=std_state_firing[state], capsize=5)
+        ax[state].set_ylabel('Firing rate')
+        # Print state name on the right of each subplot (rotated vertically)
+        ax[state].text(1.02, 0.5, 'State {}'.format(state),
+                    rotation=270, verticalalignment='center',
+                       transform=ax[state].transAxes)
+        #ax[state].set_title('State {}'.format(state))
+        ax[state].set_xticks(np.arange(n_neurons))
+        ax[state].set_xticklabels(np.arange(n_neurons))
+        for neuron in range(n_neurons):
+            if neuron in significant_neurons:
+                upper_lim = mean_state_firing[state, neuron] + std_state_firing[state, neuron]
+                #ax[state].text(neuron, 1.1*upper_lim,
+                #               '*', horizontalalignment='center')
+                ax[state].axvspan(neuron-0.5, neuron+0.5,
+                                  color='y', alpha=0.5, zorder = 10)
+    ax[n_states-1].set_xlabel('Neuron')
+    fig.suptitle('Firing rate per state' + '\n' + \
+            'Highlight = Significance (with Bonf Correction, p < 0.05)')
+    plt.tight_layout()
+    return fig, ax
+

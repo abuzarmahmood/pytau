@@ -6,11 +6,12 @@ import pickle as pkl
 
 import numpy as np
 import pandas as pd
-from scipy.stats import mode
+from scipy.stats import mode, f_oneway, ttest_rel
 
 from .utils import EphysData
 
-def get_transition_snips(spike_array, tau_array, window_radius = 300):
+
+def get_transition_snips(spike_array, tau_array, window_radius=300):
     """Get snippets of activty around changepoints for each trial
 
     Args:
@@ -25,8 +26,10 @@ def get_transition_snips(spike_array, tau_array, window_radius = 300):
     # Get snippets of activity around changepoints for each trial
     n_trials, n_neurons, n_bins = spike_array.shape
     n_transitions = tau_array.shape[1]
-    transition_snips = np.zeros((n_trials, n_neurons, 2*window_radius, n_transitions))
-    window_lims = np.stack([tau_array - window_radius, tau_array + window_radius], axis=-1)
+    transition_snips = np.zeros(
+        (n_trials, n_neurons, 2*window_radius, n_transitions))
+    window_lims = np.stack(
+        [tau_array - window_radius, tau_array + window_radius], axis=-1)
 
     # Make sure no lims are outside the bounds of the data
     if (window_lims < 0).sum(axis=None) or (window_lims > n_bins).sum(axis=None):
@@ -36,8 +39,9 @@ def get_transition_snips(spike_array, tau_array, window_radius = 300):
     for trial in range(n_trials):
         for transition in range(n_transitions):
             transition_snips[trial, :, :, transition] = \
-                spike_array[trial, :, window_lims[trial, transition, 0]:window_lims[trial, transition, 1]]
+                spike_array[trial, :, window_lims[trial, transition, 0]                            :window_lims[trial, transition, 1]]
     return transition_snips
+
 
 def get_state_firing(spike_array, tau_array):
     """Calculate firing rates within states given changepoint positions on data
@@ -47,7 +51,7 @@ def get_state_firing(spike_array, tau_array):
         tau_array (2D Numpy array): trials x switchpoints
 
     Returns:
-        Numpy array: Average firing given state bounds
+        state_firing (3D Numpy array): trials x states x nrns
     """
 
     states = tau_array.shape[-1] + 1
@@ -68,6 +72,55 @@ def get_state_firing(spike_array, tau_array):
     return state_firing
 
 
+def calc_significant_neurons_firing(state_firing, p_val=0.05):
+    """Calculate significant changes in firing rate between states
+    Iterate ANOVA over neurons for all states
+    With Bonferroni correction
+
+    Args
+        state_firing (3D Numpy array): trials x states x nrns
+        p_val (float, optional): p-value to use for significance. Defaults to 0.05.
+
+    Returns:
+        anova_p_val_array (1D Numpy array): p-values for each neuron
+        anova_sig_neurons (1D Numpy array): indices of significant neurons
+    """
+    n_neurons = state_firing.shape[-1]
+    # Calculate ANOVA p-values for each neuron
+    anova_p_val_array = np.zeros(state_firing.shape[-1])
+    for neuron in range(state_firing.shape[-1]):
+        anova_p_val_array[neuron] = f_oneway(*state_firing[:, :, neuron].T)[1]
+    anova_sig_neurons = np.where(anova_p_val_array < p_val/n_neurons)[0]
+
+    return anova_p_val_array, anova_sig_neurons
+
+
+def calc_significant_neurons_snippets(transition_snips, p_val=0.05):
+    """Calculate pairwise t-tests to detect differences between each transition 
+    With Bonferroni correction
+
+    Args
+        transition_snips (4D Numpy array): trials x nrns x bins x transitions
+        p_val (float, optional): p-value to use for significance. Defaults to 0.05.
+
+    Returns:
+        anova_p_val_array (neurons, transition): p-values for each neuron 
+        anova_sig_neurons (neurons, transition): indices of significant neurons
+    """
+    # Calculate pairwise t-tests for each transition
+    # shape : [before, after] x trials x neurons x transitions
+    mean_transition_snips = np.stack(np.array_split(
+        transition_snips, 2, axis=2)).mean(axis=3)
+    pairwise_p_val_array = np.zeros(mean_transition_snips.shape[2:])
+    n_neuron, n_transitions = pairwise_p_val_array.shape
+    for neuron in range(n_neuron):
+        for transition in range(n_transitions):
+            pairwise_p_val_array[neuron, transition] = \
+                ttest_rel(*mean_transition_snips[:, :, neuron, transition])[1]
+    pairwise_sig_neurons = pairwise_p_val_array < p_val  # /n_neuron
+    return pairwise_p_val_array, pairwise_sig_neurons
+
+
 class _firing():
     """Helper class to handle processing for firing rate using "EphysData"
     """
@@ -85,14 +138,20 @@ class _firing():
         self.metadata = metadata
         self._EphysData = EphysData(self.metadata['data']['data_dir'])
         temp_spikes = self._EphysData.return_region_spikes(
-                            self.metadata['data']['region_name'])
+            self.metadata['data']['region_name'])
         taste_num = self.metadata['data']['taste_num']
-        if  taste_num != 'all':
+        if taste_num != 'all':
             self.raw_spikes = temp_spikes[taste_num]
         else:
             self.raw_spikes = temp_spikes
         self.state_firing = get_state_firing(self.processed_spikes,
                                              self.tau.raw_mode_tau)
+        self.transition_snips = get_transition_snippets(self.raw_spikes,
+                                                        self.tau.scaled_mode_tau)
+        self.anova_p_val_array, self.anova_significant_neurons = \
+            calc_significant_neurons_firing(self.state_firing)
+        self.pairwise_p_val_array, self.pairwise_significant_neurons = \
+            calc_significant_neurons_snippets(self.transition_snips)
 
 
 class _tau():
@@ -107,11 +166,7 @@ class _tau():
             metadata (Dict): Dict containing metadata on fit
         """
         self.raw_tau = tau_array
-        #self.metadata = metadata
 
-        # def process_tau(self):
-        #time_lims = self.metadata['preprocess']['time_lims']
-        #bin_width = self.metadata['preprocess']['bin_width']
         time_lims = metadata['preprocess']['time_lims']
         bin_width = metadata['preprocess']['bin_width']
 
@@ -154,4 +209,3 @@ class PklHandler():
 
         self.tau = _tau(self.tau_array, self.metadata)
         self.firing = _firing(self.tau, self.processed_spikes, self.metadata)
-
