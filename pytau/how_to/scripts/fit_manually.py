@@ -1,17 +1,17 @@
 # Fit a model to data manually
 
-from pytau.utils import plotting
 import pylab as plt
 from scipy import stats
 import tables
 import os
-from pytau.changepoint_model import single_taste_poisson, advi_fit
-from pytau.changepoint_preprocess import preprocess_single_taste
 from glob import glob
 import numpy as np
 import sys
 pytau_base_dir = '/media/bigdata/projects/pytau'
 sys.path.append(pytau_base_dir)
+from pytau.utils import plotting
+from pytau.changepoint_model import single_taste_poisson, advi_fit
+from pytau.changepoint_preprocess import preprocess_single_taste
 
 # Write to MODEL_SAVE_DIR.params
 param_file_path = f'{pytau_base_dir}/pytau/config/MODEL_SAVE_DIR.params'
