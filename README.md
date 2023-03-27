@@ -7,6 +7,28 @@ https://abuzarmahmood.github.io/pytau/
 
 - Perform inter-region transition correlations on models fit to each taste 
     individually
+    
+## Installation
+```
+# Create and activate conda environment
+conda create -n "pytau_env" python=3.6.13 ipython notebook -y
+conda activate pytau_env
+
+# Clone repository
+cd ~/Desktop
+git clone https://github.com/abuzarmahmood/pytau.git
+
+# Install requirements from specified file
+cd pytau
+pip install -r requirements.txt
+
+# Test everything is working by running notebook
+cd pytau/how_to
+bash scripts/download_test_data.sh
+cd notebooks
+jupyter notebook
+# Run a notebook
+```
 
 ## Data Organization
 
