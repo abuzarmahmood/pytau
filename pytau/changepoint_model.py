@@ -12,6 +12,7 @@ import theano.tensor as tt
 import numpy as np
 import os
 import time
+from tqdm import tqdm
 
 ############################################################
 # Functions
@@ -843,6 +844,54 @@ def all_taste_poisson_trial_switch(
 ######################################################################
 # Run Inference
 ######################################################################
+
+def extract_inferred_values(trace):
+    """Convenience function to extract inferred values from ADVI fit
+
+    Args:
+        trace (dict): trace
+
+    Returns:
+        dict: dictionary of inferred values
+    """
+    # Extract relevant variables from trace
+    out_dict = dict(
+            tau_samples = trace['tau'])
+    if 'lambda' in trace.varnames:
+        out_dict['lambda_stack'] = trace['lambda'].swapaxes(0, 1)
+    if 'mu' in trace.varnames:
+        out_dict['mu_stack'] = trace['mu'].swapaxes(0, 1)
+        out_dict['sigma_stack'] = trace['sigma'].swapaxes(0, 1)
+    return out_dict
+
+def find_best_states(data, model_generator, n_fit, n_samples, min_states = 2, max_states = 10):
+    """Convenience function to find best number of states for model
+
+    Args:
+        data (array): array on which to run inference
+        model_generator (function): function that generates model
+        n_fit (int): Number of iterationst to fit the model for
+        n_samples (int): Number of samples to draw from fitted model
+        min_states (int): Minimum number of states to test
+        max_states (int): Maximum number of states to test
+
+    Returns:
+        best_model: model with best number of states,
+        model_list: list of models with different number of states,
+        elbo_values: list of elbo values for different number of states
+    """
+    n_state_array = np.arange(min_states, max_states+1)
+    elbo_values = []
+    model_list = []
+    for n_states in tqdm(n_state_array):
+        print(f'Fitting model with {n_states} states')
+        model = model_generator(data, n_states)
+        model, approx = advi_fit(model, n_fit, n_samples)[:2]
+        elbo_values.append(approx.hist[-1])
+        model_list.append(model)
+    best_model = model_list[np.argmin(elbo_values)]
+    return best_model, model_list, elbo_values
+
 
 def advi_fit(model, fit, samples):
     """Convenience function to perform ADVI fit on model
