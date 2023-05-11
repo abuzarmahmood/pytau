@@ -4,12 +4,7 @@ of Poisson Likelihood Changepoint for spike trains.
 """
 
 ########################################
-# ___                            _
-#|_ _|_ __ ___  _ __   ___  _ __| |_
-# | || '_ ` _ \| '_ \ / _ \| '__| __|
-# | || | | | | | |_) | (_) | |  | |_
-#|___|_| |_| |_| .__/ \___/|_|   \__|
-#              |_|
+# Import
 ########################################
 import pymc3 as pm
 import theano
@@ -19,11 +14,7 @@ import os
 import time
 
 ############################################################
-#  ____                _         __  __           _      _
-# / ___|_ __ ___  __ _| |_ ___  |  \/  | ___   __| | ___| |
-#| |   | '__/ _ \/ _` | __/ _ \ | |\/| |/ _ \ / _` |/ _ \ |
-#| |___| | |  __/ (_| | ||  __/ | |  | | (_) | (_| |  __/ |
-# \____|_|  \___|\__,_|\__\___| |_|  |_|\___/ \__,_|\___|_|
+# Functions
 ############################################################
 
 def theano_lock_present():
@@ -46,6 +37,99 @@ def compile_wait():
     while theano_lock_present():
         print('Lock present...waiting')
         time.sleep(10)
+
+def gen_test_array(array_size, n_states, type = 'poisson'):
+    """
+    Generate test array for model fitting
+    Last 2 dimensions consist of a single trial
+    Time will always be last dimension
+
+    Args:
+        array_size (tuple): Size of array to generate
+        n_states (int): Number of states to generate
+        type (str): Type of data to generate
+            - normal
+            - poisson
+    """
+    assert array_size[-1] > n_states, 'Array too small for states'
+    assert type in ['normal', 'poisson'], 'Invalid type, please use normal or poisson'
+
+    # Generate transition times
+    transition_times = np.random.random((*array_size[:-2], n_states))
+    transition_times = np.cumsum(transition_times, axis=-1)
+    transition_times = transition_times / transition_times.max(axis=-1, keepdims=True)
+    transition_times *= array_size[-1]
+    transition_times = np.vectorize(int)(transition_times)
+
+    # Generate state bounds
+    state_bounds = np.zeros((*array_size[:-2], n_states+1), dtype = int)
+    state_bounds[..., 1:] = transition_times
+
+    # Generate state rates
+    lambda_vals = np.random.random((*array_size[:-1], n_states))
+
+    # Generate array
+    rate_array = np.zeros(array_size)
+    inds = list(np.ndindex(lambda_vals.shape))
+    for this_ind in inds:
+        this_lambda = lambda_vals[this_ind[:-2]][:,this_ind[-1]]
+        this_state_bounds = [
+                state_bounds[(*this_ind[:-2], this_ind[-1])], 
+                state_bounds[(*this_ind[:-2], this_ind[-1]+1)]]
+        rate_array[this_ind[:-2]][:, slice(*this_state_bounds)] = this_lambda[:,None]
+
+    if type == 'poisson':
+        return np.random.poisson(rate_array)
+    else:
+        return np.random.normal(loc = rate_array, scale = 0.1)
+
+
+def gaussian_changepoint_2d(data_array, n_states, **kwargs):
+    """Model for gaussian data on 2D array
+
+    Args:
+        data_array (2D Numpy array): <dimension> x time
+        n_states (int): Number of states to model
+
+    Returns:
+        pymc3 model: Model class containing graph to run inference on
+    """
+    mean_vals = np.array([np.mean(x, axis=-1)
+                          for x in np.array_split(data_array, n_states, axis=-1)]).T
+    mean_vals += 0.01  # To avoid zero starting prob
+
+    y_dim = data_array.shape[0]
+    idx = np.arange(data_array.shape[-1])
+    length = idx.max() + 1
+
+    with pm.Model() as model:
+        mu = pm.Normal('mu', mu=mean_vals, sd=1, shape=(y_dim, n_states))
+        sigma = pm.HalfCauchy('sigma', 3., shape=(y_dim, n_states))
+
+        a_tau = pm.HalfCauchy('a_tau', 3., shape=n_states - 1)
+        b_tau = pm.HalfCauchy('b_tau', 3., shape=n_states - 1)
+
+        even_switches = np.linspace(0, 1, n_states+1)[1:-1]
+        tau_latent = pm.Beta('tau_latent', a_tau, b_tau,
+                             testval=even_switches,
+                             shape=(n_states-1)).sort(axis=-1)
+
+        tau = pm.Deterministic('tau',
+                               idx.min() + (idx.max() - idx.min()) * tau_latent)
+
+        weight_stack = tt.nnet.sigmoid(idx[np.newaxis,:]-tau[:,np.newaxis])
+        weight_stack = tt.concatenate([np.ones((1,length)),weight_stack],axis=0)
+        inverse_stack = 1 - weight_stack[1:]
+        inverse_stack = tt.concatenate([inverse_stack, np.ones((1,length))],axis=0)
+        weight_stack = np.multiply(weight_stack,inverse_stack)
+
+        mu_latent = mu.dot(weight_stack)
+        sigma_latent = sigma.dot(weight_stack)
+        observation = pm.Normal("obs", mu = mu_latent, sd = sigma_latent, 
+                                observed = data_array)
+
+    return model
+
 
 def single_taste_poisson(
         spike_array,
@@ -757,10 +841,7 @@ def all_taste_poisson_trial_switch(
     return model
 
 ######################################################################
-#|  _ \ _   _ _ __   |_ _|_ __  / _| ___ _ __ ___ _ __   ___ ___
-#| |_) | | | | '_ \   | || '_ \| |_ / _ \ '__/ _ \ '_ \ / __/ _ \
-#|  _ <| |_| | | | |  | || | | |  _|  __/ | |  __/ | | | (_|  __/
-#|_| \_\\__,_|_| |_| |___|_| |_|_|  \___|_|  \___|_| |_|\___\___|
+# Run Inference
 ######################################################################
 
 def advi_fit(model, fit, samples):
