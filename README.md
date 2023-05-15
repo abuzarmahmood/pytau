@@ -122,3 +122,8 @@ Data stored in models:
     - Script to iterate over data
     - Input:
         1) List of data to iterate over
+
+## Notes
+
+- Parallelization
+    - Parallelization is currently performed using GNU Parallel by setting separate a theano compiledir for each job. This prevents compilation clashes. Refer to [this file](https://github.com/abuzarmahmood/pytau/blob/master/pytau/utils/batch_utils/single_process.sh) and [this commit](https://github.com/abuzarmahmood/pytau/pull/19/commits/231dd33b846cf278549b1b5815fdae5e76fa14a2)
