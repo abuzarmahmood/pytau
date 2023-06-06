@@ -132,6 +132,86 @@ def gaussian_changepoint_mean_var_2d(data_array, n_states, **kwargs):
 
     return model
 
+
+def stick_breaking(beta):
+    portion_remaining = tt.concatenate([[1], tt.extra_ops.cumprod(1 - beta)[:-1]])
+    return beta * portion_remaining
+
+def gaussian_changepoint_mean_dirichlet(data_array, max_states = 15):
+    """Model for gaussian data on 2D array detecting changes only in 
+    the mean. Number of states determined using dirichlet process prior.
+
+    Args:
+        data_array (2D Numpy array): <dimension> x time
+        max_states (int): Max number of states to include in truncated dirichlet process 
+
+    Returns:
+        pymc3 model: Model class containing graph to run inference on
+    """
+
+    y_dim = data_array.shape[0]
+    idx = np.arange(data_array.shape[-1])
+    length = idx.max() + 1
+
+    mean_vals = np.array([np.mean(x, axis=-1)
+                          for x in np.array_split(data_array, max_states, axis=-1)]).T
+    mean_vals += 0.01  # To avoid zero starting prob
+    test_std = np.std(data_array, axis=-1)
+
+    with pm.Model() as model:
+        # ===================
+        # Emissions Variables
+        # ===================
+        lambda_latent = pm.Normal('lambda', 
+                        mu = mean_vals, sigma = 10, 
+                        shape = (y_dim, max_states))
+        # One variance for each dimension
+        sigma = pm.HalfCauchy('sigma', test_std, shape=(y_dim))
+
+        # =====================
+        # Changepoint Variables
+        # =====================
+        
+        # Hyperpriors on alpha
+        a_gamma = pm.Gamma('a_gamma',10,1)
+        b_gamma = pm.Gamma('b_gamma',1.5,1)
+        
+        # Concentration parameter for beta
+        alpha = pm.Gamma('alpha', a_gamma, b_gamma)
+        
+        # Draw beta's to calculate stick lengths
+        beta = pm.Beta('beta', 1, alpha, shape = max_states)
+        
+        # Calculate stick lengths using stick_breaking process
+        w_raw = pm.Deterministic('w_raw', stick_breaking(beta))
+        
+        # Make sure lengths add to 1, and scale to length of data
+        w_latent = pm.Deterministic('w_latent', w_raw / w_raw.sum())
+        tau = pm.Deterministic('tau', tt.cumsum(w_latent * length)[:-1])
+        
+        # Weight stack to assign lambda's to point in time
+        weight_stack = tt.nnet.sigmoid(idx[np.newaxis,:]-tau[:,np.newaxis])
+        weight_stack = tt.concatenate([np.ones((1,length)),weight_stack],axis=0)
+        inverse_stack = 1 - weight_stack[1:]
+        inverse_stack = tt.concatenate([inverse_stack, np.ones((1,length))],axis=0)
+        weight_stack = np.multiply(weight_stack,inverse_stack)
+
+        # Create timeseries for latent variable (mean emission)
+        lambda_ = pm.Deterministic('lambda_', 
+                                   tt.tensordot(
+                                       lambda_latent,
+                                       weight_stack,
+                                       axes=(1,0)
+                                   )
+                                  )
+        sigma_latent = sigma.dimshuffle(0, 'x')
+        
+        # Likelihood for observations
+        observation = pm.Normal("obs", mu = lambda_, sigma = sigma_latent, observed=data_array)
+    return model
+
+#TODO: Convenience function for taking out non-significant states
+
 def gaussian_changepoint_mean_2d(data_array, n_states, **kwargs):
     """Model for gaussian data on 2D array detecting changes only in 
     the mean.
