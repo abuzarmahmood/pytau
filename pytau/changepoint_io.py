@@ -20,8 +20,8 @@ from .utils import EphysData
 #import changepoint_preprocess
 #from utils import EphysData
 
-import pymc3
-import theano
+import pymc
+# import theano
 
 MODULE_DIR = os.path.dirname(__file__)
 PARAMS_PATH = os.path.join(MODULE_DIR, 'config', 'MODEL_SAVE_DIR.params')

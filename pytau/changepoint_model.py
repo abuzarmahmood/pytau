@@ -6,9 +6,9 @@ of Poisson Likelihood Changepoint for spike trains.
 ########################################
 # Import
 ########################################
-import pymc3 as pm
-import theano
-import theano.tensor as tt
+import pymc as pm
+# import theano
+import pytensor.tensor as tt
 import numpy as np
 import os
 import time
@@ -347,7 +347,7 @@ def single_taste_poisson_dirichlet(
         # =====================
 
         # Weight stack to assign lambda's to point in time
-        weight_stack = tt.nnet.sigmoid(
+        weight_stack = tt.math.sigmoid(
             idx[np.newaxis, :]-tau[:, :, np.newaxis])
         weight_stack = tt.concatenate(
             [np.ones((trials, 1, length)), weight_stack], axis=1)
@@ -1165,17 +1165,29 @@ def find_best_states(data, model_generator, n_fit, n_samples, min_states=2, max_
     return best_model, model_list, elbo_values
 
 
-def dpp_fit(model, n_chains = 24, n_cores = 1, tune = 500, draws = 500):
+def dpp_fit(model, n_chains = 24, n_cores = 1, tune = 500, draws = 500,
+            use_numpyro = False):
     """Convenience function to fit DPP model
     """
-    with model:
-        dpp_trace = pm.sample(
-                            tune = tune,
-                            draws = draws, 
-                              target_accept = 0.95,
-                             chains = n_chains,
-                             cores = n_cores,
-                            return_inferencedata=False)
+    if not use_numpyro:
+        with model:
+            dpp_trace = pm.sample(
+                                tune = tune,
+                                draws = draws, 
+                                  target_accept = 0.95,
+                                 chains = n_chains,
+                                 cores = n_cores,
+                                return_inferencedata=False)
+    else:
+        with model:
+            dpp_trace = pm.sample(
+                                nuts_sampler = 'numpyro',
+                                tune = tune,
+                                draws = draws, 
+                                  target_accept = 0.95,
+                                 chains = n_chains,
+                                 cores = n_cores,
+                                return_inferencedata=False)
     return dpp_trace
 
 
