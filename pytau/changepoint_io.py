@@ -17,18 +17,6 @@ import pymc
 from . import changepoint_model, changepoint_preprocess
 from .utils import EphysData
 
-# import changepoint_model
-# import changepoint_preprocess
-# from utils import EphysData
-
-# import theano
-
-
-# import changepoint_model
-# import changepoint_preprocess
-# from utils import EphysData
-
-
 MODULE_DIR = os.path.dirname(__file__)
 # Use a local directory for model saving instead of reading from a parameter file
 MODEL_SAVE_DIR = os.path.join(os.path.expanduser("~"), ".pytau", "models")
