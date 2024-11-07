@@ -125,7 +125,7 @@ def gaussian_changepoint_mean_var_2d(data_array, n_states, **kwargs):
         tau = pm.Deterministic('tau',
                                idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-        weight_stack = tt.nnet.sigmoid(idx[np.newaxis, :]-tau[:, np.newaxis])
+        weight_stack = tt.math.sigmoid(idx[np.newaxis, :]-tau[:, np.newaxis])
         weight_stack = tt.concatenate(
             [np.ones((1, length)), weight_stack], axis=0)
         inverse_stack = 1 - weight_stack[1:]
@@ -200,7 +200,7 @@ def gaussian_changepoint_mean_dirichlet(data_array, max_states=15):
         tau = pm.Deterministic('tau', tt.cumsum(w_latent * length)[:-1])
 
         # Weight stack to assign lambda's to point in time
-        weight_stack = tt.nnet.sigmoid(idx[np.newaxis, :]-tau[:, np.newaxis])
+        weight_stack = tt.math.sigmoid(idx[np.newaxis, :]-tau[:, np.newaxis])
         weight_stack = tt.concatenate(
             [np.ones((1, length)), weight_stack], axis=0)
         inverse_stack = 1 - weight_stack[1:]
@@ -261,7 +261,7 @@ def gaussian_changepoint_mean_2d(data_array, n_states, **kwargs):
         tau = pm.Deterministic('tau',
                                idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-        weight_stack = tt.nnet.sigmoid(idx[np.newaxis, :]-tau[:, np.newaxis])
+        weight_stack = tt.math.sigmoid(idx[np.newaxis, :]-tau[:, np.newaxis])
         weight_stack = tt.concatenate(
             [np.ones((1, length)), weight_stack], axis=0)
         inverse_stack = 1 - weight_stack[1:]
@@ -411,7 +411,7 @@ def single_taste_poisson(
         tau = pm.Deterministic('tau',
                                idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-        weight_stack = tt.nnet.sigmoid(
+        weight_stack = tt.math.sigmoid(
             idx[np.newaxis, :]-tau[:, :, np.newaxis])
         weight_stack = tt.concatenate(
             [np.ones((trials, 1, length)), weight_stack], axis=1)
@@ -720,7 +720,7 @@ def all_taste_poisson(
         tau = pm.Deterministic('tau',
                                idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-        weight_stack = tt.nnet.sigmoid(
+        weight_stack = tt.math.sigmoid(
             idx[np.newaxis, :]-tau[:, :, np.newaxis])
         weight_stack = tt.concatenate(
             [np.ones((tastes*trials, 1, length)), weight_stack], axis=1)
@@ -915,7 +915,7 @@ def single_taste_poisson_trial_switch(
         tau_trial = pm.Deterministic('tau_trial', trial_num * tau_trial_latent)
 
         trial_idx = np.arange(trial_num)
-        trial_selector = tt.nnet.sigmoid(
+        trial_selector = tt.math.sigmoid(
             trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, 'x'))
 
         trial_selector = tt.concatenate(
@@ -943,7 +943,7 @@ def single_taste_poisson_trial_switch(
         idx = np.arange(time_bins)
 
         # tau : Trials x Changepoints
-        weight_stack = tt.nnet.sigmoid(
+        weight_stack = tt.math.sigmoid(
             idx[np.newaxis, :]-tau[:, :, np.newaxis])
         weight_stack = tt.concatenate(
             [np.ones((trial_num, 1, time_bins)), weight_stack], axis=1)
@@ -1038,7 +1038,7 @@ def all_taste_poisson_trial_switch(
         tau_trial = pm.Deterministic('tau_trial', trial_num * tau_trial_latent)
 
         trial_idx = np.arange(trial_num)
-        trial_selector = tt.nnet.sigmoid(
+        trial_selector = tt.math.sigmoid(
             trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, 'x'))
 
         trial_selector = tt.concatenate(
@@ -1064,7 +1064,7 @@ def all_taste_poisson_trial_switch(
         # First, we can "select" sets of emissions depending on trial_changepoints
         # =================================================
         trial_idx = np.arange(trial_num)
-        trial_selector = tt.nnet.sigmoid(
+        trial_selector = tt.math.sigmoid(
             trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, 'x'))
 
         trial_selector = tt.concatenate(
@@ -1082,7 +1082,7 @@ def all_taste_poisson_trial_switch(
         idx = np.arange(time_bins)
 
         # tau : Tastes x Trials x Changepoints
-        weight_stack = tt.nnet.sigmoid(
+        weight_stack = tt.math.sigmoid(
             idx[np.newaxis, :]-tau[:, :, :, np.newaxis])
         weight_stack = tt.concatenate(
             [np.ones((tastes, trial_num, 1, time_bins)), weight_stack], axis=2)
