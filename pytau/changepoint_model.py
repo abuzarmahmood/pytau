@@ -1721,11 +1721,11 @@ def advi_fit(model, fit, samples):
     tau_samples = trace['tau']
     if 'lambda' in trace.varnames:
         lambda_stack = trace['lambda'].swapaxes(0, 1)
-        return model, approx, lambda_stack, tau_samples, model.obs.observations
+        return model, trace, lambda_stack, tau_samples, model.obs.observations
     if 'mu' in trace.varnames:
         mu_stack = trace['mu'].swapaxes(0, 1)
         sigma_stack = trace['sigma'].swapaxes(0, 1)
-        return model, approx, mu_stack, sigma_stack, tau_samples, model.obs.observations
+        return model, trace, mu_stack, sigma_stack, tau_samples, model.obs.observations
 
 
 def mcmc_fit(model, samples):
