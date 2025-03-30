@@ -119,6 +119,16 @@ significant_neurons = firing.anova_significant_neurons
 
 This example demonstrates the streamlined workflow for fitting a changepoint model to taste response data and analyzing the results.
 
+# Tutorials and documentation
+
+For users interested in learning how to effectively use the `pytau` package, a series of tutorials are available in the `how_to` directory of the repository. These include:
+
+1. **Jupyter notebooks**: Step-by-step walkthroughs demonstrating the package functionality with and without handlers
+2. **Example scripts**: Ready-to-run Python scripts showing how to fit models manually or using the `FitHandler`
+3. **Test data**: Scripts to download test datasets for practicing with the package
+
+These tutorials provide comprehensive guidance on various features and use cases of the package, helping users to get started quickly and efficiently with changepoint analysis of neural data.
+
 # Model types and features
 
 `pytau` implements several types of changepoint models to accommodate different analysis needs:
