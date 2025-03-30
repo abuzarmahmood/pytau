@@ -123,9 +123,9 @@ This example demonstrates the streamlined workflow for fitting a changepoint mod
 
 For users interested in learning how to effectively use the `pytau` package, a series of tutorials are available in the `how_to` directory of the repository. These include:
 
-1. **Jupyter notebooks**: Step-by-step walkthroughs demonstrating the package functionality with and without handlers
-2. **Example scripts**: Ready-to-run Python scripts showing how to fit models manually or using the `FitHandler`
-3. **Test data**: Scripts to download test datasets for practicing with the package
+1. **Jupyter notebooks**: Step-by-step walkthroughs demonstrating the package functionality with and without handlers. These notebooks cover various scenarios and use cases, providing a hands-on approach to learning.
+2. **Example scripts**: Ready-to-run Python scripts showing how to fit models manually or using the `FitHandler`. These scripts serve as practical examples for users to understand the workflow and customize it for their needs.
+3. **Test data**: Scripts to download test datasets for practicing with the package. This allows users to experiment with the package features without needing their own data initially.
 
 These tutorials provide comprehensive guidance on various features and use cases of the package, helping users to get started quickly and efficiently with changepoint analysis of neural data.
 
