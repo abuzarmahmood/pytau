@@ -8,10 +8,12 @@ tags:
   - bayesian modeling
 authors:
   - name: Abuzar Mahmood
-    orcid: 0000-0000-0000-0000
+    orcid: 0000-0002-2448-4818
     affiliation: 1
+  - name: Donald Katz
+    orcid: 0000-0002-8444-6063 
 affiliations:
- - name: Independent Researcher
+ - name: Department of Psychology, Brandeis University, Waltham, MA, USA 
    index: 1
 date: 30 March 2025
 bibliography: paper.bib
@@ -19,7 +21,7 @@ bibliography: paper.bib
 
 # Summary
 
-Analyzing complex biological data, particularly time-series data from neuroscience experiments, often requires sophisticated statistical modeling to identify significant changes in system dynamics. Changepoint models are crucial for detecting abrupt shifts or transitions in neural activity patterns. `pytau` is a Python software package designed to perform streamlined, batched inference for changepoint models across different parameter grids and datasets. It provides tools to efficiently query and analyze the results from sets of fitted models, facilitating the study of dynamic processes in biological systems, such as neural ensemble activity in response to stimuli. The package integrates with PyMC3 for Bayesian inference and provides utilities for data preprocessing, model fitting, and result visualization.
+Analyzing complex biological data, particularly time-series data from neuroscience experiments, often requires sophisticated statistical modeling to identify significant changes in system dynamics. Several decades of research has emphasized that the dynamics of neural activity may show sharp changes accurately captured by models detecting state transitions such as Hidden aMarkov Models and changepoint models [@Seidemann1994, @Jones2007, @Saravani2019]. `pytau` is a Python software package designed to perform streamlined, batched inference for changepoint models across different parameter grids and datasets. It provides tools to efficiently query and analyze the results from sets of fitted models, facilitating the study of dynamic processes in biological systems, such as neural ensemble activity in response to stimuli. The package integrates with PyMC3 for Bayesian inference of these models (providing estimates of uncertainty in inference which are critical for noisy datasets usually with small sample sizes and low channelc counts common in neuroscience) and provides utilities for data preprocessing, model fitting, and result visualization.
 
 # Statement of need
 
@@ -37,7 +39,7 @@ These features make `pytau` particularly valuable for neuroscientists studying s
 
 # Implementation and architecture
 
-`pytau` is implemented in Python and built on several key libraries including NumPy, SciPy, PyMC3, and Matplotlib. The package is organized into several modules:
+`pytau` is implemented in Python and built on several key libraries including NumPy, SciPy, PyMC3, and Matplotlib [@numpy, @pymc3]. The package is organized into several modules:
 
 1. **changepoint_model.py**: Contains model definitions for various changepoint models including Poisson and Gaussian models for neural data
 2. **changepoint_io.py**: Handles data loading, preprocessing, and result storage through the `FitHandler` and `DatabaseHandler` classes
@@ -151,7 +153,7 @@ These tutorials provide comprehensive guidance on various features and use cases
    single_taste_poisson_varsig_fixed(spike_array, states, inds_span=1)
    ```
 
-4. **All-taste models**: For analyzing responses across multiple tastes
+4. **All-taste models**: For analyzing responses across multiple stimuli
    ```python
    # From changepoint_model.py
    all_taste_poisson(spike_array, states, **kwargs)
