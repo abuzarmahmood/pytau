@@ -4,3 +4,8 @@ pymc3==3.9.3
 theano==1.0.5
 easygui==0.98.1
 tables==3.6.1
+pytest>=6.0.0
+pytest-cov>=2.10.0
+mkdocs>=1.1.0
+mkdocs-material>=7.0.0
+mkdocstrings>=0.15.0

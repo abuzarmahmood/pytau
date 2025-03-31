@@ -1738,7 +1738,7 @@ def advi_fit(model, fit, samples):
 
 
 def mcmc_fit(model, samples):
-    """Convenience function to perform ADVI fit on model
+    """Convenience function to perform MCMC sampling on model
 
     Args:
         model (pymc3 model): model object to run inference on
@@ -1746,9 +1746,9 @@ def mcmc_fit(model, samples):
 
     Returns:
         model: original model on which inference was run,
-        trace:  samples drawn from MCMC,
+        trace: samples drawn from MCMC,
         lambda_stack: array containing lambda (emission) values,
-        tau_samples,: array containing samples from changepoint distribution
+        tau_samples: array containing samples from changepoint distribution
         model.obs.observations: processed array on which fit was run
     """
 

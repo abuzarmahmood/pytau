@@ -4,6 +4,14 @@ Tests for the changepoint_model module.
 
 import pytest
 import numpy as np
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 from pytau.changepoint_model import (
     ChangepointModel,
     GaussianChangepointMeanVar2D,
@@ -23,32 +31,42 @@ from pytau.changepoint_model import (
 # Test the base model class
 def test_base_model_class():
     """Test that the base model class raises NotImplementedError."""
+    logger.info("Testing base ChangepointModel class")
     model = ChangepointModel()
     with pytest.raises(NotImplementedError):
         model.generate_model()
     with pytest.raises(NotImplementedError):
         model.test()
+    logger.info("Base ChangepointModel test passed")
 
 # Test the test data generation function
 def test_gen_test_array():
     """Test the gen_test_array function."""
+    logger.info("Testing gen_test_array function")
+    
     # Test Poisson data
     array_size = (5, 10, 100)
     n_states = 3
+    logger.info(f"Testing Poisson data generation with shape {array_size} and {n_states} states")
     data = gen_test_array(array_size, n_states, type='poisson')
     assert data.shape == array_size
     
     # Test Normal data
+    logger.info(f"Testing Normal data generation with shape {array_size} and {n_states} states")
     data = gen_test_array(array_size, n_states, type='normal')
     assert data.shape == array_size
     
     # Test with invalid type
+    logger.info("Testing invalid data type handling")
     with pytest.raises(AssertionError):
         gen_test_array(array_size, n_states, type='invalid')
     
     # Test with too few time points
+    logger.info("Testing handling of insufficient time points")
     with pytest.raises(AssertionError):
         gen_test_array((5, 10, 2), n_states, type='poisson')
+        
+    logger.info("gen_test_array tests passed")
 
 # Test model initialization and basic functionality
 @pytest.mark.parametrize("model_class,data_shape,n_states,extra_args", [
@@ -66,6 +84,8 @@ def test_gen_test_array():
 ])
 def test_model_initialization(model_class, data_shape, n_states, extra_args):
     """Test that models can be initialized and generate a model."""
+    logger.info(f"Testing initialization of {model_class.__name__}")
+    
     # Generate test data
     data_type = 'normal' if model_class in [GaussianChangepointMeanVar2D, GaussianChangepointMeanDirichlet, GaussianChangepointMean2D] else 'poisson'
     test_data = gen_test_array(data_shape, n_states=3 if n_states is None else n_states, type=data_type)
@@ -79,6 +99,7 @@ def test_model_initialization(model_class, data_shape, n_states, extra_args):
     # Check that model can be generated
     model = model_instance.generate_model()
     assert model is not None
+    logger.info(f"{model_class.__name__} initialization test passed")
 
 # Test the run_all_tests function (minimal test to avoid long runtime)
 def test_run_all_tests_imports():

@@ -2,13 +2,13 @@ site_name: PyTau
 site_description: "Simple python package to perform streamlined batch inference on changepoint models"
 
 theme:
-  name: "mkdocs"
+  name: "material"
   palette:
     primary: "blue"
     accent: "grey"
   features:
-      - toc.integrate
-      - navigation.sections
+    - toc.integrate
+    - navigation.sections
 
 plugins:
   - search
@@ -17,3 +17,5 @@ plugins:
 nav:
   - "Start": index.md
   - "API": api.md
+  - "Models": 
+    - "Changepoint Models": models/changepoint.md

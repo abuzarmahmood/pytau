@@ -8,24 +8,28 @@ PyTau uses changepoint models to detect shifts in data distributions. These mode
 
 ### Available Models
 
+All models are now implemented as proper Python classes, making them easier to use and extend:
+
 #### Gaussian Changepoint Models
 These models detect changes in both mean and variance or only in the mean for Gaussian data. They are suitable for continuous data where changes in statistical properties like mean and variance are of interest.
 
-- `gaussian_changepoint_mean_var_2d`: Detects changes in both mean and variance.
-- `gaussian_changepoint_mean_dirichlet`: Uses a Dirichlet process prior to determine the number of states, detecting changes only in the mean.
-- `gaussian_changepoint_mean_2d`: Detects changes only in the mean.
+- `GaussianChangepointMeanVar2D`: Detects changes in both mean and variance.
+- `GaussianChangepointMeanDirichlet`: Uses a Dirichlet process prior to determine the number of states, detecting changes only in the mean.
+- `GaussianChangepointMean2D`: Detects changes only in the mean.
 
 #### Poisson Changepoint Models
 These models are used for spike train data, detecting changes in the rate of events. They are ideal for count data where the rate of occurrence is the primary focus.
 
-- `single_taste_poisson`: Models changepoints for single taste without hierarchical structure.
-- `single_taste_poisson_dirichlet`: Uses a Dirichlet process prior for single taste spike train data.
-- `single_taste_poisson_varsig`: Uses variable sigmoid slope inferred from data.
-- `single_taste_poisson_varsig_fixed`: Uses sigmoid with given slope.
-- `all_taste_poisson`: Fits changepoints across multiple tastes.
-- `all_taste_poisson_varsig_fixed`: Fits changepoints across multiple tastes with fixed sigmoid slope.
-- `single_taste_poisson_trial_switch`: Assumes only emissions change across trials.
-- `all_taste_poisson_trial_switch`: Fits changepoints across multiple tastes with trial switching.
+- `SingleTastePoisson`: Models changepoints for single taste without hierarchical structure.
+- `SingleTastePoissonDirichlet`: Uses a Dirichlet process prior for single taste spike train data.
+- `SingleTastePoissonVarsig`: Uses variable sigmoid slope inferred from data.
+- `SingleTastePoissonVarsigFixed`: Uses sigmoid with given slope.
+- `AllTastePoisson`: Fits changepoints across multiple tastes.
+- `AllTastePoissonVarsigFixed`: Fits changepoints across multiple tastes with fixed sigmoid slope.
+- `SingleTastePoissonTrialSwitch`: Assumes only emissions change across trials.
+- `AllTastePoissonTrialSwitch`: Fits changepoints across multiple tastes with trial switching.
+
+For backward compatibility, function wrappers with the original names (e.g., `single_taste_poisson`) are still available.
 
 ### Fitting Methods
 PyTau provides several fitting methods for these models:
@@ -61,20 +65,23 @@ jupyter notebook
 
 ## Usage
 
-PyTau provides a streamlined workflow for fitting changepoint models to neural data. Here's a basic example of how to use the package:
+PyTau provides a streamlined workflow for fitting changepoint models to neural data. Here's a basic example of how to use the package with the new class-based approach:
 
 ```python
 import pytau
-from pytau.changepoint_model import single_taste_poisson, advi_fit
+from pytau.changepoint_model import SingleTastePoisson, advi_fit
 
 # Load your spike data (trials x neurons x time)
 spike_array = load_your_data()
 
-# Create a model with desired number of states
-model = single_taste_poisson(spike_array, states=3)
+# Create a model instance with desired number of states
+model_instance = SingleTastePoisson(spike_array, states=3)
+
+# Generate the PyMC3 model
+model = model_instance.generate_model()
 
 # Fit the model using ADVI
-model, approx, lambda_stack, tau_samples, data = advi_fit(model, fit=10000, samples=1000)
+model, trace, lambda_stack, tau_samples, data = advi_fit(model, fit=10000, samples=1000)
 
 # Analyze the results
 # tau_samples contains the changepoint times
@@ -88,7 +95,7 @@ For more detailed usage examples, refer to the notebooks in the `pytau/how_to/no
 A typical workflow with PyTau involves the following steps:
 
 1. **Data Preparation**: Organize your spike train data into the required format (typically trials x neurons x time).
-2. **Model Selection**: Choose the appropriate changepoint model based on your data characteristics (e.g., single_taste_poisson for single taste data).
+2. **Model Selection**: Choose the appropriate changepoint model based on your data characteristics (e.g., SingleTastePoisson for single taste data).
 3. **Inference**: Run the model to detect changepoints using methods like ADVI or MCMC.
 4. **Analysis**: Analyze the results to understand the detected changepoints and their implications.
 
@@ -128,6 +135,20 @@ PyTau's pipeline consists of several components:
 2. **Data pre-processing code**: Handles different data types (shuffle, simulated, actual)
 3. **I/O helper code**: Loads data, processes it, and feeds it to modeling code
 4. **Run script**: Iterates over data for batch processing
+
+## Testing
+
+PyTau now includes comprehensive tests for all model classes. You can run the tests using pytest:
+
+```bash
+pytest tests/
+```
+
+Or using tox to test across multiple Python versions:
+
+```bash
+tox
+```
 
 ## Parallelization
 
