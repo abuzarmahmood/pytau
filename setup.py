@@ -8,7 +8,9 @@ CLASSIFIERS = [
 "Intended Audience :: Science/Research",
 "Topic :: Scientific/Engineering",
 "Topic :: Scientific/Engineering :: Mathematics",
-"Operating System :: OS Independent"
+"Operating System :: OS Independent",
+"Framework :: tox",
+"Framework :: Pytest"
 ]
 
 DISTNAME = 'pytau'
@@ -26,7 +28,10 @@ PYTHON_MAX_VERSION = '3.6.10'
 PYTHON_REQUIRES = f'>={PYTHON_MIN_VERSION}, <={PYTHON_MAX_VERSION}'
 
 INSTALL_REQUIRES = [
-    'pymc3'
+    'pymc3',
+    'numpy',
+    'theano',
+    'tqdm'
 ]
 
 PACKAGES = [
