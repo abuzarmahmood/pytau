@@ -109,6 +109,9 @@ def gen_test_array(array_size, n_states, type='poisson'):
     else:
         return np.random.normal(loc=rate_array, scale=0.1)
 
+############################################################
+# Models
+############################################################
 
 class GaussianChangepointMeanVar2D(ChangepointModel):
     """Model for gaussian data on 2D array detecting changes in both
@@ -1624,13 +1627,19 @@ def run_all_tests():
         AllTastePoissonTrialSwitch(test_data_4d, 2, 3)
     ]
     
-    for model in models_to_test:
+    failed_tests = []
+    pbar = tqdm(models_to_test, total=len(models_to_test))
+    for model in pbar:
         try:
             model.test()
+            pbar.set_description(f"Test passed for {model.__class__.__name__}")
         except Exception as e:
+            failed_tests.append(model.__class__.__name__)
             print(f"Test failed for {model.__class__.__name__}: {str(e)}")
     
     print("All tests completed")
+    if failed_tests:
+        print("Failed tests:", failed_tests)
 
 
 def extract_inferred_values(trace):
