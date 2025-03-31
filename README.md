@@ -1,5 +1,8 @@
 # PyTau
 
+## License
+PyTau is released under the MIT License. This means you are free to use, modify, distribute, and sell this software with minimal restrictions. See the [LICENSE](LICENSE) file for the full license text.
+
 ## API Documentation
 https://abuzarmahmood.github.io/pytau/
 
