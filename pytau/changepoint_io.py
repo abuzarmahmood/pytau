@@ -24,8 +24,8 @@ import pymc3
 import theano
 
 MODULE_DIR = os.path.dirname(__file__)
-PARAMS_PATH = os.path.join(MODULE_DIR, 'config', 'MODEL_SAVE_DIR.params')
-MODEL_SAVE_DIR = open(PARAMS_PATH, 'r').read().strip()
+# Use a local directory for model saving instead of reading from a parameter file
+MODEL_SAVE_DIR = os.path.join(os.path.expanduser('~'), '.pytau', 'models')
 if not os.path.exists(MODEL_SAVE_DIR):
     os.makedirs(MODEL_SAVE_DIR)
     print('Created directory: {}'.format(MODEL_SAVE_DIR))
