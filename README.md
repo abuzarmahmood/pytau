@@ -1,5 +1,9 @@
 # PyTau
 
+<p align="center">
+  <img src="pytau_logo.svg" alt="PyTau Logo" width="300"/>
+</p>
+
 ## License
 PyTau is released under the MIT License. This means you are free to use, modify, distribute, and sell this software with minimal restrictions. See the [LICENSE](LICENSE) file for the full license text.
 
