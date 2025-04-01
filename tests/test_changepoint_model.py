@@ -86,16 +86,9 @@ def test_run_all_tests():
     from pytau.changepoint_model import run_all_tests
     assert callable(run_all_tests)
     
-    # Just test that it can be called without errors
-    # We don't actually run the full tests to avoid long runtime
-    # but we can check that the function exists and is callable
-    try:
-        # This would normally run all tests, but we'll mock it
-        # by just checking it's callable
-        assert run_all_tests.__code__ is not None
-    except AttributeError:
-        # If it's not a function with code, at least make sure it's callable
-        assert hasattr(run_all_tests, '__call__')
+    # We don't actually run the full tests here to avoid long runtime in CI
+    # Just verify the function exists and is callable
+    # For full testing, run the function directly
 
 # Test the utility functions
 def test_extract_inferred_values():
