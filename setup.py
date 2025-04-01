@@ -34,6 +34,11 @@ INSTALL_REQUIRES = [
     'tqdm'
 ]
 
+TESTS_REQUIRE = [
+    'pytest',
+    'pytest-cov'
+]
+
 PACKAGES = [
     'pytau',
 ]
@@ -45,6 +50,8 @@ metadata = dict(
     packages=PACKAGES,
     python_requires=PYTHON_REQUIRES,
     install_requires=INSTALL_REQUIRES,
+    tests_require=TESTS_REQUIRE,
+    extras_require={'test': TESTS_REQUIRE},
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
     description=DESCRIPTION,
