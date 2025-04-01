@@ -1,19 +1,19 @@
-  ___        _   _ _            
- / _ \ _   _| |_| (_)_ __   ___ 
+  ___        _   _ _
+ / _ \ _   _| |_| (_)_ __   ___
 | | | | | | | __| | | '_ \ / _ \
 | |_| | |_| | |_| | | | | |  __/
  \___/ \__,_|\__|_|_|_| |_|\___|
 ==================================================
-                                
-- Perform inter-region transition correlations on models fit to each taste 
+
+- Perform inter-region transition correlations on models fit to each taste
     individually
 
- ____        _           ___            
-|  _ \  __ _| |_ __ _   / _ \ _ __ __ _ 
+ ____        _           ___
+|  _ \  __ _| |_ __ _   / _ \ _ __ __ _
 | | | |/ _` | __/ _` | | | | | '__/ _` |
 | |_| | (_| | || (_| | | |_| | | | (_| |
 |____/ \__,_|\__\__,_|  \___/|_|  \__, |
-                                  |___/ 
+                                  |___/
 ==================================================
 - Models stored in CENTRAL LOCATION and accessed by indexing an info file,
     which also contains model parameters and metadata
@@ -21,7 +21,7 @@
     something happens
 
 Database for models fit:
-    - Columns : 
+    - Columns :
         -   Model save path
         -   Animal Name
         -   Session date
@@ -31,7 +31,7 @@ Database for models fit:
         -   Fit Date
 
         -   Model parameters:
-            - Model Type (See below) 
+            - Model Type (See below)
             - Data Type (Shuffled, simulated, actual)
             - States Num
             - Fit steps
@@ -54,12 +54,12 @@ Data stored in models:
     - Joint region model
     We need to have a standardized pipeline for fitting and retrieving these models
 
- ____  _            _ _            
-|  _ \(_)_ __   ___| (_)_ __   ___ 
+ ____  _            _ _
+|  _ \(_)_ __   ___| (_)_ __   ___
 | |_) | | '_ \ / _ \ | | '_ \ / _ \
 |  __/| | |_) |  __/ | | | | |  __/
 |_|   |_| .__/ \___|_|_|_| |_|\___|
-        |_|                        
+        |_|
 ==================================================
 
 -- Filelist:
@@ -72,7 +72,7 @@ Data stored in models:
     - These should be functions
 
     - Input:
-        1) Processed spike trains 
+        1) Processed spike trains
         2) Model parameters (model type, states, fit steps)
     - Output:
         1) Model

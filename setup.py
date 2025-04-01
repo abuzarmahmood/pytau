@@ -1,38 +1,32 @@
 # python setup.py develop
 from setuptools import setup
 
-
 CLASSIFIERS = [
-"License :: OSI Approved",
-"Programming Language :: Python :: 3.6",
-"Intended Audience :: Science/Research",
-"Topic :: Scientific/Engineering",
-"Topic :: Scientific/Engineering :: Mathematics",
-"Operating System :: OS Independent",
-"Framework :: tox",
-"Framework :: Pytest"
+    "License :: OSI Approved",
+    "Programming Language :: Python :: 3.6",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Operating System :: OS Independent",
+    "Framework :: tox",
+    "Framework :: Pytest",
 ]
 
-DISTNAME = 'pytau'
-AUTHOR = 'Abuzar Mahmood'
-AUTHOR_EMAIL = 'abuzarmahmood@gmail.com'
-DESCRIPTION = 'Simple package to perform streamlined, batched inference on pymc3-based changepoint models.'
-LICENSE = 'MIT'
-README = 'Streamlined batch inference on changepoint models'
+DISTNAME = "pytau"
+AUTHOR = "Abuzar Mahmood"
+AUTHOR_EMAIL = "abuzarmahmood@gmail.com"
+DESCRIPTION = "Simple package to perform streamlined, batched inference on pymc3-based changepoint models."
+LICENSE = "MIT"
+README = "Streamlined batch inference on changepoint models"
 
-VERSION = '0.1.1'
+VERSION = "0.1.1"
 ISRELEASED = False
 
-PYTHON_MIN_VERSION = '3.6.10'
-PYTHON_MAX_VERSION = '3.6.10'
-PYTHON_REQUIRES = f'>={PYTHON_MIN_VERSION}, <={PYTHON_MAX_VERSION}'
+PYTHON_MIN_VERSION = "3.6.10"
+PYTHON_MAX_VERSION = "3.6.10"
+PYTHON_REQUIRES = f">={PYTHON_MIN_VERSION}, <={PYTHON_MAX_VERSION}"
 
-INSTALL_REQUIRES = [
-    'pymc3',
-    'numpy',
-    'theano',
-    'tqdm'
-]
+INSTALL_REQUIRES = ["pymc3", "numpy", "theano", "tqdm"]
 
 TESTS_REQUIRE = [
     'pytest',
@@ -40,7 +34,7 @@ TESTS_REQUIRE = [
 ]
 
 PACKAGES = [
-    'pytau',
+    "pytau",
 ]
 
 metadata = dict(
@@ -56,7 +50,7 @@ metadata = dict(
     author_email=AUTHOR_EMAIL,
     description=DESCRIPTION,
     classifiers=CLASSIFIERS,
-    license=LICENSE
+    license=LICENSE,
 )
 
 
@@ -64,5 +58,5 @@ def setup_package() -> None:
     setup(**metadata)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     setup_package()

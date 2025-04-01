@@ -9129,15 +9129,15 @@ label {
 }
 /* Flexible box model classes */
 /* Taken from Alex Russell http://infrequently.org/2009/08/css-3-progress/ */
-/* This file is a compatability layer.  It allows the usage of flexible box 
+/* This file is a compatability layer.  It allows the usage of flexible box
 model layouts accross multiple browsers, including older browsers.  The newest,
 universal implementation of the flexible box model is used when available (see
-`Modern browsers` comments below).  Browsers that are known to implement this 
+`Modern browsers` comments below).  Browsers that are known to implement this
 new spec completely include:
 
     Firefox 28.0+
     Chrome 29.0+
-    Internet Explorer 11+ 
+    Internet Explorer 11+
     Opera 17.0+
 
 Browsers not listed, including Safari, are supported via the styling under the
@@ -12519,7 +12519,7 @@ div#pager .ui-resizable-handle {
   background: #f7f7f7;
   border-top: 1px solid #cfcfcf;
   border-bottom: 1px solid #cfcfcf;
-  /* This injects handle bars (a short, wide = symbol) for 
+  /* This injects handle bars (a short, wide = symbol) for
         the resize handle. */
 }
 div#pager .ui-resizable-handle::after {
@@ -13038,14 +13038,14 @@ div#notebook {
   div.cell {
     display: block;
     page-break-inside: avoid;
-  } 
-  div.output_wrapper { 
-    display: block;
-    page-break-inside: avoid; 
   }
-  div.output { 
+  div.output_wrapper {
     display: block;
-    page-break-inside: avoid; 
+    page-break-inside: avoid;
+  }
+  div.output {
+    display: block;
+    page-break-inside: avoid;
   }
 }
 </style>
@@ -13140,12 +13140,12 @@ div#notebook {
         <span class="k">for</span> <span class="n">state_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">states</span><span class="p">):</span>
             <span class="n">true_r</span><span class="p">[</span><span class="n">taste</span><span class="p">,</span><span class="n">trial_num</span><span class="p">,:,</span><span class="n">state_inds</span><span class="p">[</span><span class="n">taste</span><span class="p">,</span><span class="n">trial_num</span><span class="p">,</span><span class="n">state_num</span><span class="p">]:</span><span class="n">state_inds</span><span class="p">[</span><span class="n">taste</span><span class="p">,</span><span class="n">trial_num</span><span class="p">,</span><span class="n">state_num</span><span class="o">+</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> \
                             <span class="n">true_lambda</span><span class="p">[</span><span class="n">taste</span><span class="p">,:,</span><span class="n">state_num</span><span class="p">][:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
-        
-<span class="n">data_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">true_r</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">true_r</span>   
+
+<span class="n">data_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">true_r</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">true_r</span>
 
 <span class="c1"># Spike array : tastes x trials x neurons x timebins</span>
 <span class="n">spike_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data_array</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">*</span><span class="n">data_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">bin_width</span><span class="p">)),</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">spike_array_long</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">spike_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> 
+<span class="n">spike_array_long</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">spike_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13220,7 +13220,7 @@ div#notebook {
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Unroll arrays along taste axis</span>
-    <span class="n">spike_array_long</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">spike_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> 
+    <span class="n">spike_array_long</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">spike_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="c1"># Define dimension variables for convenience</span>
     <span class="n">tastes</span> <span class="o">=</span> <span class="n">spike_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -13252,12 +13252,12 @@ div#notebook {
         <span class="c1">#############################################################</span>
         <span class="c1">## EMISSION VARIABLES</span>
         <span class="c1">#############################################################</span>
-        
+
         <span class="c1"># Hierarchical firing rates</span>
         <span class="c1"># Refer to model diagram</span>
         <span class="c1"># **Note: Since support of Exponential distribution is [0,inf), it satisfies</span>
         <span class="c1"># ** requirement to be the lambda parameter for another Exponential distribution</span>
-        
+
         <span class="c1"># EQ 1</span>
         <span class="c1"># =====</span>
         <span class="c1"># Mean firing rate of neuron AT ALL TIMES</span>
@@ -13282,14 +13282,14 @@ div#notebook {
         <span class="c1">#############################################################</span>
         <span class="c1">## Changepoint Position Variables </span>
         <span class="c1">#############################################################</span>
-        
+
         <span class="c1"># EQ 4</span>
         <span class="c1"># =====</span>
         <span class="c1"># INDEPENDENT TAU FOR EVERY CHANGEPOINT</span>
         <span class="c1"># But shared across trials</span>
         <span class="n">a</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">HalfNormal</span><span class="p">(</span><span class="s1">&#39;a_tau&#39;</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">states</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">b</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">HalfNormal</span><span class="p">(</span><span class="s1">&#39;b_tau&#39;</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">states</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-        
+
         <span class="c1"># EQ 5</span>
         <span class="c1"># =====</span>
         <span class="c1"># Stack produces states x trials --&gt; That gets transposed</span>
@@ -13298,7 +13298,7 @@ div#notebook {
                              <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">trial_num</span><span class="p">,</span> <span class="n">states</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
                              <span class="n">testval</span><span class="o">=</span><span class="n">tt</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">even_switches_normal</span><span class="p">[</span><span class="mi">1</span><span class="p">:(</span><span class="n">states</span><span class="p">)],</span>
                                              <span class="p">(</span><span class="n">array_idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">)))</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-        
+
         <span class="c1"># EQ 6</span>
         <span class="c1"># =====</span>
         <span class="c1"># Expand tau_latent for [0,1] --&gt; [0, max_time_bin]</span>
@@ -13308,14 +13308,14 @@ div#notebook {
         <span class="c1">#############################################################</span>
         <span class="c1">## Likelihood </span>
         <span class="c1">#############################################################</span>
-        
+
         <span class="c1"># EQ 8</span>
         <span class="c1"># =====</span>
         <span class="c1"># Emissions (lambda) and changepoint positions (tau) are used to generate</span>
         <span class="c1"># timeseries of firing rates over the (trials x neurons x timebins) array</span>
         <span class="c1"># Sigmoids are used to &quot;select&quot; a particular state for contiguous time segments</span>
         <span class="c1"># Refer to (https://www.desmos.com/calculator/yisbydv2cq) for a visual example</span>
-        
+
         <span class="n">weight_stack</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span>
             <span class="n">idx</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span><span class="o">-</span><span class="n">tau</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span>
         <span class="n">weight_stack</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
@@ -13476,7 +13476,7 @@ div#notebook {
       <progress value='40000' class='' max='40000' style='width:300px; height:20px; vertical-align: middle;'></progress>
       100.00% [40000/40000 02:44<00:00 Average Loss = 1.4927e+05]
     </div>
-    
+
 </div>
 
 </div>
@@ -13573,11 +13573,11 @@ div#notebook {
 <span class="k">for</span> <span class="n">trial_num</span><span class="p">,</span><span class="n">this_trial_ind</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trial_inds</span><span class="p">):</span>
     <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">trial_num</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">true_r</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="n">this_trial_ind</span><span class="p">][</span><span class="o">...</span><span class="p">,::</span><span class="n">bin_width</span><span class="p">],</span><span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">)</span>
     <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">trial_num</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">spike_array_long</span><span class="p">[</span><span class="n">this_trial_ind</span><span class="p">],</span><span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">)</span>
-    
+
     <span class="k">for</span> <span class="n">tau_num</span><span class="p">,</span> <span class="n">this_tau</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tau</span><span class="p">[:,</span><span class="n">this_trial_ind</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">):</span>
         <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="n">trial_num</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">this_tau</span><span class="p">,</span><span class="n">bins</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
         <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">trial_num</span><span class="p">]</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">mode_tau</span><span class="p">[</span><span class="n">this_trial_ind</span><span class="p">,</span><span class="n">tau_num</span><span class="p">],</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="n">nrns</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">linewidth</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">linestyles</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span><span class="p">)</span>
-        
+
 <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;True Emission Rates&#39;</span><span class="p">);</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Binned Spike Counts&#39;</span><span class="p">);</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Inferred Changepoints Dists&#39;</span><span class="p">);</span>
@@ -13634,7 +13634,7 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span>
 </pre></div>
 
     </div>
@@ -13646,7 +13646,7 @@ div#notebook {
   </div>
 </body>
 
- 
+
 
 
 </html>

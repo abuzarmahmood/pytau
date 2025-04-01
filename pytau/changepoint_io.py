@@ -12,29 +12,29 @@ from glob import glob
 
 import numpy as np
 import pandas as pd
-
-from . import changepoint_model
-from . import changepoint_preprocess
-from .utils import EphysData
-#import changepoint_model
-#import changepoint_preprocess
-#from utils import EphysData
-
 import pymc3
 import theano
 
+from . import changepoint_model, changepoint_preprocess
+from .utils import EphysData
+
+# import changepoint_model
+# import changepoint_preprocess
+# from utils import EphysData
+
+
 MODULE_DIR = os.path.dirname(__file__)
 # Use a local directory for model saving instead of reading from a parameter file
-MODEL_SAVE_DIR = os.path.join(os.path.expanduser('~'), '.pytau', 'models')
+MODEL_SAVE_DIR = os.path.join(os.path.expanduser("~"), ".pytau", "models")
 if not os.path.exists(MODEL_SAVE_DIR):
     os.makedirs(MODEL_SAVE_DIR)
-    print('Created directory: {}'.format(MODEL_SAVE_DIR))
+    print("Created directory: {}".format(MODEL_SAVE_DIR))
 else:
-    print('Using directory: {}'.format(MODEL_SAVE_DIR))
-MODEL_DATABASE_PATH = os.path.join(MODEL_SAVE_DIR, 'model_database.csv')
+    print("Using directory: {}".format(MODEL_SAVE_DIR))
+MODEL_DATABASE_PATH = os.path.join(MODEL_SAVE_DIR, "model_database.csv")
 
 
-class FitHandler():
+class FitHandler:
     """Class to handle pipeline of model fitting including:
     1) Loading data
     2) Preprocessing loaded arrays
@@ -43,15 +43,16 @@ class FitHandler():
 
     """
 
-    def __init__(self,
-                 data_dir,
-                 taste_num,
-                 region_name,
-                 laser_type = None,
-                 experiment_name=None,
-                 model_params_path=None,
-                 preprocess_params_path=None,
-                 ):
+    def __init__(
+        self,
+        data_dir,
+        taste_num,
+        region_name,
+        laser_type=None,
+        experiment_name=None,
+        model_params_path=None,
+        preprocess_params_path=None,
+    ):
         """Initialize FitHandler class
 
         Args:
@@ -75,43 +76,44 @@ class FitHandler():
 
         # =============== Check for exceptions ===============
         if experiment_name is None:
-            raise Exception('Please specify an experiment name')
-        if laser_type not in [None, 'on','off']:
+            raise Exception("Please specify an experiment name")
+        if laser_type not in [None, "on", "off"]:
             raise Exception('laser_type must be from [None, "on","off"]')
-        if not (isinstance(taste_num,int) or taste_num == 'all'):
+        if not (isinstance(taste_num, int) or taste_num == "all"):
             raise Exception('taste_num must be an integer or "all"')
 
         # =============== Save relevant arguments ===============
         self.data_dir = data_dir
         self.EphysData = EphysData(self.data_dir)
-        #self.data = self.EphysData.get_spikes({"bla","gc","all"})
+        # self.data = self.EphysData.get_spikes({"bla","gc","all"})
 
         self.taste_num = taste_num
         self.laser_type = laser_type
         self.region_name = region_name
         self.experiment_name = experiment_name
 
-        data_handler_init_kwargs = dict(zip(
-            [   'data_dir', 
-                'experiment_name', 
-                'taste_num', 
-                'laser_type',
-                'region_name'],
-            [   data_dir, 
-                experiment_name, 
-                taste_num, 
-                laser_type,
-                region_name]))
+        data_handler_init_kwargs = dict(
+            zip(
+                [
+                    "data_dir",
+                    "experiment_name",
+                    "taste_num",
+                    "laser_type",
+                    "region_name",
+                ],
+                [data_dir, experiment_name, taste_num, laser_type, region_name],
+            )
+        )
         self.database_handler = DatabaseHandler()
         self.database_handler.set_run_params(**data_handler_init_kwargs)
 
         if model_params_path is None:
-            print('MODEL_PARAMS will have to be set')
+            print("MODEL_PARAMS will have to be set")
         else:
             self.set_model_params(file_path=model_params_path)
 
         if preprocess_params_path is None:
-            print('PREPROCESS_PARAMS will have to be set')
+            print("PREPROCESS_PARAMS will have to be set")
         else:
             self.set_preprocess_params(file_path=preprocess_params_path)
 
@@ -119,12 +121,9 @@ class FitHandler():
     # SET PARAMS
     ########################################
 
-    def set_preprocess_params(self,
-                              time_lims,
-                              bin_width,
-                              data_transform,
-                              file_path=None):
-
+    def set_preprocess_params(
+        self, time_lims, bin_width, data_transform, file_path=None
+    ):
         """Load given params as "preprocess_params" attribute
 
         Args:
@@ -138,22 +137,20 @@ class FitHandler():
         """
 
         if file_path is None:
-            preprocess_params_dict = dict(zip(['time_lims', 'bin_width', 'data_transform'],
-                         [time_lims, bin_width, data_transform]))
+            preprocess_params_dict = dict(
+                zip(
+                    ["time_lims", "bin_width", "data_transform"],
+                    [time_lims, bin_width, data_transform],
+                )
+            )
             self.preprocess_params = preprocess_params_dict
-            print('Set preprocess params to: {}'.format(preprocess_params_dict))
-                
+            print("Set preprocess params to: {}".format(preprocess_params_dict))
+
         else:
             # Load json and save dict
             pass
 
-    def set_model_params(self,
-                         states,
-                         fit,
-                         samples,
-                         model_kwargs = None,
-                         file_path=None):
-
+    def set_model_params(self, states, fit, samples, model_kwargs=None, file_path=None):
         """Load given params as "model_params" attribute
 
         Args:
@@ -166,11 +163,15 @@ class FitHandler():
         """
 
         if file_path is None:
-            model_params_dict = dict(zip(['states', 'fit', 'samples', 'model_kwargs'], 
-                    [states, fit, samples, model_kwargs]))
+            model_params_dict = dict(
+                zip(
+                    ["states", "fit", "samples", "model_kwargs"],
+                    [states, fit, samples, model_kwargs],
+                )
+            )
             self.model_params = model_params_dict
-            print('Set model params to: {}'.format(model_params_dict))
-                
+            print("Set model params to: {}".format(model_params_dict))
+
         else:
             # Load json and save dict
             pass
@@ -203,9 +204,8 @@ class FitHandler():
         """
 
         if isinstance(self.taste_num, int):
-            self.set_preprocessor(
-                changepoint_preprocess.preprocess_single_taste)
-        elif self.taste_num == 'all':
+            self.set_preprocessor(changepoint_preprocess.preprocess_single_taste)
+        elif self.taste_num == "all":
             self.set_preprocessor(changepoint_preprocess.preprocess_all_taste)
         else:
             raise Exception("Something went wrong")
@@ -230,10 +230,9 @@ class FitHandler():
 
         """
         if isinstance(self.taste_num, int):
-            #self.set_model_template(changepoint_model.single_taste_poisson_varsig)
-            self.set_model_template(
-                    changepoint_model.single_taste_poisson)
-        elif self.taste_num == 'all':
+            # self.set_model_template(changepoint_model.single_taste_poisson_varsig)
+            self.set_model_template(changepoint_model.single_taste_poisson)
+        elif self.taste_num == "all":
             self.set_model_template(changepoint_model.all_taste_poisson)
         else:
             raise Exception("Something went wrong")
@@ -260,17 +259,18 @@ class FitHandler():
     ########################################
 
     def load_spike_trains(self):
-        """Helper function to load spike trains from data_dir using EphysData module
-        """
+        """Helper function to load spike trains from data_dir using EphysData module"""
         full_spike_array = self.EphysData.return_region_spikes(
-                region_name = self.region_name,
-                laser = self.laser_type)
+            region_name=self.region_name, laser=self.laser_type
+        )
         if isinstance(self.taste_num, int):
             self.data = full_spike_array[self.taste_num]
-        if self.taste_num == 'all':
+        if self.taste_num == "all":
             self.data = full_spike_array
-        print(f'Loading spike trains from {self.database_handler.data_basename}, '
-              f'dig_in {self.taste_num}, laser {str(self.laser_type)}')
+        print(
+            f"Loading spike trains from {self.database_handler.data_basename}, "
+            f"dig_in {self.taste_num}, laser {str(self.laser_type)}"
+        )
 
     def preprocess_data(self):
         """Perform data preprocessing
@@ -279,14 +279,15 @@ class FitHandler():
         1) Raw data loaded
         2) Preprocessor selected
         """
-        if 'data' not in dir(self):
+        if "data" not in dir(self):
             self.load_spike_trains()
-        if 'preprocessor' not in dir(self):
+        if "preprocessor" not in dir(self):
             self.preprocess_selector()
-        print('Preprocessing spike trains, '
-              f'preprocessing func: <{self.preprocessor.__name__}>')
-        self.preprocessed_data = \
-            self.preprocessor(self.data, **self.preprocess_params)
+        print(
+            "Preprocessing spike trains, "
+            f"preprocessing func: <{self.preprocessor.__name__}>"
+        )
+        self.preprocessed_data = self.preprocessor(self.data, **self.preprocess_params)
 
     def create_model(self):
         """Create model and save as attribute
@@ -295,19 +296,21 @@ class FitHandler():
         1) Data preprocessed
         2) Model template selected
         """
-        if 'preprocessed_data' not in dir(self):
+        if "preprocessed_data" not in dir(self):
             self.preprocess_data()
-        if 'model_template' not in dir(self):
+        if "model_template" not in dir(self):
             self.model_template_selector()
 
         # In future iterations, before fitting model,
         # check that a similar entry doesn't exist
 
         changepoint_model.compile_wait()
-        print(f'Generating Model, model func: <{self.model_template.__name__}>')
-        self.model = self.model_template(self.preprocessed_data,
-                                         self.model_params['states'],
-                                         **self.model_params['model_kwargs'])
+        print(f"Generating Model, model func: <{self.model_template.__name__}>")
+        self.model = self.model_template(
+            self.preprocessed_data,
+            self.model_params["states"],
+            **self.model_params["model_kwargs"],
+        )
 
     def run_inference(self):
         """Perform inference on data
@@ -316,18 +319,17 @@ class FitHandler():
         1) Model created
         2) Inference function selected
         """
-        if 'model' not in dir(self):
+        if "model" not in dir(self):
             self.create_model()
-        if 'inference_func' not in dir(self):
+        if "inference_func" not in dir(self):
             self.inference_func_selector()
 
         changepoint_model.compile_wait()
-        print('Running inference, inference func: '
-              f'<{self.inference_func.__name__}>')
-        temp_outs = self.inference_func(self.model,
-                                        self.model_params['fit'],
-                                        self.model_params['samples'])
-        varnames = ['model', 'approx', 'lambda', 'tau', 'data']
+        print("Running inference, inference func: " f"<{self.inference_func.__name__}>")
+        temp_outs = self.inference_func(
+            self.model, self.model_params["fit"], self.model_params["samples"]
+        )
+        varnames = ["model", "approx", "lambda", "tau", "data"]
         self.inference_outs = dict(zip(varnames, temp_outs))
 
     def _gen_fit_metadata(self):
@@ -345,15 +347,14 @@ class FitHandler():
         """
         pre_params = self.preprocess_params
         model_params = self.model_params
-        pre_params['preprocessor_name'] = self.preprocessor.__name__
-        model_params['model_template_name'] = self.model_template.__name__
-        model_params['inference_func_name'] = self.inference_func.__name__
-        fin_dict = dict(zip(['preprocess', 'model'], [pre_params, model_params]))
+        pre_params["preprocessor_name"] = self.preprocessor.__name__
+        model_params["model_template_name"] = self.model_template.__name__
+        model_params["inference_func_name"] = self.inference_func.__name__
+        fin_dict = dict(zip(["preprocess", "model"], [pre_params, model_params]))
         return fin_dict
 
     def _pass_metadata_to_handler(self):
-        """Function to coordinate transfer of metadata to DatabaseHandler
-        """
+        """Function to coordinate transfer of metadata to DatabaseHandler"""
         self.database_handler.ingest_fit_data(self._gen_fit_metadata())
 
     def _return_fit_output(self):
@@ -364,51 +365,48 @@ class FitHandler():
         """
         self._pass_metadata_to_handler()
         agg_metadata = self.database_handler.aggregate_metadata()
-        return {'model_data': self.inference_outs, 'metadata': agg_metadata}
+        return {"model_data": self.inference_outs, "metadata": agg_metadata}
 
     def save_fit_output(self):
-        """Save fit output (fitted data + metadata) to pkl file
-        """
-        if 'inference_outs' not in dir(self):
+        """Save fit output (fitted data + metadata) to pkl file"""
+        if "inference_outs" not in dir(self):
             self.run_inference()
         out_dict = self._return_fit_output()
-        with open(self.database_handler.model_save_path + '.pkl', 'wb') as buff:
+        with open(self.database_handler.model_save_path + ".pkl", "wb") as buff:
             pickle.dump(out_dict, buff)
 
-        json_file_name = os.path.join(
-            self.database_handler.model_save_path + '.info')
-        with open(json_file_name, 'w') as file:
-            json.dump(out_dict['metadata'], file, indent=4)
+        json_file_name = os.path.join(self.database_handler.model_save_path + ".info")
+        with open(json_file_name, "w") as file:
+            json.dump(out_dict["metadata"], file, indent=4)
 
         self.database_handler.write_to_database()
 
-        print('Saving inference output to : \n'
-                f'{self.database_handler.model_save_dir}' 
-                "\n" + "================================" + '\n')
+        print(
+            "Saving inference output to : \n"
+            f"{self.database_handler.model_save_dir}"
+            "\n" + "================================" + "\n"
+        )
 
 
-class DatabaseHandler():
-    """Class to handle transactions with model database
-    """
+class DatabaseHandler:
+    """Class to handle transactions with model database"""
 
     def __init__(self):
-        """Initialize DatabaseHandler class
-        """
-        self.unique_cols = ['exp.model_id', 'exp.save_path', 'exp.fit_date']
+        """Initialize DatabaseHandler class"""
+        self.unique_cols = ["exp.model_id", "exp.save_path", "exp.fit_date"]
         self.model_database_path = MODEL_DATABASE_PATH
         self.model_save_base_dir = MODEL_SAVE_DIR
 
         if os.path.exists(self.model_database_path):
-            self.fit_database = pd.read_csv(self.model_database_path,
-                                            index_col=0)
+            self.fit_database = pd.read_csv(self.model_database_path, index_col=0)
             all_na = [all(x) for num, x in self.fit_database.isna().iterrows()]
             if all_na:
-                print(f'{sum(all_na)} rows found with all NA, removing...')
-                self.fit_database = self.fit_database.dropna(how='all')
+                print(f"{sum(all_na)} rows found with all NA, removing...")
+                self.fit_database = self.fit_database.dropna(how="all")
         else:
-            print('Fit database does not exist yet')
+            print("Fit database does not exist yet")
 
-    def show_duplicates(self, keep='first'):
+    def show_duplicates(self, keep="first"):
         """Find duplicates in database
 
         Args:
@@ -419,15 +417,15 @@ class DatabaseHandler():
             pandas dataframe: Dataframe containing duplicated rows
             pandas series : Indices of duplicated rows
         """
-        dup_inds = self.fit_database.drop(self.unique_cols, axis=1)\
-            .duplicated(keep=keep)
+        dup_inds = self.fit_database.drop(self.unique_cols, axis=1).duplicated(
+            keep=keep
+        )
         return self.fit_database.loc[dup_inds], dup_inds
 
     def drop_duplicates(self):
-        """Remove duplicated rows from database
-        """
+        """Remove duplicated rows from database"""
         _, dup_inds = self.show_duplicates()
-        print(f'Removing {sum(dup_inds)} duplicate rows')
+        print(f"Removing {sum(dup_inds)} duplicate rows")
         self.fit_database = self.fit_database.loc[~dup_inds]
 
     def check_mismatched_paths(self):
@@ -438,15 +436,19 @@ class DatabaseHandler():
             list: pkl files which cannot be matched to model in database
             list: all files in save directory
         """
-        mismatch_from_database = [not os.path.exists(x + ".pkl")
-                                  for x in self.fit_database['exp.save_path']]
+        mismatch_from_database = [
+            not os.path.exists(x + ".pkl") for x in self.fit_database["exp.save_path"]
+        ]
         file_list = glob(os.path.join(self.model_save_base_dir, "*/*.pkl"))
-        mismatch_from_file = [not
-                              (x.split('.')[0] in list(
-                                  self.fit_database['exp.save_path']))
-                              for x in file_list]
-        print(f"{sum(mismatch_from_database)} mismatches from database" + "\n"
-              + f"{sum(mismatch_from_file)} mismatches from files")
+        mismatch_from_file = [
+            not (x.split(".")[0] in list(self.fit_database["exp.save_path"]))
+            for x in file_list
+        ]
+        print(
+            f"{sum(mismatch_from_database)} mismatches from database"
+            + "\n"
+            + f"{sum(mismatch_from_file)} mismatches from files"
+        )
         return mismatch_from_database, mismatch_from_file, file_list
 
     def clear_mismatched_paths(self):
@@ -456,37 +458,37 @@ class DatabaseHandler():
         1) Files for which no entry can be found in database
         2) Database entries for which no corresponding file can be found
         """
-        mismatch_from_database, mismatch_from_file, file_list = \
-            self.check_mismatched_paths()
+        (
+            mismatch_from_database,
+            mismatch_from_file,
+            file_list,
+        ) = self.check_mismatched_paths()
         mismatch_from_file = np.array(mismatch_from_file)
         mismatch_from_database = np.array(mismatch_from_database)
         self.fit_database = self.fit_database.loc[~mismatch_from_database]
         mismatched_files = [x for x, y in zip(file_list, mismatch_from_file) if y]
         for x in mismatched_files:
             os.remove(x)
-        print('==== Clearing Completed ====')
+        print("==== Clearing Completed ====")
 
     def write_updated_database(self):
-        """Can be called following clear_mismatched_entries to update current database
-        """
+        """Can be called following clear_mismatched_entries to update current database"""
         database_backup_dir = os.path.join(
-            self.model_save_base_dir, '.database_backups')
+            self.model_save_base_dir, ".database_backups"
+        )
         if not os.path.exists(database_backup_dir):
             os.makedirs(database_backup_dir)
-        #current_date = date.today().strftime("%m-%d-%y")
+        # current_date = date.today().strftime("%m-%d-%y")
         current_date = str(datetime.now()).replace(" ", "_")
-        shutil.copy(self.model_database_path,
-                    os.path.join(database_backup_dir,
-                                 f"database_backup_{current_date}"))
-        self.fit_database.to_csv(self.model_database_path, mode='w')
+        shutil.copy(
+            self.model_database_path,
+            os.path.join(database_backup_dir, f"database_backup_{current_date}"),
+        )
+        self.fit_database.to_csv(self.model_database_path, mode="w")
 
     def set_run_params(
-            self, 
-            data_dir, 
-            experiment_name, 
-            taste_num, 
-            laser_type,
-            region_name):
+        self, data_dir, experiment_name, taste_num, laser_type, region_name
+    ):
         """Store metadata related to inference run
 
         Args:
@@ -495,7 +497,7 @@ class DatabaseHandler():
                     (for metedata). Defaults to None.
             taste_num (int): Index of taste to perform fit on (Corresponds to
                     INDEX of taste in spike array, not actual dig_ins)
-            laser_type (None or str): None, 'on', or 'off' (For a laser session, 
+            laser_type (None or str): None, 'on', or 'off' (For a laser session,
                     which set of trials are wanted, None indicated return all trials)
             region_name (str): Region on which to perform fit on
                     (must match regions in .info file)
@@ -506,16 +508,15 @@ class DatabaseHandler():
         self.session_date = self.data_basename.split("_")[-1]
 
         self.experiment_name = experiment_name
-        self.model_save_dir = os.path.join(self.model_save_base_dir,
-                                           experiment_name)
+        self.model_save_dir = os.path.join(self.model_save_base_dir, experiment_name)
 
         if not os.path.exists(self.model_save_dir):
             os.makedirs(self.model_save_dir)
 
-        self.model_id = str(uuid.uuid4()).split('-')[0]
-        self.model_save_path = os.path.join(self.model_save_dir,
-                                            self.experiment_name +
-                                            "_" + self.model_id)
+        self.model_id = str(uuid.uuid4()).split("-")[0]
+        self.model_save_path = os.path.join(
+            self.model_save_dir, self.experiment_name + "_" + self.model_id
+        )
         self.fit_date = date.today().strftime("%m-%d-%y")
 
         self.taste_num = taste_num
@@ -541,62 +542,72 @@ class DatabaseHandler():
         Returns:
             dict: Dictionary of metadata given to FitHandler class
         """
-        if 'external_metadata' not in dir(self):
-            raise Exception('Fit run metdata needs to be ingested '
-                            'into data_handler first')
+        if "external_metadata" not in dir(self):
+            raise Exception(
+                "Fit run metdata needs to be ingested " "into data_handler first"
+            )
 
-        data_details = dict(zip(
-            ['data_dir',
-             'basename',
-             'animal_name',
-             'session_date',
-             'taste_num',
-             'laser_type',
-             'region_name'],
-            [self.data_dir,
-             self.data_basename,
-             self.animal_name,
-             self.session_date,
-             self.taste_num,
-             self.laser_type,
-             self.region_name]))
+        data_details = dict(
+            zip(
+                [
+                    "data_dir",
+                    "basename",
+                    "animal_name",
+                    "session_date",
+                    "taste_num",
+                    "laser_type",
+                    "region_name",
+                ],
+                [
+                    self.data_dir,
+                    self.data_basename,
+                    self.animal_name,
+                    self.session_date,
+                    self.taste_num,
+                    self.laser_type,
+                    self.region_name,
+                ],
+            )
+        )
 
-        exp_details = dict(zip(
-            ['exp_name', 
-             'model_id',
-             'save_path',
-             'fit_date'],
-            [self.experiment_name,
-             self.model_id,
-             self.model_save_path,
-             self.fit_date]))
+        exp_details = dict(
+            zip(
+                ["exp_name", "model_id", "save_path", "fit_date"],
+                [
+                    self.experiment_name,
+                    self.model_id,
+                    self.model_save_path,
+                    self.fit_date,
+                ],
+            )
+        )
 
-        module_details = dict(zip(
-            ['pymc3_version',
-             'theano_version'],
-            [pymc3.__version__,
-                theano.__version__]
-            ))
+        module_details = dict(
+            zip(
+                ["pymc3_version", "theano_version"],
+                [pymc3.__version__, theano.__version__],
+            )
+        )
 
         temp_ext_met = self.external_metadata
-        temp_ext_met['data'] = data_details
-        temp_ext_met['exp'] = exp_details
-        temp_ext_met['module'] = module_details
+        temp_ext_met["data"] = data_details
+        temp_ext_met["exp"] = exp_details
+        temp_ext_met["module"] = module_details
 
         return temp_ext_met
 
     def write_to_database(self):
-        """Write out metadata to database
-        """
+        """Write out metadata to database"""
         agg_metadata = self.aggregate_metadata()
         # Convert model_kwargs to str so that they are save appropriately
-        agg_metadata['model']['model_kwargs'] = str(agg_metadata['model']['model_kwargs'])
+        agg_metadata["model"]["model_kwargs"] = str(
+            agg_metadata["model"]["model_kwargs"]
+        )
         flat_metadata = pd.json_normalize(agg_metadata)
         if not os.path.isfile(self.model_database_path):
-            flat_metadata.to_csv(self.model_database_path, mode='a')
+            flat_metadata.to_csv(self.model_database_path, mode="a")
         else:
-            flat_metadata.to_csv(self.model_database_path,
-                                 mode='a', header=False)
+            flat_metadata.to_csv(self.model_database_path, mode="a", header=False)
 
     def check_exists(self):
         """Check if the given fit already exists in database
