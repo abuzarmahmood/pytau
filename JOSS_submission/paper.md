@@ -31,9 +31,16 @@ The package offers several key advantages:
 
 1. **Batch processing**: Automates the fitting of models across multiple datasets and parameter configurations
 2. **Database management**: Organizes and tracks model fits for easy retrieval and comparison
-3. **Visualization tools**: Provides specialized plotting functions for changepoint model results
+3. **Visualization tools**: Provides specialized plotting functions for changepoint model results, including:
+   - Raster plots with overlaid changepoints
+   - State-dependent firing rate visualizations
+   - Transition-aligned activity plots
+   - Model comparison visualizations
 4. **Flexible model specification**: Supports various changepoint model configurations for different analysis needs
-5. **Statistical analysis**: Includes tools for significance testing of state-dependent neural activity
+5. **Statistical analysis**: Includes tools for significance testing of state-dependent neural activity, such as:
+   - ANOVA-based detection of neurons with significant state-dependent firing
+   - Pairwise t-tests for transition-triggered neural activity
+   - Cross-trial analysis of state transitions
 
 These features make `pytau` particularly valuable for neuroscientists studying state transitions in neural activity, such as taste processing, decision-making, or learning paradigms.
 
@@ -117,9 +124,25 @@ firing = pkl_handler.firing  # Firing rate analysis
 
 # Analyze significant neurons
 significant_neurons = firing.anova_significant_neurons
+
+# Access transition analysis data
+transition_snippets = firing.transition_snips
+pairwise_significant = firing.pairwise_significant_neurons
+
+# Visualize the results (using functions from pytau.utils.plotting)
+import matplotlib.pyplot as plt
+from pytau.utils.plotting import plot_changepoint_raster, plot_state_firing_rates
+
+# Plot spike rasters with changepoint overlays
+fig, ax = plt.subplots(figsize=(10, 6))
+plot_changepoint_raster(pkl_handler.processed_spikes, pkl_handler.tau.scaled_mode_tau, 
+                        plot_lims=[0, 2000])
+
+# Plot state-dependent firing rates
+plot_state_firing_rates(pkl_handler.processed_spikes, pkl_handler.tau.scaled_mode_tau)
 ```
 
-This example demonstrates the streamlined workflow for fitting a changepoint model to taste response data and analyzing the results.
+This example demonstrates the streamlined workflow for fitting a changepoint model to taste response data, analyzing the results, and visualizing the findings.
 
 # Tutorials and documentation
 
@@ -183,7 +206,50 @@ The package also provides tools for statistical analysis of fitted models, inclu
    ```python
    # From changepoint_analysis.py
    get_transition_snips(spike_array, tau_array, window_radius=300)
+   calc_significant_neurons_snippets(transition_snips, p_val=0.05)
    ```
+
+4. **Visualization tools**:
+   ```python
+   # From utils/plotting.py
+   plot_changepoint_raster(spike_array, tau, plot_lims=None)
+   plot_changepoint_overview(tau, plot_lims)
+   plot_aligned_state_firing(spike_array, tau, window_radius=300)
+   plot_state_firing_rates(spike_array, tau)
+   plot_elbo_history(fit_model, final_window=0.05)
+   ```
+
+These visualization and analysis functions enable researchers to:
+- Examine neural activity with overlaid changepoints
+- Visualize the distribution of changepoints across trials
+- Analyze neural activity aligned to state transitions
+- Compare firing rates across different states
+- Identify neurons with significant state-dependent activity
+- Detect neurons that respond significantly to state transitions
+
+# Analysis capabilities
+
+The `PklHandler` class in `changepoint_analysis.py` provides a comprehensive interface for analyzing fitted models:
+
+```python
+# Load a fitted model
+pkl_handler = PklHandler('/path/to/model.pkl')
+
+# Access key components
+tau = pkl_handler.tau           # Changepoint times and transformations
+firing = pkl_handler.firing     # Firing rate analysis
+
+# Access raw data
+raw_spikes = firing.raw_spikes  # Original spike data
+processed_spikes = firing.processed_spikes  # Preprocessed spike data
+
+# Access analysis results
+state_firing = firing.state_firing  # State-dependent firing rates
+transition_snips = firing.transition_snips  # Activity around transitions
+significant_neurons = firing.anova_significant_neurons  # Neurons with significant state modulation
+```
+
+This structured approach allows researchers to easily access both raw data and analysis results, facilitating comprehensive examination of neural dynamics.
 
 # Comparison with existing tools
 
