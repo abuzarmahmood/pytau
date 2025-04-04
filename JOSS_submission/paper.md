@@ -76,7 +76,7 @@ Where $\lambda_k$ represents the firing rate in state $k$.
 
 ## Fitting Methods
 
-`pytau` employs advanced Bayesian inference techniques to fit changepoint models. The package utilizes both Automatic Differentiation Variational Inference (ADVI) and Markov Chain Monte Carlo (MCMC) methods, including the No-U-Turn Sampler (NUTS), to perform efficient and accurate model fitting. These methods are integrated through PyMC3, allowing for robust estimation of model parameters and uncertainty quantification.
+`pytau` employs advanced Bayesian inference techniques to fit changepoint models. The package utilizes both Automatic Differentiation Variational Inference (ADVI) [@kucukelbir2016automatic] and Markov Chain Monte Carlo (MCMC) methods, including the No-U-Turn Sampler (NUTS) [@hoffman2011no], to perform efficient and accurate model fitting. These methods are integrated through PyMC3, allowing for robust estimation of model parameters and uncertainty quantification.
 
 The use of ADVI provides a fast approximation to the posterior distribution, making it suitable for initial exploration and parameter tuning. For more precise inference, `pytau` leverages the NUTS sampler, a variant of MCMC that adapts the step size and trajectory length during sampling, ensuring efficient exploration of the parameter space.
 
@@ -270,9 +270,10 @@ This structured approach allows researchers to easily access both raw data and a
 
 Several tools exist for changepoint detection, including:
 
-1. **ruptures**: A Python package for offline change point detection
+1. **ruptures** [@ruptures]: A Python package for offline change point detection
 2. **bayesloop**: A probabilistic programming framework for time series analysis
 3. **PyChange**: A Python package for change point detection in time series
+4. **Bayesian online changepoint detection** [@adams2007bayesian, @fearnhead2007line]: Methods for online detection of changepoints
 
 `pytau` differs from these tools in its specific focus on neuroscience applications, particularly for analyzing neural ensemble data across multiple experimental conditions. It provides specialized functionality for:
 
