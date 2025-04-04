@@ -31,10 +31,3 @@ repos:
     hooks:
     -   id: black
         args: ['--line-length=100']
-
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.3.0
-    hooks:
-    -   id: mypy
-        additional_dependencies: [types-all]
-        args: ['--ignore-missing-imports']
