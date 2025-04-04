@@ -71,8 +71,10 @@ def test_gen_test_array():
         (SingleTastePoissonVarsigFixed, (5, 10, 100), 3, {"inds_span": 1}),
         (AllTastePoisson, (2, 5, 10, 100), 3, {}),
         (AllTastePoissonVarsigFixed, (2, 5, 10, 100), 3, {"inds_span": 1}),
-        (SingleTastePoissonTrialSwitch, (5, 10, 100), 3, {"switch_components": 2}),
-        (AllTastePoissonTrialSwitch, (2, 5, 10, 100), 3, {"switch_components": 2}),
+        (SingleTastePoissonTrialSwitch,
+         (5, 10, 100), 3, {"switch_components": 2}),
+        (AllTastePoissonTrialSwitch, (2, 5, 10, 100),
+         3, {"switch_components": 2}),
     ],
 )
 def test_model_initialization(model_class, data_shape, n_states, extra_args):
@@ -96,7 +98,8 @@ def test_model_initialization(model_class, data_shape, n_states, extra_args):
     if n_states is None:
         model_instance = model_class(data_array=test_data, **extra_args)
     else:
-        model_instance = model_class(data_array=test_data, n_states=n_states, **extra_args)
+        model_instance = model_class(
+            data_array=test_data, n_states=n_states, **extra_args)
 
     # Check that model can be generated
     model = model_instance.generate_model()
@@ -116,7 +119,8 @@ def test_run_all_tests():
         # Just verify the function exists and is callable
         # For full testing, run the function directly
     except ImportError:
-        pytest.skip("run_all_tests function not found in changepoint_model module")
+        pytest.skip(
+            "run_all_tests function not found in changepoint_model module")
 
 
 # Test the utility functions

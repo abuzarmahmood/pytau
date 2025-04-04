@@ -26,7 +26,7 @@ parallel_temp_path = "/media/bigdata/projects/pytau/pytau/utils" "/batch_utils/p
 # dir_list_path = '/media/bigdata/projects/pytau/pytau/data/bla_dirs.txt'
 dir_list_path = "/media/bigdata/firing_space_plot/NM_gape_analysis/fin_NM_emg_dat.txt"
 ########################################
-## Specify Things HERE
+# Specify Things HERE
 ########################################
 
 # Define all iterators
@@ -49,8 +49,8 @@ exp_preprocess_parameters = {
     "time_lims": [[2000, 4000]],
     "bin_width": [50],
     "data_transform": ["None"]  # ,
-    #'spike_shuffled',
-    #'trial_shuffled']
+    # 'spike_shuffled',
+    # 'trial_shuffled']
 }
 
 exp_fit_handler_kwargs = {
@@ -96,4 +96,5 @@ else:
 
 for num, this_row in iter_frame.iterrows():
     temp_frame = pd.DataFrame(this_row)
-    temp_frame.to_json(os.path.join(parallel_temp_path, f"job{num:04}.json"), indent=4)
+    temp_frame.to_json(os.path.join(parallel_temp_path,
+                       f"job{num:04}.json"), indent=4)

@@ -1,5 +1,8 @@
 # Fit a model to data manually
 
+from pytau.utils import plotting
+from pytau.changepoint_preprocess import preprocess_single_taste
+from pytau.changepoint_model import advi_fit, single_taste_poisson
 import os
 import sys
 from glob import glob
@@ -11,9 +14,6 @@ from scipy import stats
 
 pytau_base_dir = "/media/bigdata/projects/pytau"
 sys.path.append(pytau_base_dir)
-from pytau.changepoint_model import advi_fit, single_taste_poisson
-from pytau.changepoint_preprocess import preprocess_single_taste
-from pytau.utils import plotting
 
 # Write to MODEL_SAVE_DIR.params
 param_file_path = f"{pytau_base_dir}/pytau/config/MODEL_SAVE_DIR.params"
@@ -60,7 +60,8 @@ fig, ax = plotting.plot_elbo_history(approx)
 plt.show()
 
 # Overlay raster plot with states
-fig, ax = plotting.plot_changepoint_raster(spike_train, scaled_mode_tau, [1500, 4000])
+fig, ax = plotting.plot_changepoint_raster(
+    spike_train, scaled_mode_tau, [1500, 4000])
 plt.show()
 
 # Overview of changepoint positions

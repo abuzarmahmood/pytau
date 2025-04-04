@@ -202,7 +202,8 @@ class FitHandler:
         """
 
         if isinstance(self.taste_num, int):
-            self.set_preprocessor(changepoint_preprocess.preprocess_single_taste)
+            self.set_preprocessor(
+                changepoint_preprocess.preprocess_single_taste)
         elif self.taste_num == "all":
             self.set_preprocessor(changepoint_preprocess.preprocess_all_taste)
         else:
@@ -281,8 +282,10 @@ class FitHandler:
             self.load_spike_trains()
         if "preprocessor" not in dir(self):
             self.preprocess_selector()
-        print("Preprocessing spike trains, " f"preprocessing func: <{self.preprocessor.__name__}>")
-        self.preprocessed_data = self.preprocessor(self.data, **self.preprocess_params)
+        print(
+            "Preprocessing spike trains, " f"preprocessing func: <{self.preprocessor.__name__}>")
+        self.preprocessed_data = self.preprocessor(
+            self.data, **self.preprocess_params)
 
     def create_model(self):
         """Create model and save as attribute
@@ -300,7 +303,8 @@ class FitHandler:
         # check that a similar entry doesn't exist
 
         changepoint_model.compile_wait()
-        print(f"Generating Model, model func: <{self.model_template.__name__}>")
+        print(
+            f"Generating Model, model func: <{self.model_template.__name__}>")
         self.model = self.model_template(
             self.preprocessed_data,
             self.model_params["states"],
@@ -320,7 +324,8 @@ class FitHandler:
             self.inference_func_selector()
 
         changepoint_model.compile_wait()
-        print("Running inference, inference func: " f"<{self.inference_func.__name__}>")
+        print(
+            "Running inference, inference func: " f"<{self.inference_func.__name__}>")
         temp_outs = self.inference_func(
             self.model, self.model_params["fit"], self.model_params["samples"]
         )
@@ -345,7 +350,8 @@ class FitHandler:
         pre_params["preprocessor_name"] = self.preprocessor.__name__
         model_params["model_template_name"] = self.model_template.__name__
         model_params["inference_func_name"] = self.inference_func.__name__
-        fin_dict = dict(zip(["preprocess", "model"], [pre_params, model_params]))
+        fin_dict = dict(zip(["preprocess", "model"],
+                        [pre_params, model_params]))
         return fin_dict
 
     def _pass_metadata_to_handler(self):
@@ -370,7 +376,8 @@ class FitHandler:
         with open(self.database_handler.model_save_path + ".pkl", "wb") as buff:
             pickle.dump(out_dict, buff)
 
-        json_file_name = os.path.join(self.database_handler.model_save_path + ".info")
+        json_file_name = os.path.join(
+            self.database_handler.model_save_path + ".info")
         with open(json_file_name, "w") as file:
             json.dump(out_dict["metadata"], file, indent=4)
 
@@ -393,7 +400,8 @@ class DatabaseHandler:
         self.model_save_base_dir = MODEL_SAVE_DIR
 
         if os.path.exists(self.model_database_path):
-            self.fit_database = pd.read_csv(self.model_database_path, index_col=0)
+            self.fit_database = pd.read_csv(
+                self.model_database_path, index_col=0)
             all_na = [all(x) for num, x in self.fit_database.isna().iterrows()]
             if all_na:
                 print(f"{sum(all_na)} rows found with all NA, removing...")
@@ -412,7 +420,8 @@ class DatabaseHandler:
             pandas dataframe: Dataframe containing duplicated rows
             pandas series : Indices of duplicated rows
         """
-        dup_inds = self.fit_database.drop(self.unique_cols, axis=1).duplicated(keep=keep)
+        dup_inds = self.fit_database.drop(
+            self.unique_cols, axis=1).duplicated(keep=keep)
         return self.fit_database.loc[dup_inds], dup_inds
 
     def drop_duplicates(self):
@@ -458,21 +467,24 @@ class DatabaseHandler:
         mismatch_from_file = np.array(mismatch_from_file)
         mismatch_from_database = np.array(mismatch_from_database)
         self.fit_database = self.fit_database.loc[~mismatch_from_database]
-        mismatched_files = [x for x, y in zip(file_list, mismatch_from_file) if y]
+        mismatched_files = [x for x, y in zip(
+            file_list, mismatch_from_file) if y]
         for x in mismatched_files:
             os.remove(x)
         print("==== Clearing Completed ====")
 
     def write_updated_database(self):
         """Can be called following clear_mismatched_entries to update current database"""
-        database_backup_dir = os.path.join(self.model_save_base_dir, ".database_backups")
+        database_backup_dir = os.path.join(
+            self.model_save_base_dir, ".database_backups")
         if not os.path.exists(database_backup_dir):
             os.makedirs(database_backup_dir)
         # current_date = date.today().strftime("%m-%d-%y")
         current_date = str(datetime.now()).replace(" ", "_")
         shutil.copy(
             self.model_database_path,
-            os.path.join(database_backup_dir, f"database_backup_{current_date}"),
+            os.path.join(database_backup_dir,
+                         f"database_backup_{current_date}"),
         )
         self.fit_database.to_csv(self.model_database_path, mode="w")
 
@@ -496,7 +508,8 @@ class DatabaseHandler:
         self.session_date = self.data_basename.split("_")[-1]
 
         self.experiment_name = experiment_name
-        self.model_save_dir = os.path.join(self.model_save_base_dir, experiment_name)
+        self.model_save_dir = os.path.join(
+            self.model_save_base_dir, experiment_name)
 
         if not os.path.exists(self.model_save_dir):
             os.makedirs(self.model_save_dir)
@@ -531,7 +544,8 @@ class DatabaseHandler:
             dict: Dictionary of metadata given to FitHandler class
         """
         if "external_metadata" not in dir(self):
-            raise Exception("Fit run metdata needs to be ingested " "into data_handler first")
+            raise Exception(
+                "Fit run metdata needs to be ingested " "into data_handler first")
 
         data_details = dict(
             zip(
@@ -586,12 +600,14 @@ class DatabaseHandler:
         """Write out metadata to database"""
         agg_metadata = self.aggregate_metadata()
         # Convert model_kwargs to str so that they are save appropriately
-        agg_metadata["model"]["model_kwargs"] = str(agg_metadata["model"]["model_kwargs"])
+        agg_metadata["model"]["model_kwargs"] = str(
+            agg_metadata["model"]["model_kwargs"])
         flat_metadata = pd.json_normalize(agg_metadata)
         if not os.path.isfile(self.model_database_path):
             flat_metadata.to_csv(self.model_database_path, mode="a")
         else:
-            flat_metadata.to_csv(self.model_database_path, mode="a", header=False)
+            flat_metadata.to_csv(self.model_database_path,
+                                 mode="a", header=False)
 
     def check_exists(self):
         """Check if the given fit already exists in database

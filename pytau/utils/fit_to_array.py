@@ -2,6 +2,10 @@
 Fit models to given spike array
 """
 
+from pytau.utils import EphysData
+from pytau import changepoint_model, changepoint_preprocess
+import theano
+import pymc3
 import json
 import os
 import pickle
@@ -20,11 +24,6 @@ from tqdm import tqdm, trange
 base_dir = "/media/bigdata/projects/pytau"
 sys.path.append(base_dir)
 
-import pymc3
-import theano
-
-from pytau import changepoint_model, changepoint_preprocess
-from pytau.utils import EphysData
 
 for ind in trange(len(quin_clust_flat)):
     data = quin_clust_flat[ind]
@@ -34,7 +33,8 @@ for ind in trange(len(quin_clust_flat)):
     preprocess_parameters_values = [[2000, 4000], 50, None]
 
     model_params = dict(zip(model_parameters_keys, model_parameters_values))
-    preprocess_params = dict(zip(preprocess_parameters_keys, preprocess_parameters_values))
+    preprocess_params = dict(
+        zip(preprocess_parameters_keys, preprocess_parameters_values))
 
     preprocessor = changepoint_preprocess.preprocess_single_taste
     model_template = changepoint_model.single_taste_poisson
@@ -46,7 +46,8 @@ for ind in trange(len(quin_clust_flat)):
         preprocessed_data, model_params["states"], **model_params["model_kwargs"]
     )
 
-    temp_outs = inference_func(model, model_params["fit"], model_params["samples"])
+    temp_outs = inference_func(
+        model, model_params["fit"], model_params["samples"])
     varnames = ["model", "approx", "lambda", "tau", "data"]
     inference_outs = dict(zip(varnames, temp_outs))
 

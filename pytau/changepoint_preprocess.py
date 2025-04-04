@@ -41,7 +41,8 @@ def preprocess_single_taste(spike_array, time_lims, bin_width, data_transform):
         None,
     ]
     if data_transform not in accepted_transforms:
-        raise Exception(f"data_transform must be of type {accepted_transforms}")
+        raise Exception(
+            f"data_transform must be of type {accepted_transforms}")
 
     ##################################################
     # Create shuffled data
@@ -50,13 +51,15 @@ def preprocess_single_taste(spike_array, time_lims, bin_width, data_transform):
 
     if data_transform == "trial_shuffled":
         transformed_dat = np.array(
-            [np.random.permutation(neuron) for neuron in np.swapaxes(spike_array, 1, 0)]
+            [np.random.permutation(neuron)
+             for neuron in np.swapaxes(spike_array, 1, 0)]
         )
         transformed_dat = np.swapaxes(transformed_dat, 0, 1)
 
     if data_transform == "spike_shuffled":
         transformed_dat = np.moveaxis(spike_array, -1, 0)
-        transformed_dat = np.stack([np.random.permutation(x) for x in transformed_dat])
+        transformed_dat = np.stack([np.random.permutation(x)
+                                   for x in transformed_dat])
         transformed_dat = np.moveaxis(transformed_dat, 0, -1)
     ##################################################
     # Create simulated data
@@ -87,7 +90,7 @@ def preprocess_single_taste(spike_array, time_lims, bin_width, data_transform):
     # Bin Data
     ##################################################
     spike_binned = np.sum(
-        transformed_dat[..., time_lims[0] : time_lims[1]].reshape(
+        transformed_dat[..., time_lims[0]: time_lims[1]].reshape(
             *spike_array.shape[:-1], -1, bin_width
         ),
         axis=-1,
@@ -121,7 +124,8 @@ def preprocess_all_taste(spike_array, time_lims, bin_width, data_transform):
         None,
     ]
     if data_transform not in accepted_transforms:
-        raise Exception(f"data_transform must be of type {accepted_transforms}")
+        raise Exception(
+            f"data_transform must be of type {accepted_transforms}")
 
     ##################################################
     # Create shuffled data
@@ -130,13 +134,15 @@ def preprocess_all_taste(spike_array, time_lims, bin_width, data_transform):
 
     if data_transform == "trial_shuffled":
         transformed_dat = np.array(
-            [np.random.permutation(neuron) for neuron in np.swapaxes(spike_array, 2, 0)]
+            [np.random.permutation(neuron)
+             for neuron in np.swapaxes(spike_array, 2, 0)]
         )
         transformed_dat = np.swapaxes(transformed_dat, 0, 2)
 
     if data_transform == "spike_shuffled":
         transformed_dat = spike_array.swapaxes(-1, 0)
-        transformed_dat = np.stack([np.random.permutation(x) for x in transformed_dat])
+        transformed_dat = np.stack([np.random.permutation(x)
+                                   for x in transformed_dat])
         transformed_dat = transformed_dat.swapaxes(0, -1)
 
     ##################################################
@@ -149,7 +155,8 @@ def preprocess_all_taste(spike_array, time_lims, bin_width, data_transform):
         mean_firing = np.broadcast_to(mean_firing[:, None], spike_array.shape)
 
         # Simulate spikes
-        transformed_dat = (np.random.random(spike_array.shape) < mean_firing) * 1
+        transformed_dat = (np.random.random(
+            spike_array.shape) < mean_firing) * 1
 
     ##################################################
     # Null Transform Case
@@ -161,7 +168,7 @@ def preprocess_all_taste(spike_array, time_lims, bin_width, data_transform):
     # Bin Data
     ##################################################
     spike_binned = np.sum(
-        transformed_dat[..., time_lims[0] : time_lims[1]].reshape(
+        transformed_dat[..., time_lims[0]: time_lims[1]].reshape(
             *transformed_dat.shape[:-1], -1, bin_width
         ),
         axis=-1,

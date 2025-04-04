@@ -1,16 +1,16 @@
+from tqdm import tqdm, trange
+from ephys_data import ephys_data
+from changepoint_io import database_handler
+from changepoint_analysis import pkl_handler
+import visualize as vz
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
 import sys
 
 sys.path.append("/media/bigdata/firing_space_plot/ephys_data")
 sys.path.append("/media/bigdata/firing_space_plot/changepoint_mcmc/v2")
-import os
 
-import matplotlib.pyplot as plt
-import pandas as pd
-import visualize as vz
-from changepoint_analysis import pkl_handler
-from changepoint_io import database_handler
-from ephys_data import ephys_data
-from tqdm import tqdm, trange
 
 # from joblib import Parallel, cpu_count, delayed
 
@@ -25,7 +25,7 @@ wanted_frame = dframe.loc[dframe["exp.exp_name"] == wanted_exp_name]
 file_list = list(wanted_frame["exp.save_path"])
 
 ########################################
-## Extract spikes and state_firing
+# Extract spikes and state_firing
 ########################################
 # def parallelize(func, iterator):
 #    return Parallel(n_jobs = cpu_count()-2)\
@@ -98,7 +98,8 @@ plt.close()
 
 time_lims = [2600, 3000]
 selected_inds = np.where(
-    np.logical_and(mean_scaled_tau >= time_lims[0], mean_scaled_tau <= time_lims[1])
+    np.logical_and(mean_scaled_tau >=
+                   time_lims[0], mean_scaled_tau <= time_lims[1])
 )[0]
 selected_mean_diff = mean_state_diff[selected_inds]
 max_diff_inds = np.argsort(np.abs(selected_mean_diff))[-10:]
@@ -134,7 +135,7 @@ for this_ind, this_spikes, this_tau in zip(fin_inds, fin_spikes, fin_tau):
     plt.close(fig)
 
 ########################################
-## Increased step firing
+# Increased step firing
 ########################################
 max_increase_inds = np.argsort(mean_state_diff)[-10:]
 inc_spikes = this_raw_spikes[max_increase_inds]
