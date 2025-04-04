@@ -72,6 +72,14 @@ $$x_t \sim \textrm{Poisson}(\lambda_k) \textrm{ for } \tau_{k-1} < t \leq \tau_k
 
 Where $\lambda_k$ represents the firing rate in state $k$.
 
+## Fitting Methods
+
+`pytau` employs advanced Bayesian inference techniques to fit changepoint models. The package utilizes both Automatic Differentiation Variational Inference (ADVI) and Markov Chain Monte Carlo (MCMC) methods, including the No-U-Turn Sampler (NUTS), to perform efficient and accurate model fitting. These methods are integrated through PyMC3, allowing for robust estimation of model parameters and uncertainty quantification.
+
+The use of ADVI provides a fast approximation to the posterior distribution, making it suitable for initial exploration and parameter tuning. For more precise inference, `pytau` leverages the NUTS sampler, a variant of MCMC that adapts the step size and trajectory length during sampling, ensuring efficient exploration of the parameter space.
+
+A key feature of `pytau` is the creation of states through the stacking of sigmoid functions. This approach allows for continuous exploration of parameters, enabling the detection of subtle changes in neural activity. By modeling state transitions with sigmoid functions, the package captures the gradual nature of neural dynamics, providing a more nuanced understanding of state-dependent processes.
+
 # Example usage
 
 Below is a simple example of using `pytau` to fit a changepoint model to neural data:
