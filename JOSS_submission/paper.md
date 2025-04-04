@@ -140,13 +140,11 @@ fig, ax = plt.subplots(figsize=(10, 6))
 plot_changepoint_raster(pkl_handler.processed_spikes, pkl_handler.tau.scaled_mode_tau, 
                         plot_lims=[0, 2000])
 
-![Spike rasters with changepoint overlays](figs/state_raster_overlay.png)
-
 # Plot state-dependent firing rates
 plot_state_firing_rates(pkl_handler.processed_spikes, pkl_handler.tau.scaled_mode_tau)
-
-![State-specific neuron activity](figs/state_specific_neuron_activity.png)
 ```
+![Spike rasters with changepoint overlays](figs/state_raster_overlay.png)
+![State-specific neuron activity](figs/state_specific_neuron_activity.png)
 
 This example demonstrates the streamlined workflow for fitting a changepoint model to taste response data, analyzing the results, and visualizing the findings.
 
