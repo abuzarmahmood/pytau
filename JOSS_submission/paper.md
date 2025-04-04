@@ -42,6 +42,8 @@ The package offers several key advantages:
    - Pairwise t-tests for transition-triggered neural activity
    - Cross-trial analysis of state transitions
 
+![**Fig 1. Spike rasters with changepoint overlays** provide a first visualization of the inferred changepoints](figs/state_raster_overlay.png)
+
 These features make `pytau` particularly valuable for neuroscientists studying state transitions in neural activity, such as taste processing, decision-making, or learning paradigms.
 
 # Implementation and architecture
@@ -142,6 +144,9 @@ plot_changepoint_raster(pkl_handler.processed_spikes, pkl_handler.tau.scaled_mod
 plot_state_firing_rates(pkl_handler.processed_spikes, pkl_handler.tau.scaled_mode_tau)
 ```
 
+![**Fig 2. Overview of state timing**: A general overview of state-durations across trials fit, as well as the distribution of transition times.](figs/state_timing_overview.png)
+![**Fig 3. State-specific neuron activity**: Visuaizing state-specific firing rates of neurons allows assessment of the fraction of neurons showing differential activity and distribution of firing rates and firing-rate changes between neurons](figs/state_specific_neuron_activity.png)
+
 This example demonstrates the streamlined workflow for fitting a changepoint model to taste response data, analyzing the results, and visualizing the findings.
 
 # Tutorials and documentation
@@ -218,6 +223,8 @@ The package also provides tools for statistical analysis of fitted models, inclu
    plot_state_firing_rates(spike_array, tau)
    plot_elbo_history(fit_model, final_window=0.05)
    ```
+
+![**Fig 4. Transition-aligned activity**: Alignment of neural activity to transitions across trials allows us to visualize patterns of change across different transitions.](figs/transition_aligned_activity.png)
 
 These visualization and analysis functions enable researchers to:
 - Examine neural activity with overlaid changepoints
