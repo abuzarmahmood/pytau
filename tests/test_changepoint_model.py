@@ -96,9 +96,16 @@ def test_model_initialization(model_class, data_shape, n_states, extra_args):
 
     # Initialize model
     if n_states is None:
-        model_instance = model_class(test_data, **extra_args)
+        model_instance = model_class(
+                data_array = test_data, 
+                **extra_args
+                )
     else:
-        model_instance = model_class(test_data, n_states, **extra_args)
+        model_instance = model_class(
+                data_array = test_data, 
+                states = n_states, 
+                **extra_args
+                )
 
     # Check that model can be generated
     model = model_instance.generate_model()
