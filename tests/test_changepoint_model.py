@@ -62,7 +62,6 @@ def test_gen_test_array():
 
 
 # Test model initialization and basic functionality
-<<<<<<< HEAD
 @pytest.mark.slow
 @pytest.mark.parametrize("model_class,data_shape,n_states,extra_args", [
     (GaussianChangepointMeanVar2D, (10, 100), 3, {}),
@@ -77,24 +76,7 @@ def test_gen_test_array():
     (SingleTastePoissonTrialSwitch, (5, 10, 100), 3, {"switch_components": 2}),
     (AllTastePoissonTrialSwitch, (2, 5, 10, 100), 3, {"switch_components": 2}),
 ])
-=======
-@pytest.mark.parametrize(
-    "model_class,data_shape,n_states,extra_args",
-    [
-        (GaussianChangepointMeanVar2D, (10, 100), 3, {}),
-        (GaussianChangepointMeanDirichlet, (10, 100), None, {"max_states": 5}),
-        (GaussianChangepointMean2D, (10, 100), 3, {}),
-        (SingleTastePoissonDirichlet, (5, 10, 100), None, {"max_states": 5}),
-        (SingleTastePoisson, (5, 10, 100), 3, {}),
-        (SingleTastePoissonVarsig, (5, 10, 100), 3, {}),
-        (SingleTastePoissonVarsigFixed, (5, 10, 100), 3, {"inds_span": 1}),
-        (AllTastePoisson, (2, 5, 10, 100), 3, {}),
-        (AllTastePoissonVarsigFixed, (2, 5, 10, 100), 3, {"inds_span": 1}),
-        (SingleTastePoissonTrialSwitch, (5, 10, 100), 3, {"switch_components": 2}),
-        (AllTastePoissonTrialSwitch, (2, 5, 10, 100), 3, {"switch_components": 2}),
-    ],
-)
->>>>>>> 78619ad ([pre-commit.ci] auto fixes from pre-commit.com hooks)
+
 def test_model_initialization(model_class, data_shape, n_states, extra_args):
     """Test that models can be initialized and generate a model."""
     # Generate test data
@@ -122,7 +104,6 @@ def test_model_initialization(model_class, data_shape, n_states, extra_args):
     model = model_instance.generate_model()
     assert model is not None
 
-<<<<<<< HEAD
 # Test the run_all_tests function
 @pytest.mark.slow
 def test_run_all_tests():
@@ -136,25 +117,10 @@ def test_run_all_tests():
         # For full testing, run the function directly
     except ImportError:
         pytest.skip("run_all_tests function not found in changepoint_model module")
-=======
-
-# Test the run_all_tests function (minimal test to avoid long runtime)
-def test_run_all_tests_imports():
-    """Test that run_all_tests can be imported."""
-    from pytau.changepoint_model import run_all_tests
-
-    assert callable(run_all_tests)
->>>>>>> 78619ad ([pre-commit.ci] auto fixes from pre-commit.com hooks)
-
 
 # Test the utility functions
 def test_extract_inferred_values():
     """Test the extract_inferred_values function."""
-<<<<<<< HEAD
-=======
-    from pytau.changepoint_model import extract_inferred_values
-
->>>>>>> 78619ad ([pre-commit.ci] auto fixes from pre-commit.com hooks)
     # Create a mock trace
     class MockTrace:
         def __init__(self):
@@ -169,7 +135,6 @@ def test_extract_inferred_values():
 
     trace = MockTrace()
     result = extract_inferred_values(trace)
-<<<<<<< HEAD
     
     assert 'tau_samples' in result
     assert 'lambda_stack' in result
@@ -185,14 +150,8 @@ def test_advi_fit():
     
     # Skip actual testing as it would require a full PyMC3 model
     pytest.skip("Full testing of advi_fit requires a PyMC3 model")
+
 def test_module_import():
     """Test that the changepoint_model module can be imported."""
     import pytau.changepoint_model
     assert pytau.changepoint_model is not None
-=======
-
-    assert "tau_samples" in result
-    assert "lambda_stack" in result
-    assert result["tau_samples"].shape == trace["tau"].shape
-    assert result["lambda_stack"].shape == (5, 10, 3)  # Swapped axes
->>>>>>> 78619ad ([pre-commit.ci] auto fixes from pre-commit.com hooks)
