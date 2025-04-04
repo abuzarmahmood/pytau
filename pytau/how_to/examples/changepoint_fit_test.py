@@ -1,16 +1,16 @@
-import sys
-
-sys.path.append("/media/bigdata/firing_space_plot/ephys_data")
-sys.path.append("/media/bigdata/firing_space_plot/changepoint_mcmc/v2")
 import ast
 import itertools as it
 import os
+import sys
 
 import numpy as np
 import pandas as pd
 from changepoint_io import fit_handler
 from ephys_data import ephys_data
 from tqdm import tqdm
+
+sys.path.append("/media/bigdata/firing_space_plot/ephys_data")
+sys.path.append("/media/bigdata/firing_space_plot/changepoint_mcmc/v2")
 
 
 def entry_checker(msg, check_func, fail_response):
@@ -29,7 +29,7 @@ def entry_checker(msg, check_func, fail_response):
 
 
 ########################################
-## Specify Things HERE
+# Specify Things HERE
 ########################################
 
 # Define all iterators
@@ -43,7 +43,8 @@ dir_list = [x.strip() for x in open(dir_list_path, "r").readlines()]
 # Exp params
 # NOTE :: EVERYTHING needs to be a list
 # Except time_lims which has to be a list of lists
-exp_model_parameters = {"states": [2, 3, 4], "fit": [40000], "samples": [20000]}
+exp_model_parameters = {"states": [2, 3, 4],
+                        "fit": [40000], "samples": [20000]}
 
 exp_preprocess_parameters = {
     "time_lims": [[2000, 4000]],
@@ -96,7 +97,8 @@ for num, this_iter in iter_frame.iterrows():
         globals()[key] = val
 
     # Define arguments/parameters
-    model_parameters = dict(zip(["states", "fit", "samples"], [states, fit, samples]))
+    model_parameters = dict(
+        zip(["states", "fit", "samples"], [states, fit, samples]))
     preprocess_parameters = dict(
         zip(
             ["time_lims", "bin_width", "data_transform"],
@@ -116,8 +118,7 @@ for num, this_iter in iter_frame.iterrows():
     handler.set_preprocess_params(**preprocess_parameters)
 
     error_file_path = os.path.join(
-        handler.database_handler.model_save_dir, "error_log_file.txt"
-    )
+        handler.database_handler.model_save_dir, "error_log_file.txt")
 
     try:
         handler.run_inference()

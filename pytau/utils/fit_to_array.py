@@ -14,17 +14,17 @@ from glob import glob
 import numpy as np
 import pandas as pd
 import pingouin as pg
+import pymc3
 import seaborn as sns
+import theano
 from tqdm import tqdm, trange
+
+from pytau import changepoint_model, changepoint_preprocess
+from pytau.utils import EphysData
 
 base_dir = "/media/bigdata/projects/pytau"
 sys.path.append(base_dir)
 
-import pymc3
-import theano
-
-from pytau import changepoint_model, changepoint_preprocess
-from pytau.utils import EphysData
 
 for ind in trange(len(quin_clust_flat)):
     data = quin_clust_flat[ind]
@@ -35,8 +35,7 @@ for ind in trange(len(quin_clust_flat)):
 
     model_params = dict(zip(model_parameters_keys, model_parameters_values))
     preprocess_params = dict(
-        zip(preprocess_parameters_keys, preprocess_parameters_values)
-    )
+        zip(preprocess_parameters_keys, preprocess_parameters_values))
 
     preprocessor = changepoint_preprocess.preprocess_single_taste
     model_template = changepoint_model.single_taste_poisson
@@ -48,7 +47,8 @@ for ind in trange(len(quin_clust_flat)):
         preprocessed_data, model_params["states"], **model_params["model_kwargs"]
     )
 
-    temp_outs = inference_func(model, model_params["fit"], model_params["samples"])
+    temp_outs = inference_func(
+        model, model_params["fit"], model_params["samples"])
     varnames = ["model", "approx", "lambda", "tau", "data"]
     inference_outs = dict(zip(varnames, temp_outs))
 

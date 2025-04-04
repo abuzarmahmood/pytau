@@ -1,12 +1,16 @@
-## Import modules
-base_dir = "/media/bigdata/projects/pytau"
+# Import modules
 import sys
 
-sys.path.append(base_dir)
 import pylab as plt
 
-from pytau.changepoint_io import FitHandler
+from pytau.changepoint_analysis import PklHandler
+from pytau.changepoint_io import DatabaseHandler, FitHandler
 from pytau.utils import plotting
+
+base_dir = "/media/bigdata/projects/pytau"
+
+sys.path.append(base_dir)
+
 
 # Specify params for fit
 model_parameters = dict(
@@ -30,7 +34,7 @@ FitHandler_kwargs = dict(
     experiment_name=["pytau_test"],
 )
 
-## Initialize handler, and feed paramters
+# Initialize handler, and feed paramters
 handler = FitHandler(**FitHandler_kwargs)
 handler.set_model_params(**model_parameters)
 handler.set_preprocess_params(**preprocess_parameters)
@@ -50,7 +54,6 @@ inference_outs = handler.inference_outs
 # data : Data used for inference
 
 # Can also get path to pkl file from model database
-from pytau.changepoint_io import DatabaseHandler
 
 fit_database = DatabaseHandler()
 fit_database.drop_duplicates()
@@ -63,7 +66,7 @@ wanted_frame = dframe.loc[dframe["exp.exp_name"] == wanted_exp_name]
 # Pull out a single data_directory
 pkl_path = wanted_frame["exp.save_path"].iloc[0]
 
-## Information saved in model database
+# Information saved in model database
 # preprocess.time_lims
 # preprocess.bin_width
 # preprocess.data_transform
@@ -89,7 +92,6 @@ pkl_path = wanted_frame["exp.save_path"].iloc[0]
 # module.theano_version
 
 # From saved pkl file
-from pytau.changepoint_analysis import PklHandler
 
 this_handler = PklHandler(pkl_path)
 # Can access following attributes
@@ -118,7 +120,8 @@ fig, ax = plotting.plot_elbo_history(fit_model)
 plt.show()
 
 # Overlay raster plot with states
-fig, ax = plotting.plot_changepoint_raster(spike_train, scaled_mode_tau, [1500, 4000])
+fig, ax = plotting.plot_changepoint_raster(
+    spike_train, scaled_mode_tau, [1500, 4000])
 plt.show()
 
 # Overview of changepoint positions

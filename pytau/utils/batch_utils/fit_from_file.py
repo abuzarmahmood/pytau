@@ -1,19 +1,23 @@
+import argparse
 import os
 import sys
-
-base_dir = "/media/bigdata/projects/pytau"
-# sys.path.append(os.path.join(base_dir, 'utils'))
-sys.path.append(base_dir)
-import argparse
 
 import numpy as np
 import pandas as pd
 
-# from ephys_data import EphysData
 from pytau.changepoint_io import FitHandler
 
-parser = argparse.ArgumentParser(description="Run single fit with parameters from file")
-parser.add_argument("param_path_file", help="JSON file containing parameters for fit")
+base_dir = "/media/bigdata/projects/pytau"
+# sys.path.append(os.path.join(base_dir, 'utils'))
+sys.path.append(base_dir)
+
+
+# from ephys_data import EphysData
+
+parser = argparse.ArgumentParser(
+    description="Run single fit with parameters from file")
+parser.add_argument("param_path_file",
+                    help="JSON file containing parameters for fit")
 args = parser.parse_args()
 # parallel_temp_path = '/media/bigdata/pytau/pytau/v2/parallel_temp'
 
@@ -41,25 +45,23 @@ def fit_func(input_params):
     ]
 
     model_parameters = dict(
-        zip(model_parameters_keys, input_params[model_parameters_keys].iloc[0])
-    )
+        zip(model_parameters_keys, input_params[model_parameters_keys].iloc[0]))
     preprocess_parameters = dict(
-        zip(
-            preprocess_parameters_keys, input_params[preprocess_parameters_keys].iloc[0]
-        )
+        zip(preprocess_parameters_keys,
+            input_params[preprocess_parameters_keys].iloc[0])
     )
     FitHandler_kwargs = dict(
-        zip(FitHandler_kwargs_keys, input_params[FitHandler_kwargs_keys].iloc[0])
+        zip(FitHandler_kwargs_keys,
+            input_params[FitHandler_kwargs_keys].iloc[0])
     )
 
-    ## Initialize handler, and feed paramters
+    # Initialize handler, and feed paramters
     handler = FitHandler(**FitHandler_kwargs)
     handler.set_model_params(**model_parameters)
     handler.set_preprocess_params(**preprocess_parameters)
 
     error_file_path = os.path.join(
-        handler.database_handler.model_save_dir, "error_log_file.txt"
-    )
+        handler.database_handler.model_save_dir, "error_log_file.txt")
 
     try:
         handler.run_inference()

@@ -4,18 +4,20 @@ Test to make sure that the pipeline properly extracts laser vs non-laser trials
 
 import os
 import sys
-
-base_dir = "/media/bigdata/projects/pytau"
-# sys.path.append(os.path.join(base_dir, 'utils'))
-sys.path.append(base_dir)
 from glob import glob
 
 import numpy as np
 import pandas as pd
 import tables
 
-# from ephys_data import EphysData
 from pytau.changepoint_io import FitHandler
+
+base_dir = "/media/bigdata/projects/pytau"
+# sys.path.append(os.path.join(base_dir, 'utils'))
+sys.path.append(base_dir)
+
+
+# from ephys_data import EphysData
 
 data_dir = "/media/fastdata/NM_sorted_data/NM51/NM51_500ms_161029_132459"
 h5_path = glob(os.path.join(data_dir, "*.h5"))[0]
@@ -34,10 +36,11 @@ FitHandler_kwargs_keys = [
 FitHandler_kwargs = [data_dir, 0, "gc", "EMG_analysis", "on"]
 
 model_parameters = dict(zip(model_parameters_keys, model_parameters))
-preprocess_parameters = dict(zip(preprocess_parameters_keys, preprocess_parameters))
+preprocess_parameters = dict(
+    zip(preprocess_parameters_keys, preprocess_parameters))
 FitHandler_kwargs = dict(zip(FitHandler_kwargs_keys, FitHandler_kwargs))
 
-## Initialize handler, and feed paramters
+# Initialize handler, and feed paramters
 handler = FitHandler(**FitHandler_kwargs)
 handler.set_model_params(**model_parameters)
 handler.set_preprocess_params(**preprocess_parameters)
@@ -48,7 +51,7 @@ loaded_on = handler.data
 ########################################
 FitHandler_kwargs = [data_dir, 0, "gc", "EMG_analysis", None]
 FitHandler_kwargs = dict(zip(FitHandler_kwargs_keys, FitHandler_kwargs))
-## Initialize handler, and feed paramters
+# Initialize handler, and feed paramters
 handler = FitHandler(**FitHandler_kwargs)
 handler.set_model_params(**model_parameters)
 handler.set_preprocess_params(**preprocess_parameters)

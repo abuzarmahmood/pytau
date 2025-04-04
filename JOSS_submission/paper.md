@@ -13,7 +13,7 @@ authors:
 affiliations:
  - name: Swartz Foundational Computational Neuroscience Fellow, Volen Center for Complex Systems, Brandeis University, Waltham, MA, USA
    index: 1
- - name: Department of Psychology, Brandeis University, Waltham, MA, USA 
+ - name: Department of Psychology, Brandeis University, Waltham, MA, USA
    index: 2
 date: 30 March 2025
 bibliography: paper.bib
@@ -145,7 +145,7 @@ from pytau.utils.plotting import plot_changepoint_raster, plot_state_firing_rate
 
 # Plot spike rasters with changepoint overlays
 fig, ax = plt.subplots(figsize=(10, 6))
-plot_changepoint_raster(pkl_handler.processed_spikes, pkl_handler.tau.scaled_mode_tau, 
+plot_changepoint_raster(pkl_handler.processed_spikes, pkl_handler.tau.scaled_mode_tau,
                         plot_lims=[0, 2000])
 
 # Plot state-dependent firing rates

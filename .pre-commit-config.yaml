@@ -12,6 +12,11 @@ repos:
     -   id: detect-private-key
     -   id: check-toml
     -   id: debug-statements
+    -   id: pretty-format-json
+        args:
+            - "--autofix"
+            - "--indent=4"
+            - "--no-sort-keys"
 
 -   repo: https://github.com/pycqa/flake8
     rev: 6.0.0
@@ -32,9 +37,9 @@ repos:
     -   id: black
         args: ['--line-length=100']
 
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.3.0
+-   repo: https://github.com/hhatto/autopep8
+    rev: v2.3.1  # select the tag or revision you want, or run `pre-commit autoupdate`
     hooks:
-    -   id: mypy
-        additional_dependencies: [types-all]
-        args: ['--ignore-missing-imports']
+    -   id: autopep8
+        args:
+            - "--in-place"

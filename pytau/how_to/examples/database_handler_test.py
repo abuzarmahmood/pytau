@@ -1,9 +1,10 @@
 import sys
 
-sys.path.append("/media/bigdata/firing_space_plot/ephys_data")
-sys.path.append("/media/bigdata/firing_space_plot/changepoint_mcmc/v2")
 from changepoint_io import database_handler
 from ephys_data import ephys_data
+
+sys.path.append("/media/bigdata/firing_space_plot/ephys_data")
+sys.path.append("/media/bigdata/firing_space_plot/changepoint_mcmc/v2")
 
 fit_database = database_handler()
 fit_database.drop_duplicates()

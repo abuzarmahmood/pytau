@@ -15,7 +15,9 @@ CLASSIFIERS = [
 DISTNAME = "pytau"
 AUTHOR = "Abuzar Mahmood"
 AUTHOR_EMAIL = "abuzarmahmood@gmail.com"
-DESCRIPTION = "Simple package to perform streamlined, batched inference on pymc3-based changepoint models."
+DESCRIPTION = (
+    "Simple package to perform streamlined, batched inference on pymc3-based changepoint models."
+)
 LICENSE = "MIT"
 README = "Streamlined batch inference on changepoint models"
 
@@ -28,10 +30,7 @@ PYTHON_REQUIRES = f">={PYTHON_MIN_VERSION}, <={PYTHON_MAX_VERSION}"
 
 INSTALL_REQUIRES = ["pymc3", "numpy", "theano", "tqdm"]
 
-TESTS_REQUIRE = [
-    'pytest',
-    'pytest-cov'
-]
+TESTS_REQUIRE = ["pytest", "pytest-cov"]
 
 PACKAGES = [
     "pytau",
@@ -45,7 +44,7 @@ metadata = dict(
     python_requires=PYTHON_REQUIRES,
     install_requires=INSTALL_REQUIRES,
     tests_require=TESTS_REQUIRE,
-    extras_require={'test': TESTS_REQUIRE},
+    extras_require={"test": TESTS_REQUIRE},
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
     description=DESCRIPTION,

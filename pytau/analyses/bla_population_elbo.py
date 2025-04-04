@@ -1,9 +1,6 @@
-import sys
-
-sys.path.append("/media/bigdata/firing_space_plot/ephys_data")
-sys.path.append("/media/bigdata/projects/pytau")
 import itertools as it
 import os
+import sys
 
 import matplotlib as mpl
 import matplotlib.patches as mpatches
@@ -11,8 +8,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pingouin as pg
-
-# from joblib import Parallel, cpu_count, delayed
 import seaborn as sns
 import visualize as vz
 from ephys_data import ephys_data
@@ -23,6 +18,13 @@ from tqdm import tqdm, trange
 
 from pytau.changepoint_analysis import PklHandler
 from pytau.changepoint_io import DatabaseHandler
+
+sys.path.append("/media/bigdata/firing_space_plot/ephys_data")
+sys.path.append("/media/bigdata/projects/pytau")
+
+
+# from joblib import Parallel, cpu_count, delayed
+
 
 # def parallelize(func, iterator):
 #    return Parallel(n_jobs = cpu_count()-2)\
@@ -40,23 +42,24 @@ wanted_exp_name = "bla_population_elbo_repeat"
 wanted_frame = dframe.loc[dframe["exp.exp_name"] == wanted_exp_name]
 # wanted_frame = wanted_frame.loc[wanted_frame['model.states'] == 4]
 
-wanted_frame = pd.read_json(os.path.join(data_dir, "bla_population_elbo_repeat.json"))
+wanted_frame = pd.read_json(os.path.join(
+    data_dir, "bla_population_elbo_repeat.json"))
 #        os.path.join(data_dir, 'bla_inter_elbo.json'))
 
 # Thin out recordings to avoid over-representation bias
 wanted_counts = [4, 5]
 wanted_basenames = []
 for num, val in enumerate(wanted_counts):
-    this_basenames = wanted_frame.groupby("data.animal_name")["data.basename"].unique()[
-        num
-    ][:val]
+    this_basenames = wanted_frame.groupby("data.animal_name")[
+        "data.basename"].unique()[num][:val]
     wanted_basenames.append(this_basenames)
 wanted_basenames = [x for y in wanted_basenames for x in y]
-wanted_frame = wanted_frame[wanted_frame["data.basename"].isin(wanted_basenames)]
+wanted_frame = wanted_frame[wanted_frame["data.basename"].isin(
+    wanted_basenames)]
 
 # grouped_frame = list(wanted_frame.groupby('module.pymc3_version'))
-##grouped_frame = [x[1] for x in grouped_frame]
-##grouped_paths = [x[1]['exp.save_path'] for x in grouped_frame]
+# grouped_frame = [x[1] for x in grouped_frame]
+# grouped_paths = [x[1]['exp.save_path'] for x in grouped_frame]
 #
 # file_list = list(wanted_frame['exp.save_path'])
 #
@@ -102,9 +105,8 @@ wanted_columns = [
 ]
 analysis_frame = wanted_frame[wanted_columns].reset_index(drop=True)
 # Remove 2 Taste sessions
-analysis_frame = analysis_frame[
-    ~analysis_frame["data.basename"].str.contains("2Tastes")
-]
+analysis_frame = analysis_frame[~analysis_frame["data.basename"].str.contains(
+    "2Tastes")]
 # Remove simulated models
 analysis_frame = analysis_frame[
     ~analysis_frame["preprocess.data_transform"].str.contains("simulated")
@@ -115,18 +117,19 @@ grouped_frame = list(analysis_frame.groupby("data.basename"))
 for num, this_frame in grouped_frame:
     this_frame["zscore_elbo"] = zscore(this_frame["model_elbo"])
     this_frame["rank_elbo"] = np.argsort(this_frame["model_elbo"])
-analysis_frame = pd.concat([x[1] for x in grouped_frame]).reset_index(drop=True)
+analysis_frame = pd.concat(
+    [x[1] for x in grouped_frame]).reset_index(drop=True)
 analysis_frame["line_states"] = analysis_frame["model.states"] - 2
 
-## Plot all animals
+# Plot all animals
 # g = sns.relplot(data = analysis_frame,
 #            x = 'model.states', y = 'model_elbo',
 #            hue = 'preprocess.data_transform', col = 'data.basename',
 #            style = 'preprocess.data_transform',
 #            col_wrap = 4, kind = 'line', markers =True,
 #            facet_kws={'sharey': False, 'sharex': True})
-##plt.suptitle('ELBO per animal, per shuffle')
-##plt.tight_layout()
+# plt.suptitle('ELBO per animal, per shuffle')
+# plt.tight_layout()
 # plt.show()
 
 # ANOVA
@@ -136,7 +139,8 @@ anova_results = pg.rm_anova(
     within=["model.states", "preprocess.data_transform"],
     subject="data.basename",
 )
-anova_results.to_csv(os.path.join(data_dir, f"two_way_rm_anova_{wanted_exp_name}.csv"))
+anova_results.to_csv(os.path.join(
+    data_dir, f"two_way_rm_anova_{wanted_exp_name}.csv"))
 
 hue_order = ["None", "spike_shuffled", "trial_shuffled"]
 # Scatter
@@ -165,7 +169,8 @@ g = sns.lineplot(
     hue_order=hue_order,
     linewidth=2,
 )
-plt.suptitle(wanted_exp_name + "\n" + "Zscored ELBO across datasets, mean +/- SD")
+plt.suptitle(wanted_exp_name + "\n" +
+             "Zscored ELBO across datasets, mean +/- SD")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
 plt.tight_layout()
 plt.xlabel("Model States")
@@ -199,7 +204,8 @@ for num, dat in grouped_frame:
     #                                'rank_elbo', 'zscore_elbo']])
 
 fin_rank_frame = pd.concat(frame_slices)
-median_ranks = fin_rank_frame.groupby(["transform", "states"]).median().reset_index()
+median_ranks = fin_rank_frame.groupby(
+    ["transform", "states"]).median().reset_index()
 median_ranks["plot_states"] = median_ranks["states"] - 1.5
 
 #
@@ -210,7 +216,8 @@ median_ranks["plot_states"] = median_ranks["states"] - 1.5
 # plt.show()
 
 # Convert to matrix
-rank_wide = fin_rank_frame.pivot(index="rank", columns="states", values="transform")
+rank_wide = fin_rank_frame.pivot(
+    index="rank", columns="states", values="transform")
 
 type_map = {"None": 0, "trial_shuffled": 1, "spike_shuffled": 2}
 rank_array = rank_wide.to_numpy()
@@ -232,10 +239,10 @@ fig, ax = plt.subplots(figsize=(5, 7))
 heatmap = ax.pcolor(num_rank_array, cmap=cmap, edgecolors="w", linewidth=1)
 patch_list = []
 for label, color_val in type_map.items():
-    patch_list.append(
-        mpatches.Patch(color=plt.cm.viridis(norm(color_val)), label=label)
-    )
-ax.legend(handles=patch_list, bbox_to_anchor=(0.5, 1.1), ncol=3, loc="upper center")
+    patch_list.append(mpatches.Patch(
+        color=plt.cm.viridis(norm(color_val)), label=label))
+ax.legend(handles=patch_list, bbox_to_anchor=(
+    0.5, 1.1), ncol=3, loc="upper center")
 ax.set_xlabel("Number of states")
 ax.set_ylabel("ELBO Rank")
 ax.set_xticks(ticks=np.arange(len(x)) + 0.5)  # , labels = x)
@@ -263,9 +270,8 @@ sns.lineplot(
     legend=False,
 )
 # plt.show()
-fig.savefig(
-    os.path.join(data_dir, f"{wanted_exp_name}_elbo_ranks.svg"), format="svg", dpi=300
-)
+fig.savefig(os.path.join(
+    data_dir, f"{wanted_exp_name}_elbo_ranks.svg"), format="svg", dpi=300)
 plt.close(fig)
 
 # g = sns.lineplot(data = analysis_frame,
@@ -283,13 +289,15 @@ plt.close(fig)
 # For actual data, determine state number with highest rank
 # For each session, get ranks for ELBO
 actual_dat = analysis_frame[analysis_frame["preprocess.data_transform"] == "None"]
-actual_dat["state_ranks"] = actual_dat.groupby("data.basename")["model_elbo"].rank()
+actual_dat["state_ranks"] = actual_dat.groupby("data.basename")[
+    "model_elbo"].rank()
 # Calculate median rank for each state
 median_state_ranks = actual_dat.groupby("model.states")["state_ranks"].median()
 
 
 fig, ax = plt.subplots(figsize=(3, 2))
-sns.swarmplot(data=actual_dat, x="model.states", y="state_ranks", ax=ax, color="grey")
+sns.swarmplot(data=actual_dat, x="model.states",
+              y="state_ranks", ax=ax, color="grey")
 # jitter = 0.25, ax=ax)
 sns.lineplot(
     data=median_state_ranks,
@@ -308,9 +316,8 @@ plt.ylabel("Model Ranks")
 plt.suptitle(f"Exp : {wanted_exp_name}" + "_State Rankings")
 plt.tight_layout()
 # plt.show()
-fig.savefig(
-    os.path.join(data_dir, f"{wanted_exp_name}_state_ranks.svg"), format="svg", dpi=300
-)
+fig.savefig(os.path.join(
+    data_dir, f"{wanted_exp_name}_state_ranks.svg"), format="svg", dpi=300)
 plt.close(fig)
 # plt.legend()
 

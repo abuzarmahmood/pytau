@@ -73,9 +73,8 @@ def plot_changepoint_raster(spike_array, tau, plot_lims=None):
     cmap = plt.cm.get_cmap("tab10")
     n_trials, n_neurons, n_bins = spike_array.shape
     n_states = tau.shape[1] + 1
-    fig, ax = plt.subplots(
-        n_trials, 1, figsize=(15, 5 * n_trials), sharex=True, sharey=True
-    )
+    fig, ax = plt.subplots(n_trials, 1, figsize=(
+        15, 5 * n_trials), sharex=True, sharey=True)
     for trial in range(n_trials):
         raster(spike_array[trial], ax=ax[trial])
         if trial == n_trials - 1:
@@ -83,20 +82,21 @@ def plot_changepoint_raster(spike_array, tau, plot_lims=None):
             ax[trial].set_ylabel("Nrn #")
         if plot_lims is not None:
             ax[trial].set_xlim(plot_lims)
-            ax[trial].text(plot_lims[1] + 10, 0.5 * n_neurons, "Trial {}".format(trial))
+            ax[trial].text(plot_lims[1] + 10, 0.5 * n_neurons,
+                           "Trial {}".format(trial))
         else:
-            ax[trial].text(n_bins + 10, 0.5 * n_neurons, "Trial {}".format(trial))
+            ax[trial].text(n_bins + 10, 0.5 * n_neurons,
+                           "Trial {}".format(trial))
         for change in range(n_states - 1):
-            ax[trial].axvline(
-                tau[trial, change], color="r", linestyle="--", linewidth=2
-            )
+            ax[trial].axvline(tau[trial, change], color="r",
+                              linestyle="--", linewidth=2)
         for state in range(n_states):
             if state == 0:
-                ax[trial].axvspan(0, tau[trial, state], color=cmap(state), alpha=0.2)
+                ax[trial].axvspan(0, tau[trial, state],
+                                  color=cmap(state), alpha=0.2)
             elif state == n_states - 1:
-                ax[trial].axvspan(
-                    tau[trial, state - 1], n_bins, color=cmap(state), alpha=0.2
-                )
+                ax[trial].axvspan(tau[trial, state - 1], n_bins,
+                                  color=cmap(state), alpha=0.2)
             else:
                 ax[trial].axvspan(
                     tau[trial, state - 1],
@@ -120,16 +120,17 @@ def plot_changepoint_overview(tau, plot_lims):
     for trial in range(n_trials):
         for state in range(n_states):
             if state == 0:
-                state_durations[trial, plot_lims[0] : tau[trial, state]] = state
+                state_durations[trial, plot_lims[0]: tau[trial, state]] = state
             elif state == n_states - 1:
-                state_durations[trial, tau[trial, state - 1] : plot_lims[1]] = state
+                state_durations[trial, tau[trial, state - 1]
+                    : plot_lims[1]] = state
             else:
-                state_durations[
-                    trial, tau[trial, state - 1] : tau[trial, state]
-                ] = state
+                state_durations[trial, tau[trial, state - 1]
+                    : tau[trial, state]] = state
 
     fig, ax = plt.subplots(2, 1, figsize=(15, 10), sharex=True)
-    ax[0].pcolormesh(np.arange(plot_lims[1]), np.arange(n_trials), state_durations)
+    ax[0].pcolormesh(np.arange(plot_lims[1]),
+                     np.arange(n_trials), state_durations)
     ax[0].set_xlim(plot_lims)
     ax[0].set_ylabel("Trial")
     ax[0].set_xlabel("State")
@@ -162,11 +163,12 @@ def plot_aligned_state_firing(spike_array, tau, window_radius=300):
     n_transitions = tau.shape[1]
     transitions_firing = get_transition_snips(spike_array, tau, window_radius)
     p_val_array, significant_neurons = calc_significant_neurons_snippets(
-        transitions_firing
-    )
-    fig, ax = plt.subplots(1, n_transitions, figsize=(15, 5), sharex=True, sharey=True)
+        transitions_firing)
+    fig, ax = plt.subplots(1, n_transitions, figsize=(
+        15, 5), sharex=True, sharey=True)
     for transitions in range(n_transitions):
-        raster(transitions_firing[..., transitions].sum(axis=0), ax=ax[transitions])
+        raster(transitions_firing[..., transitions].sum(
+            axis=0), ax=ax[transitions])
         ax[transitions].set_title("Transition {}".format(transitions))
         ax[transitions].set_xlabel("Time")
         ax[transitions].set_ylabel("Neuron")
@@ -174,8 +176,7 @@ def plot_aligned_state_firing(spike_array, tau, window_radius=300):
         for neuron in range(n_neurons):
             if significant_neurons[neuron, transitions]:
                 ax[transitions].axhspan(
-                    neuron - 0.5, neuron + 0.5, color="y", alpha=0.5, zorder=10
-                )
+                    neuron - 0.5, neuron + 0.5, color="y", alpha=0.5, zorder=10)
     return fig, ax
 
 
@@ -190,16 +191,14 @@ def plot_state_firing_rates(spike_array, tau):
     # shape (n_trials, n_states, n_neurons)
     state_firing_rates = get_state_firing(spike_array, tau)
     # shape (n_states, n_neurons)
-    mean_state_firing, std_state_firing = state_firing_rates.mean(
+    mean_state_firing, std_state_firing = state_firing_rates.mean(axis=0), state_firing_rates.std(
         axis=0
-    ), state_firing_rates.std(axis=0)
+    )
     p_val_array, significant_neurons = calc_significant_neurons_firing(
-        state_firing_rates
-    )
+        state_firing_rates)
     n_trials, n_states, n_neurons = state_firing_rates.shape
-    fig, ax = plt.subplots(
-        n_states, 1, figsize=(10, 3 * n_states), sharex=True, sharey=True
-    )
+    fig, ax = plt.subplots(n_states, 1, figsize=(
+        10, 3 * n_states), sharex=True, sharey=True)
     for state in range(n_states):
         ax[state].bar(
             np.arange(n_neurons),
@@ -222,19 +221,16 @@ def plot_state_firing_rates(spike_array, tau):
         ax[state].set_xticklabels(np.arange(n_neurons))
         for neuron in range(n_neurons):
             if neuron in significant_neurons:
-                upper_lim = (
-                    mean_state_firing[state, neuron] + std_state_firing[state, neuron]
-                )
+                upper_lim = mean_state_firing[state,
+                                              neuron] + std_state_firing[state, neuron]
                 # ax[state].text(neuron, 1.1*upper_lim,
                 #               '*', horizontalalignment='center')
-                ax[state].axvspan(
-                    neuron - 0.5, neuron + 0.5, color="y", alpha=0.5, zorder=10
-                )
+                ax[state].axvspan(neuron - 0.5, neuron + 0.5,
+                                  color="y", alpha=0.5, zorder=10)
     ax[n_states - 1].set_xlabel("Neuron")
     fig.suptitle(
-        "Firing rate per state"
-        + "\n"
-        + "Highlight = Significance (with Bonf Correction, p < 0.05)"
+        "Firing rate per state" + "\n" +
+        "Highlight = Significance (with Bonf Correction, p < 0.05)"
     )
     plt.tight_layout()
     return fig, ax
