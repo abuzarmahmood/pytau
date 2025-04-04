@@ -9,12 +9,12 @@ tags:
 authors:
   - name: Abuzar Mahmood
     orcid: 0000-0002-2448-4818
-    affiliation: 1
-  - name: Donald Katz
-    orcid: 0000-0002-8444-6063 
+    affiliation: "1,2"
 affiliations:
- - name: Department of Psychology, Brandeis University, Waltham, MA, USA 
+ - name: Swartz Foundational Computational Neuroscience Fellow, Volen Center for Complex Systems, Brandeis University, Waltham, MA, USA
    index: 1
+ - name: Department of Psychology, Brandeis University, Waltham, MA, USA 
+   index: 2
 date: 30 March 2025
 bibliography: paper.bib
 ---
