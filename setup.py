@@ -8,7 +8,9 @@ CLASSIFIERS = [
 "Intended Audience :: Science/Research",
 "Topic :: Scientific/Engineering",
 "Topic :: Scientific/Engineering :: Mathematics",
-"Operating System :: OS Independent"
+"Operating System :: OS Independent",
+"Framework :: tox",
+"Framework :: Pytest"
 ]
 
 DISTNAME = 'pytau'
@@ -26,7 +28,15 @@ PYTHON_MAX_VERSION = '3.6.10'
 PYTHON_REQUIRES = f'>={PYTHON_MIN_VERSION}, <={PYTHON_MAX_VERSION}'
 
 INSTALL_REQUIRES = [
-    'pymc3'
+    'pymc3',
+    'numpy',
+    'theano',
+    'tqdm'
+]
+
+TESTS_REQUIRE = [
+    'pytest',
+    'pytest-cov'
 ]
 
 PACKAGES = [
@@ -40,6 +50,8 @@ metadata = dict(
     packages=PACKAGES,
     python_requires=PYTHON_REQUIRES,
     install_requires=INSTALL_REQUIRES,
+    tests_require=TESTS_REQUIRE,
+    extras_require={'test': TESTS_REQUIRE},
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
     description=DESCRIPTION,

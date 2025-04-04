@@ -1766,3 +1766,65 @@ def mcmc_fit(model, samples):
         mu_stack = trace['mu'].swapaxes(0, 1)
         sigma_stack = trace['sigma'].swapaxes(0, 1)
         return model, trace, mu_stack, sigma_stack, tau_samples, model.obs.observations
+
+
+######################################################################
+# Run Inference
+######################################################################
+
+
+def run_all_tests():
+    """Run tests for all model classes"""
+    # Create test data
+    test_data_2d = gen_test_array((10, 100), n_states=3, type='normal')
+    test_data_3d = gen_test_array((5, 10, 100), n_states=3, type='poisson')
+    test_data_4d = gen_test_array((2, 5, 10, 100), n_states=3, type='poisson')
+    
+    # Test each model class
+    models_to_test = [
+        GaussianChangepointMeanVar2D(test_data_2d, 3),
+        GaussianChangepointMeanDirichlet(test_data_2d, 5),
+        GaussianChangepointMean2D(test_data_2d, 3),
+        SingleTastePoissonDirichlet(test_data_3d, 5),
+        SingleTastePoisson(test_data_3d, 3),
+        SingleTastePoissonVarsig(test_data_3d, 3),
+        SingleTastePoissonVarsigFixed(test_data_3d, 3, 1),
+        SingleTastePoissonTrialSwitch(test_data_3d, 2, 3),
+        AllTastePoisson(test_data_4d, 3),
+        AllTastePoissonVarsigFixed(test_data_4d, 3, 1),
+        AllTastePoissonTrialSwitch(test_data_4d, 2, 3)
+    ]
+    
+    failed_tests = []
+    pbar = tqdm(models_to_test, total=len(models_to_test))
+    for model in pbar:
+        try:
+            model.test()
+            pbar.set_description(f"Test passed for {model.__class__.__name__}")
+        except Exception as e:
+            failed_tests.append(model.__class__.__name__)
+            print(f"Test failed for {model.__class__.__name__}: {str(e)}")
+    
+    print("All tests completed")
+    if failed_tests:
+        print("Failed tests:", failed_tests)
+
+
+def extract_inferred_values(trace):
+    """Convenience function to extract inferred values from ADVI fit
+
+    Args:
+        trace (dict): trace
+
+    Returns:
+        dict: dictionary of inferred values
+    """
+    # Extract relevant variables from trace
+    out_dict = dict(
+        tau_samples=trace['tau'])
+    if 'lambda' in trace.varnames:
+        out_dict['lambda_stack'] = trace['lambda'].swapaxes(0, 1)
+    if 'mu' in trace.varnames:
+        out_dict['mu_stack'] = trace['mu'].swapaxes(0, 1)
+        out_dict['sigma_stack'] = trace['sigma'].swapaxes(0, 1)
+    return out_dict
