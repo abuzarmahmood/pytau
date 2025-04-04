@@ -587,16 +587,16 @@ class SingleTastePoisson(ChangepointModel):
     ** Note : This model does not have hierarchical structure for emissions
     """
 
-    def __init__(self, data_array, states, **kwargs):
+    def __init__(self, data_array, n_states, **kwargs):
         """
         Args:
             data_array (3D Numpy array): trials x neurons x time
-            states (int): Number of states to model
+            n_states (int): Number of states to model
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
         self.data_array = data_array
-        self.states = states
+        self.n_states = n_states
 
     def generate_model(self):
         """
@@ -604,10 +604,10 @@ class SingleTastePoisson(ChangepointModel):
             pymc3 model: Model class containing graph to run inference on
         """
         data_array = self.data_array
-        states = self.states
+        n_states = self.n_states
 
         mean_vals = np.array(
-            [np.mean(x, axis=-1) for x in np.array_split(data_array, states, axis=-1)]
+            [np.mean(x, axis=-1) for x in np.array_split(data_array, n_states, axis=-1)]
         ).T
         mean_vals = np.mean(mean_vals, axis=1)
         mean_vals += 0.01  # To avoid zero starting prob
@@ -619,19 +619,19 @@ class SingleTastePoisson(ChangepointModel):
 
         with pm.Model() as model:
             lambda_latent = pm.Exponential(
-                "lambda", 1 / mean_vals, shape=(nrns, states)
+                "lambda", 1 / mean_vals, shape=(nrns, n_states)
             )
 
-            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=states - 1)
-            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=states - 1)
+            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
 
-            even_switches = np.linspace(0, 1, states + 1)[1:-1]
+            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
             tau_latent = pm.Beta(
                 "tau_latent",
                 a_tau,
                 b_tau,
                 testval=even_switches,
-                shape=(trials, states - 1),
+                shape=(trials, n_states - 1),
             ).sort(axis=-1)
 
             tau = pm.Deterministic(
@@ -656,10 +656,10 @@ class SingleTastePoisson(ChangepointModel):
     def test(self):
         """Test the model with synthetic data"""
         # Generate test data
-        test_data = gen_test_array((5, 10, 100), n_states=self.states, type="poisson")
+        test_data = gen_test_array((5, 10, 100), n_states=self.n_states, type="poisson")
 
         # Create model with test data
-        test_model = SingleTastePoisson(test_data, self.states)
+        test_model = SingleTastePoisson(test_data, self.n_states)
         model = test_model.generate_model()
 
         # Run a minimal inference to verify model works
@@ -678,9 +678,9 @@ class SingleTastePoisson(ChangepointModel):
 
 
 # For backward compatibility
-def single_taste_poisson(data_array, states, **kwargs):
+def single_taste_poisson(data_array, n_states, **kwargs):
     """Wrapper function for backward compatibility"""
-    model_class = SingleTastePoisson(data_array, states, **kwargs)
+    model_class = SingleTastePoisson(data_array, n_states, **kwargs)
     return model_class.generate_model()
 
 
@@ -708,16 +708,16 @@ class SingleTastePoissonVarsig(ChangepointModel):
     ** Note : This model does not have hierarchical structure for emissions
     """
 
-    def __init__(self, data_array, states, **kwargs):
+    def __init__(self, data_array, n_states, **kwargs):
         """
         Args:
             data_array (3D Numpy array): trials x neurons x time
-            states (int): Number of states to model
+            n_states (int): Number of states to model
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
         self.data_array = data_array
-        self.states = states
+        self.n_states = n_states
 
     def generate_model(self):
         """
@@ -725,16 +725,16 @@ class SingleTastePoissonVarsig(ChangepointModel):
             pymc3 model: Model class containing graph to run inference on
         """
         data_array = self.data_array
-        states = self.states
+        n_states = self.n_states
 
         mean_vals = np.array(
-            [np.mean(x, axis=-1) for x in np.array_split(data_array, states, axis=-1)]
+            [np.mean(x, axis=-1) for x in np.array_split(data_array, n_states, axis=-1)]
         ).T
         mean_vals = np.mean(mean_vals, axis=1)
         mean_vals += 0.01  # To avoid zero starting prob
 
         lambda_test_vals = np.diff(mean_vals, axis=-1)
-        even_switches = np.linspace(0, 1, states + 1)[1:-1]
+        even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
 
         nrns = data_array.shape[1]
         trials = data_array.shape[0]
@@ -743,7 +743,7 @@ class SingleTastePoissonVarsig(ChangepointModel):
 
         with pm.Model() as model:
             # Sigmoid slope
-            sig_b = pm.Normal("sig_b", -1, 2, shape=states - 1)
+            sig_b = pm.Normal("sig_b", -1, 2, shape=n_states - 1)
 
             # Initial value
             s0 = pm.Exponential(
@@ -755,7 +755,7 @@ class SingleTastePoissonVarsig(ChangepointModel):
                 "lambda_diff",
                 mu=0,
                 sigma=10,
-                shape=(nrns, states - 1),
+                shape=(nrns, n_states - 1),
                 testval=lambda_test_vals,
             )
 
@@ -766,18 +766,18 @@ class SingleTastePoissonVarsig(ChangepointModel):
             )
 
             # Changepoint positions
-            a = pm.HalfCauchy("a_tau", 10, shape=states - 1)
-            b = pm.HalfCauchy("b_tau", 10, shape=states - 1)
+            a = pm.HalfCauchy("a_tau", 10, shape=n_states - 1)
+            b = pm.HalfCauchy("b_tau", 10, shape=n_states - 1)
 
             tau_latent = pm.Beta(
-                "tau_latent", a, b, testval=even_switches, shape=(trials, states - 1)
+                "tau_latent", a, b, testval=even_switches, shape=(trials, n_states - 1)
             ).sort(axis=-1)
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent
             )
 
             # Mechanical manipulations to generate firing rates
-            idx_temp = np.tile(idx[np.newaxis, np.newaxis, :], (trials, states - 1, 1))
+            idx_temp = np.tile(idx[np.newaxis, np.newaxis, :], (trials, n_states - 1, 1))
             tau_temp = tt.tile(tau[:, :, np.newaxis], (1, 1, len(idx)))
             sig_b_temp = tt.tile(
                 sig_b[np.newaxis, :, np.newaxis], (trials, 1, len(idx))
@@ -790,7 +790,7 @@ class SingleTastePoissonVarsig(ChangepointModel):
 
             s0_temp = tt.tile(
                 s0[np.newaxis, :, np.newaxis, np.newaxis],
-                (trials, 1, states - 1, len(idx)),
+                (trials, 1, n_states - 1, len(idx)),
             )
             lambda_diff_temp = tt.tile(
                 lambda_diff[np.newaxis, :, :, np.newaxis], (trials, 1, 1, len(idx))
@@ -815,10 +815,10 @@ class SingleTastePoissonVarsig(ChangepointModel):
     def test(self):
         """Test the model with synthetic data"""
         # Generate test data
-        test_data = gen_test_array((5, 10, 100), n_states=self.states, type="poisson")
+        test_data = gen_test_array((5, 10, 100), n_states=self.n_states, type="poisson")
 
         # Create model with test data
-        test_model = SingleTastePoissonVarsig(test_data, self.states)
+        test_model = SingleTastePoissonVarsig(test_data, self.n_states)
         model = test_model.generate_model()
 
         # Run a minimal inference to verify model works
@@ -838,9 +838,9 @@ class SingleTastePoissonVarsig(ChangepointModel):
 
 
 # For backward compatibility
-def single_taste_poisson_varsig(data_array, states, **kwargs):
+def single_taste_poisson_varsig(data_array, n_states, **kwargs):
     """Wrapper function for backward compatibility"""
-    model_class = SingleTastePoissonVarsig(data_array, states, **kwargs)
+    model_class = SingleTastePoissonVarsig(data_array, n_states, **kwargs)
     return model_class.generate_model()
 
 
@@ -856,17 +856,17 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
     ** Note : This model does not have hierarchical structure for emissions
     """
 
-    def __init__(self, data_array, states, inds_span=1, **kwargs):
+    def __init__(self, data_array, n_states, inds_span=1, **kwargs):
         """
         Args:
             data_array (3D Numpy array): trials x neurons x time
-            states (int): Number of states to model
+            n_states (int): Number of states to model
             inds_span(float) : Number of indices to cover 5-95% change in sigmoid
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
         self.data_array = data_array
-        self.states = states
+        self.n_states = n_states
         self.inds_span = inds_span
 
     def generate_model(self):
@@ -875,17 +875,17 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
             pymc3 model: Model class containing graph to run inference on
         """
         data_array = self.data_array
-        states = self.states
+        n_states = self.n_states
         inds_span = self.inds_span
 
         mean_vals = np.array(
-            [np.mean(x, axis=-1) for x in np.array_split(data_array, states, axis=-1)]
+            [np.mean(x, axis=-1) for x in np.array_split(data_array, n_states, axis=-1)]
         ).T
         mean_vals = np.mean(mean_vals, axis=1)
         mean_vals += 0.01  # To avoid zero starting prob
 
         lambda_test_vals = np.diff(mean_vals, axis=-1)
-        even_switches = np.linspace(0, 1, states + 1)[1:-1]
+        even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
 
         nrns = data_array.shape[1]
         trials = data_array.shape[0]
@@ -910,7 +910,7 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
                 "lambda_diff",
                 mu=0,
                 sigma=10,
-                shape=(nrns, states - 1),
+                shape=(nrns, n_states - 1),
                 testval=lambda_test_vals,
             )
 
@@ -921,18 +921,18 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
             )
 
             # Changepoint positions
-            a = pm.HalfCauchy("a_tau", 10, shape=states - 1)
-            b = pm.HalfCauchy("b_tau", 10, shape=states - 1)
+            a = pm.HalfCauchy("a_tau", 10, shape=n_states - 1)
+            b = pm.HalfCauchy("b_tau", 10, shape=n_states - 1)
 
             tau_latent = pm.Beta(
-                "tau_latent", a, b, testval=even_switches, shape=(trials, states - 1)
+                "tau_latent", a, b, testval=even_switches, shape=(trials, n_states - 1)
             ).sort(axis=-1)
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent
             )
 
             # Mechanical manipulations to generate firing rates
-            idx_temp = np.tile(idx[np.newaxis, np.newaxis, :], (trials, states - 1, 1))
+            idx_temp = np.tile(idx[np.newaxis, np.newaxis, :], (trials, n_states - 1, 1))
             tau_temp = tt.tile(tau[:, :, np.newaxis], (1, 1, len(idx)))
 
             weight_stack = sigmoid(idx_temp - tau_temp)
@@ -942,7 +942,7 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
 
             s0_temp = tt.tile(
                 s0[np.newaxis, :, np.newaxis, np.newaxis],
-                (trials, 1, states - 1, len(idx)),
+                (trials, 1, n_states - 1, len(idx)),
             )
             lambda_diff_temp = tt.tile(
                 lambda_diff[np.newaxis, :, :, np.newaxis], (trials, 1, 1, len(idx))
@@ -967,11 +967,11 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
     def test(self):
         """Test the model with synthetic data"""
         # Generate test data
-        test_data = gen_test_array((5, 10, 100), n_states=self.states, type="poisson")
+        test_data = gen_test_array((5, 10, 100), n_states=self.n_states, type="poisson")
 
         # Create model with test data
         test_model = SingleTastePoissonVarsigFixed(
-            test_data, self.states, self.inds_span
+            test_data, self.n_states, self.inds_span
         )
         model = test_model.generate_model()
 
@@ -992,10 +992,10 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
 
 
 # For backward compatibility
-def single_taste_poisson_varsig_fixed(data_array, states, inds_span=1, **kwargs):
+def single_taste_poisson_varsig_fixed(data_array, n_states, inds_span=1, **kwargs):
     """Wrapper function for backward compatibility"""
     model_class = SingleTastePoissonVarsigFixed(
-        data_array, states, inds_span, **kwargs
+        data_array, n_states, inds_span, **kwargs
     )
     return model_class.generate_model()
 
@@ -1006,16 +1006,16 @@ class AllTastePoisson(ChangepointModel):
     ** Largely taken from "_v1/poisson_all_tastes_changepoint_model.py"
     """
 
-    def __init__(self, data_array, states, **kwargs):
+    def __init__(self, data_array, n_states, **kwargs):
         """
         Args:
             data_array (4D Numpy array): tastes, trials, neurons, time_bins
-            states (int): Number of states to model
+            n_states (int): Number of states to model
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
         self.data_array = data_array
-        self.states = states
+        self.n_states = n_states
 
     def generate_model(self):
         """
@@ -1023,7 +1023,7 @@ class AllTastePoisson(ChangepointModel):
             pymc3 model: Model class containing graph to run inference on
         """
         data_array = self.data_array
-        states = self.states
+        n_states = self.n_states
 
         # Unroll arrays along taste axis
         data_array_long = np.concatenate(data_array, axis=0)
@@ -1034,7 +1034,7 @@ class AllTastePoisson(ChangepointModel):
         nrns = data_array.shape[2]
         trials = data_array.shape[1]
 
-        split_list = np.array_split(data_array, states, axis=-1)
+        split_list = np.array_split(data_array, n_states, axis=-1)
         # Cut all to the same size
         min_val = min([x.shape[-1] for x in split_list])
         split_array = np.array([x[..., :min_val] for x in split_list])
@@ -1045,7 +1045,7 @@ class AllTastePoisson(ChangepointModel):
         # Find evenly spaces switchpoints for initial values
         idx = np.arange(data_array.shape[-1])  # Index
         array_idx = np.broadcast_to(idx, data_array_long.shape)
-        even_switches = np.linspace(0, idx.max(), states + 1)
+        even_switches = np.linspace(0, idx.max(), n_states + 1)
         even_switches_normal = even_switches / np.max(even_switches)
 
         taste_label = np.repeat(np.arange(data_array.shape[0]), data_array.shape[1])
@@ -1074,20 +1074,20 @@ class AllTastePoisson(ChangepointModel):
 
             # Changepoint time variable
             # INDEPENDENT TAU FOR EVERY TRIAL
-            a = pm.HalfNormal("a_tau", 3.0, shape=states - 1)
-            b = pm.HalfNormal("b_tau", 3.0, shape=states - 1)
+            a = pm.HalfNormal("a_tau", 3.0, shape=n_states - 1)
+            b = pm.HalfNormal("b_tau", 3.0, shape=n_states - 1)
 
-            # Stack produces states x trials --> That gets transposed
-            # to trials x states and gets sorted along states (axis=-1)
+            # Stack produces n_states x trials --> That gets transposed
+            # to trials x n_states and gets sorted along n_states (axis=-1)
             # Sort should work the same way as the Ordered transform -->
             # see rv_sort_test.ipynb
             tau_latent = pm.Beta(
                 "tau_latent",
                 a,
                 b,
-                shape=(trial_num, states - 1),
+                shape=(trial_num, n_states - 1),
                 testval=tt.tile(
-                    even_switches_normal[1:(states)], (array_idx.shape[0], 1)
+                    even_switches_normal[1:(n_states)], (array_idx.shape[0], 1)
                 ),
             ).sort(axis=-1)
 
@@ -1120,11 +1120,11 @@ class AllTastePoisson(ChangepointModel):
         """Test the model with synthetic data"""
         # Generate test data
         test_data = gen_test_array(
-            (2, 5, 10, 100), n_states=self.states, type="poisson"
+            (2, 5, 10, 100), n_states=self.n_states, type="poisson"
         )
 
         # Create model with test data
-        test_model = AllTastePoisson(test_data, self.states)
+        test_model = AllTastePoisson(test_data, self.n_states)
         model = test_model.generate_model()
 
         # Run a minimal inference to verify model works
@@ -1145,9 +1145,9 @@ class AllTastePoisson(ChangepointModel):
 
 
 # For backward compatibility
-def all_taste_poisson(data_array, states, **kwargs):
+def all_taste_poisson(data_array, n_states, **kwargs):
     """Wrapper function for backward compatibility"""
-    model_class = AllTastePoisson(data_array, states, **kwargs)
+    model_class = AllTastePoisson(data_array, n_states, **kwargs)
     return model_class.generate_model()
 
 
@@ -1157,17 +1157,17 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
     ** Largely taken from "_v1/poisson_all_tastes_changepoint_model.py"
     """
 
-    def __init__(self, data_array, states, inds_span=1, **kwargs):
+    def __init__(self, data_array, n_states, inds_span=1, **kwargs):
         """
         Args:
             data_array (4D Numpy array): tastes, trials, neurons, time_bins
-            states (int): Number of states to model
+            n_states (int): Number of states to model
             inds_span(float): Number of indices to cover 5-95% change in sigmoid
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
         self.data_array = data_array
-        self.states = states
+        self.n_states = n_states
         self.inds_span = inds_span
 
     def generate_model(self):
@@ -1176,7 +1176,7 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
             pymc3 model: Model class containing graph to run inference on
         """
         data_array = self.data_array
-        states = self.states
+        n_states = self.n_states
         inds_span = self.inds_span
 
         # Unroll arrays along taste axis
@@ -1188,7 +1188,7 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
         nrns = data_array.shape[2]
         trials = data_array.shape[1]
 
-        split_list = np.array_split(data_array, states, axis=-1)
+        split_list = np.array_split(data_array, n_states, axis=-1)
         # Cut all to the same size
         min_val = min([x.shape[-1] for x in split_list])
         split_array = np.array([x[..., :min_val] for x in split_list])
@@ -1199,7 +1199,7 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
         # Find evenly spaces switchpoints for initial values
         idx = np.arange(data_array.shape[-1])  # Index
         array_idx = np.broadcast_to(idx, data_array_long.shape)
-        even_switches = np.linspace(0, idx.max(), states + 1)
+        even_switches = np.linspace(0, idx.max(), n_states + 1)
         even_switches_normal = even_switches / np.max(even_switches)
 
         taste_label = np.repeat(np.arange(data_array.shape[0]), data_array.shape[1])
@@ -1235,20 +1235,20 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
 
             # Changepoint time variable
             # INDEPENDENT TAU FOR EVERY TRIAL
-            a = pm.HalfNormal("a_tau", 3.0, shape=states - 1)
-            b = pm.HalfNormal("b_tau", 3.0, shape=states - 1)
+            a = pm.HalfNormal("a_tau", 3.0, shape=n_states - 1)
+            b = pm.HalfNormal("b_tau", 3.0, shape=n_states - 1)
 
-            # Stack produces states x trials --> That gets transposed
-            # to trials x states and gets sorted along states (axis=-1)
+            # Stack produces n_states x trials --> That gets transposed
+            # to trials x n_states and gets sorted along n_states (axis=-1)
             # Sort should work the same way as the Ordered transform -->
             # see rv_sort_test.ipynb
             tau_latent = pm.Beta(
                 "tau_latent",
                 a,
                 b,
-                shape=(trial_num, states - 1),
+                shape=(trial_num, n_states - 1),
                 testval=tt.tile(
-                    even_switches_normal[1:(states)], (array_idx.shape[0], 1)
+                    even_switches_normal[1:(n_states)], (array_idx.shape[0], 1)
                 ),
             ).sort(axis=-1)
 
@@ -1281,11 +1281,11 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
         """Test the model with synthetic data"""
         # Generate test data
         test_data = gen_test_array(
-            (2, 5, 10, 100), n_states=self.states, type="poisson"
+            (2, 5, 10, 100), n_states=self.n_states, type="poisson"
         )
 
         # Create model with test data
-        test_model = AllTastePoissonVarsigFixed(test_data, self.states, self.inds_span)
+        test_model = AllTastePoissonVarsigFixed(test_data, self.n_states, self.inds_span)
         model = test_model.generate_model()
 
         # Run a minimal inference to verify model works
@@ -1306,9 +1306,9 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
 
 
 # For backward compatibility
-def all_taste_poisson_varsig_fixed(data_array, states, inds_span=1, **kwargs):
+def all_taste_poisson_varsig_fixed(data_array, n_states, inds_span=1, **kwargs):
     """Wrapper function for backward compatibility"""
-    model_class = AllTastePoissonVarsigFixed(data_array, states, inds_span, **kwargs)
+    model_class = AllTastePoissonVarsigFixed(data_array, n_states, inds_span, **kwargs)
     return model_class.generate_model()
 
 
@@ -1325,18 +1325,18 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
     Changepoint distribution remains constant
     """
 
-    def __init__(self, data_array, switch_components, states, **kwargs):
+    def __init__(self, data_array, switch_components, n_states, **kwargs):
         """
         Args:
             data_array (3D Numpy array): trials x neurons x time
             switch_components (int): Number of trial switch components
-            states (int): Number of states to model
+            n_states (int): Number of states to model
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
         self.data_array = data_array
         self.switch_components = switch_components
-        self.states = states
+        self.n_states = n_states
 
     def generate_model(self):
         """
@@ -1345,7 +1345,7 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
         """
         data_array = self.data_array
         switch_components = self.switch_components
-        states = self.states
+        n_states = self.n_states
 
         trial_num, nrn_num, time_bins = data_array.shape
 
@@ -1362,23 +1362,23 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
                 shape=(nrn_num, switch_components),
             )
 
-            # nrns x switch_comps x states
+            # nrns x switch_comps x n_states
             state_lambda = pm.Exponential(
                 "state_lambda",
                 trial_lambda.dimshuffle(0, 1, "x"),
-                shape=(nrn_num, switch_components, states),
+                shape=(nrn_num, switch_components, n_states),
             )
 
             # Define Changepoints
             # Assuming distribution of changepoints remains
             # the same across all trials
 
-            a = pm.HalfCauchy("a_tau", 3.0, shape=states - 1)
-            b = pm.HalfCauchy("b_tau", 3.0, shape=states - 1)
+            a = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
 
-            even_switches = np.linspace(0, 1, states + 1)[1:-1]
+            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
             tau_latent = pm.Beta(
-                "tau_latent", a, b, testval=even_switches, shape=(trial_num, states - 1)
+                "tau_latent", a, b, testval=even_switches, shape=(trial_num, n_states - 1)
             ).sort(axis=-1)
 
             # Trials x Changepoints
@@ -1465,11 +1465,11 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
     def test(self):
         """Test the model with synthetic data"""
         # Generate test data
-        test_data = gen_test_array((5, 10, 100), n_states=self.states, type="poisson")
+        test_data = gen_test_array((5, 10, 100), n_states=self.n_states, type="poisson")
 
         # Create model with test data
         test_model = SingleTastePoissonTrialSwitch(
-            test_data, self.switch_components, self.states
+            test_data, self.switch_components, self.n_states
         )
         model = test_model.generate_model()
 
@@ -1491,10 +1491,10 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
 
 
 # For backward compatibility
-def single_taste_poisson_trial_switch(data_array, switch_components, states, **kwargs):
+def single_taste_poisson_trial_switch(data_array, switch_components, n_states, **kwargs):
     """Wrapper function for backward compatibility"""
     model_class = SingleTastePoissonTrialSwitch(
-        data_array, switch_components, states, **kwargs
+        data_array, switch_components, n_states, **kwargs
     )
     return model_class.generate_model()
 
@@ -1505,18 +1505,18 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
     Changepoint distribution remains constant
     """
 
-    def __init__(self, data_array, switch_components, states, **kwargs):
+    def __init__(self, data_array, switch_components, n_states, **kwargs):
         """
         Args:
             data_array (4D Numpy array): tastes, trials, neurons, time_bins
             switch_components (int): Number of trial switch components
-            states (int): Number of states to model
+            n_states (int): Number of states to model
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
         self.data_array = data_array
         self.switch_components = switch_components
-        self.states = states
+        self.n_states = n_states
 
     def generate_model(self):
         """
@@ -1525,7 +1525,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
         """
         data_array = self.data_array
         switch_components = self.switch_components
-        states = self.states
+        n_states = self.n_states
 
         tastes, trial_num, nrn_num, time_bins = data_array.shape
 
@@ -1548,11 +1548,11 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
                 shape=(tastes, nrn_num, switch_components),
             )
 
-            # tastes x nrns x switch_comps x states
+            # tastes x nrns x switch_comps x n_states
             state_lambda = pm.Exponential(
                 "state_lambda",
                 trial_lambda.dimshuffle(0, 1, 2, "x"),
-                shape=(tastes, nrn_num, switch_components, states),
+                shape=(tastes, nrn_num, switch_components, n_states),
             )
 
             # Define Changepoints
@@ -1560,16 +1560,16 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
             # Assuming distribution of changepoints remains
             # the same across all trials
 
-            a = pm.HalfCauchy("a_tau", 3.0, shape=states - 1)
-            b = pm.HalfCauchy("b_tau", 3.0, shape=states - 1)
+            a = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
 
-            even_switches = np.linspace(0, 1, states + 1)[1:-1]
+            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
             tau_latent = pm.Beta(
                 "tau_latent",
                 a,
                 b,
                 testval=even_switches,
-                shape=(tastes, trial_num, states - 1),
+                shape=(tastes, trial_num, n_states - 1),
             ).sort(axis=-1)
 
             # Tasets x Trials x Changepoints
@@ -1686,12 +1686,12 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
         """Test the model with synthetic data"""
         # Generate test data
         test_data = gen_test_array(
-            (2, 5, 10, 100), n_states=self.states, type="poisson"
+            (2, 5, 10, 100), n_states=self.n_states, type="poisson"
         )
 
         # Create model with test data
         test_model = AllTastePoissonTrialSwitch(
-            test_data, self.switch_components, self.states
+            test_data, self.switch_components, self.n_states
         )
         model = test_model.generate_model()
 
@@ -1714,10 +1714,10 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
 
 
 # For backward compatibility
-def all_taste_poisson_trial_switch(data_array, switch_components, states, **kwargs):
+def all_taste_poisson_trial_switch(data_array, switch_components, n_states, **kwargs):
     """Wrapper function for backward compatibility"""
     model_class = AllTastePoissonTrialSwitch(
-        data_array, switch_components, states, **kwargs
+        data_array, switch_components, n_states, **kwargs
     )
     return model_class.generate_model()
 
