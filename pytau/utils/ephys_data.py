@@ -20,7 +20,7 @@ import numpy as np
 import tables
 
 
-class EphysData():
+class EphysData:
     """Class to streamline data analysis from multiple files
 
     Class has a container for data from different files and functions for analysis
@@ -45,16 +45,19 @@ class EphysData():
         Returns:
             str: Real path to HDF5 file
         """
-        hdf5_path = glob.glob(
-            os.path.join(data_dir, '**.h5'))
+        hdf5_path = glob.glob(os.path.join(data_dir, "**.h5"))
         if not len(hdf5_path) > 0:
-            raise Exception('No HDF5 file detected')
+            raise Exception("No HDF5 file detected")
         if len(hdf5_path) > 1:
-            selection_list = ['{}) {} \n'.format(num, os.path.basename(file))
-                              for num, file in enumerate(hdf5_path)]
-            selection_string = \
-                'Multiple HDF5 files detected, please select a number:\n{}'.\
-                format("".join(selection_list))
+            selection_list = [
+                "{}) {} \n".format(num, os.path.basename(file))
+                for num, file in enumerate(hdf5_path)
+            ]
+            selection_string = (
+                "Multiple HDF5 files detected, please select a number:\n{}".format(
+                    "".join(selection_list)
+                )
+            )
             file_selection = input(selection_string)
             return hdf5_path[int(file_selection)]
 
@@ -70,7 +73,8 @@ class EphysData():
         """
         if path_to_node in hf5:
             hf5.remove_node(
-                os.path.dirname(path_to_node), os.path.basename(path_to_node))
+                os.path.dirname(path_to_node), os.path.basename(path_to_node)
+            )
 
     ####################
     # Initialize instance
@@ -83,8 +87,7 @@ class EphysData():
             data_dir (str, optional): Directory containing HDF5 file. Defaults to None.
         """
         if data_dir is None:
-            self.data_dir = easygui.diropenbox(
-                'Please select directory with HDF5 file')
+            self.data_dir = easygui.diropenbox("Please select directory with HDF5 file")
         else:
             self.data_dir = data_dir
             self.hdf5_path = self.get_hdf5_path(data_dir)
@@ -93,27 +96,28 @@ class EphysData():
             self.spikes = None
 
     def get_unit_descriptors(self):
-        """Extract unit descriptors from HDF5 file
-        """
-        with tables.open_file(self.hdf5_path, 'r+') as hf5_file:
+        """Extract unit descriptors from HDF5 file"""
+        with tables.open_file(self.hdf5_path, "r+") as hf5_file:
             self.unit_descriptors = hf5_file.root.unit_descriptor[:]
 
     def check_laser(self):
-        """Check whether session contains laser variables
-        """
-        with tables.open_file(self.hdf5_path, 'r+') as hf5:
-            dig_in_list = \
-                [x for x in hf5.list_nodes('/spike_trains')
-                 if 'dig_in' in x.__str__()]
+        """Check whether session contains laser variables"""
+        with tables.open_file(self.hdf5_path, "r+") as hf5:
+            dig_in_list = [
+                x for x in hf5.list_nodes("/spike_trains") if "dig_in" in x.__str__()
+            ]
 
             # Mark whether laser exists or not
-            self.laser_durations_exists = sum([dig_in.__contains__('laser_durations')
-                                               for dig_in in dig_in_list]) > 0
+            self.laser_durations_exists = (
+                sum([dig_in.__contains__("laser_durations") for dig_in in dig_in_list])
+                > 0
+            )
 
             # If it does, pull out laser durations
             if self.laser_durations_exists:
-                self.laser_durations = [dig_in.laser_durations[:]
-                                        for dig_in in dig_in_list]
+                self.laser_durations = [
+                    dig_in.laser_durations[:] for dig_in in dig_in_list
+                ]
 
                 non_zero_laser_durations = np.sum(self.laser_durations) > 0
 
@@ -134,13 +138,15 @@ class EphysData():
         Raises:
             Exception: If no spike_trains node found in HDF5 file
         """
-        with tables.open_file(self.hdf5_path, 'r+') as hf5:
-            if '/spike_trains' in hf5:
-                dig_in_list = \
-                    [x for x in hf5.list_nodes('/spike_trains')
-                     if 'dig_in' in x.__str__()]
+        with tables.open_file(self.hdf5_path, "r+") as hf5:
+            if "/spike_trains" in hf5:
+                dig_in_list = [
+                    x
+                    for x in hf5.list_nodes("/spike_trains")
+                    if "dig_in" in x.__str__()
+                ]
             else:
-                raise Exception('No spike trains found in HF5')
+                raise Exception("No spike trains found in HF5")
 
             self.spikes = [dig_in.spike_array[:] for dig_in in dig_in_list]
 
@@ -150,18 +156,26 @@ class EphysData():
         Raises:
             Exception: If no laser present for experiment
         """
-        if 'laser_exists' not in dir(self):
+        if "laser_exists" not in dir(self):
             self.check_laser()
-        if 'spikes' not in dir(self):
+        if "spikes" not in dir(self):
             self.get_spikes()
         if self.laser_exists:
             self.laser_spikes = {}
-            self.laser_spikes['on'] = np.array([taste[laser > 0] for taste, laser in
-                                       zip(self.spikes, self.laser_durations)])
-            self.laser_spikes['off'] = np.array([taste[laser == 0] for taste, laser in
-                                        zip(self.spikes, self.laser_durations)])
+            self.laser_spikes["on"] = np.array(
+                [
+                    taste[laser > 0]
+                    for taste, laser in zip(self.spikes, self.laser_durations)
+                ]
+            )
+            self.laser_spikes["off"] = np.array(
+                [
+                    taste[laser == 0]
+                    for taste, laser in zip(self.spikes, self.laser_durations)
+                ]
+            )
         else:
-            raise Exception('No laser trials in this experiment')
+            raise Exception("No laser trials in this experiment")
 
     def get_region_electrodes(self):
         """If the appropriate json file is present in the data_dir,
@@ -172,10 +186,11 @@ class EphysData():
         """
         json_path = glob.glob(os.path.join(self.data_dir, "**.info"))[0]
         if os.path.exists(json_path):
-            json_dict = json.load(open(json_path, 'r'))
+            json_dict = json.load(open(json_path, "r"))
             self.region_electrode_dict = json_dict["electrode_layout"]
-            self.region_names = [x for x in self.region_electrode_dict.keys()
-                                 if x != 'emg']
+            self.region_names = [
+                x for x in self.region_electrode_dict.keys() if x != "emg"
+            ]
         else:
             raise Exception("Cannot find json file. Make sure it's present")
 
@@ -187,18 +202,18 @@ class EphysData():
         if "unit_descriptors" not in dir(self):
             self.get_unit_descriptors()
 
-        unit_electrodes = [x['electrode_number']
-                           for x in self.unit_descriptors]
-        region_electrode_vals = [val for key, val in
-                                 self.region_electrode_dict.items() if key != 'emg']
+        unit_electrodes = [x["electrode_number"] for x in self.unit_descriptors]
+        region_electrode_vals = [
+            val for key, val in self.region_electrode_dict.items() if key != "emg"
+        ]
 
         car_name = []
         car_electrodes = []
         for key, val in self.region_electrode_dict.items():
-            if key != 'emg':
+            if key != "emg":
                 for num, this_car in enumerate(val):
                     car_electrodes.append(this_car)
-                    car_name.append(key+str(num))
+                    car_name.append(key + str(num))
 
         self.car_names = car_name
         self.car_electrodes = car_electrodes
@@ -210,8 +225,7 @@ class EphysData():
                     # This tells you which car group each neuron is in
                     car_ind_vec[elec_num] = num
 
-        self.car_units = [np.where(car_ind_vec == x)[0]
-                          for x in np.unique(car_ind_vec)]
+        self.car_units = [np.where(car_ind_vec == x)[0] for x in np.unique(car_ind_vec)]
 
         region_ind_vec = np.zeros(len(unit_electrodes))
         for elec_num, elec in enumerate(unit_electrodes):
@@ -220,10 +234,11 @@ class EphysData():
                     if elec in car:
                         region_ind_vec[elec_num] = region_num
 
-        self.region_units = [np.where(region_ind_vec == x)[0]
-                             for x in np.unique(region_ind_vec)]
+        self.region_units = [
+            np.where(region_ind_vec == x)[0] for x in np.unique(region_ind_vec)
+        ]
 
-    def return_region_spikes(self, region_name='all', laser = None):
+    def return_region_spikes(self, region_name="all", laser=None):
         """Use metadata to return spike trains by region
 
         Args:
@@ -236,31 +251,33 @@ class EphysData():
         Returns:
             Numpy array: Array containing spike trains for specified region
         """
-        if laser not in [None, 'on','off']:
+        if laser not in [None, "on", "off"]:
             raise Exception('laser must be from ["on","off"]')
-        if 'region_names' not in dir(self):
+        if "region_names" not in dir(self):
             self.get_region_units()
         if self.spikes is None:
             self.get_spikes()
 
         if laser is not None:
             self.separate_laser_spikes()
-            this_spikes = self.laser_spikes[laser] 
+            this_spikes = self.laser_spikes[laser]
         else:
             this_spikes = self.spikes
 
-        if region_name != 'all':
-            region_ind = [num for num, x in enumerate(self.region_names)
-                          if x == region_name]
+        if region_name != "all":
+            region_ind = [
+                num for num, x in enumerate(self.region_names) if x == region_name
+            ]
             if not len(region_ind) == 1:
-                raise Exception('Region name not found, or too many matches found, '
-                                'acceptable options are' +
-                                '\n' + f"===> {self.region_names, 'all'}")
+                raise Exception(
+                    "Region name not found, or too many matches found, "
+                    "acceptable options are" + "\n" + f"===> {self.region_names, 'all'}"
+                )
 
             this_region_units = self.region_units[region_ind[0]]
-            #region_spikes = [x[:, this_region_units] for x in self.spikes]
+            # region_spikes = [x[:, this_region_units] for x in self.spikes]
             region_spikes = [x[:, this_region_units] for x in this_spikes]
             return np.array(region_spikes)
 
         return np.array(this_spikes)
-        #return np.array(self.spikes)
+        # return np.array(self.spikes)

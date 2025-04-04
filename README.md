@@ -5,9 +5,9 @@ https://abuzarmahmood.github.io/pytau/
 
 ## Outline
 
-- Perform inter-region transition correlations on models fit to each taste 
+- Perform inter-region transition correlations on models fit to each taste
     individually
-    
+
 ## Installation
 ```
 # Create and activate conda environment
@@ -84,7 +84,7 @@ Data stored in models:
     - These should be functions
 
     - Input:
-        1) Processed spike trains 
+        1) Processed spike trains
         2) Model parameters (model type, states, fit steps)
     - Output:
         1) Model

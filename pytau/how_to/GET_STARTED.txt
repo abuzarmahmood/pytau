@@ -1,4 +1,4 @@
-In pytau/config/MODEL_SAVE_DIR.params, change the directory 
+In pytau/config/MODEL_SAVE_DIR.params, change the directory
 where you want to save the model data.
 
 If data was sorted with blech_clust and contains an exp_info file

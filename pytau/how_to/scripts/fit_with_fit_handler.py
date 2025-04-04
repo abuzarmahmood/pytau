@@ -1,9 +1,11 @@
 ## Import modules
-base_dir = '/media/bigdata/projects/pytau'
+base_dir = "/media/bigdata/projects/pytau"
 import sys
+
 sys.path.append(base_dir)
-from pytau.changepoint_io import FitHandler
 import pylab as plt
+
+from pytau.changepoint_io import FitHandler
 from pytau.utils import plotting
 
 # Specify params for fit
@@ -11,22 +13,22 @@ model_parameters = dict(
     states=4,
     fit=40000,
     samples=20000,
-    model_kwargs={'None': None},
-        )
+    model_kwargs={"None": None},
+)
 
 preprocess_parameters = dict(
     time_lims=[2000, 4000],
     bin_width=50,
-    data_transform='None',  # Can also be 'spike_shuffled','trial_shuffled'
-    )
+    data_transform="None",  # Can also be 'spike_shuffled','trial_shuffled'
+)
 
 FitHandler_kwargs = dict(
-    data_dir='/path/to/data/directory',
+    data_dir="/path/to/data/directory",
     taste_num=[0, 1, 2, 3],
-    region_name=['CA1'],  # Should match specification in info file
-    laser_type=['off'],
-    experiment_name=['pytau_test'],
-    )
+    region_name=["CA1"],  # Should match specification in info file
+    laser_type=["off"],
+    experiment_name=["pytau_test"],
+)
 
 ## Initialize handler, and feed paramters
 handler = FitHandler(**FitHandler_kwargs)
@@ -49,18 +51,19 @@ inference_outs = handler.inference_outs
 
 # Can also get path to pkl file from model database
 from pytau.changepoint_io import DatabaseHandler
+
 fit_database = DatabaseHandler()
 fit_database.drop_duplicates()
 fit_database.clear_mismatched_paths()
 
 # Get fits for a particular experiment
 dframe = fit_database.fit_database
-wanted_exp_name = 'pytau_test'
-wanted_frame = dframe.loc[dframe['exp.exp_name'] == wanted_exp_name] 
+wanted_exp_name = "pytau_test"
+wanted_frame = dframe.loc[dframe["exp.exp_name"] == wanted_exp_name]
 # Pull out a single data_directory
-pkl_path = wanted_frame['exp.save_path'].iloc[0]
+pkl_path = wanted_frame["exp.save_path"].iloc[0]
 
-## Information saved in model database 
+## Information saved in model database
 # preprocess.time_lims
 # preprocess.bin_width
 # preprocess.data_transform
@@ -87,6 +90,7 @@ pkl_path = wanted_frame['exp.save_path'].iloc[0]
 
 # From saved pkl file
 from pytau.changepoint_analysis import PklHandler
+
 this_handler = PklHandler(pkl_path)
 # Can access following attributes
 # Tau:
@@ -96,7 +100,7 @@ this_handler = PklHandler(pkl_path)
 #   Int Scaled Tau : Integer values of "Scaled Tau" ==> this_handler.tau.scaled_int_tau
 #   Mode Scale Tau : Mode of Int Scaled Tau ==> this_handler.tau.scaled_mode_tau
 # Firing:
-#   Raw spikes : Pulled using EphysData ==> this_handler.firing.raw_spikes 
+#   Raw spikes : Pulled using EphysData ==> this_handler.firing.raw_spikes
 #   Mean firing rate per state : this_handler.firing.state_firing
 #   Snippets around each transition : this_handler.firing.transition_snips
 #   Significance of changes in state firing : this_handler.firing.anova_p_val_array
@@ -105,7 +109,7 @@ this_handler = PklHandler(pkl_path)
 this_handler.pretty_metadata
 
 # Plotting
-fit_model = this_handler.data['model_data']['approx']
+fit_model = this_handler.data["model_data"]["approx"]
 spike_train = this_handler.firing.raw_spikes
 scaled_mode_tau = this_handler.tau.scaled_mode_tau
 
@@ -114,8 +118,7 @@ fig, ax = plotting.plot_elbo_history(fit_model)
 plt.show()
 
 # Overlay raster plot with states
-fig, ax = plotting.plot_changepoint_raster(
-    spike_train, scaled_mode_tau, [1500, 4000])
+fig, ax = plotting.plot_changepoint_raster(spike_train, scaled_mode_tau, [1500, 4000])
 plt.show()
 
 # Overview of changepoint positions
