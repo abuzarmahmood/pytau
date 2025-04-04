@@ -103,7 +103,7 @@ def test_model_initialization(model_class, data_shape, n_states, extra_args):
     else:
         model_instance = model_class(
                 data_array = test_data, 
-                states = n_states, 
+                n_states = n_states, 
                 **extra_args
                 )
 
