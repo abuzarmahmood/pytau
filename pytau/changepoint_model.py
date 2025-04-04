@@ -458,15 +458,15 @@ class SingleTastePoissonDirichlet(ChangepointModel):
     Model for changepoint on single taste using dirichlet process prior
     """
 
-    def __init__(self, spike_array, max_states=10, **kwargs):
+    def __init__(self, data_array, max_states=10, **kwargs):
         """
         Args:
-            spike_array (3D Numpy array): trials x neurons x time
+            data_array (3D Numpy array): trials x neurons x time
             max_states (int): Maximum number of states to model
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
-        self.spike_array = spike_array
+        self.data_array = data_array
         self.max_states = max_states
 
     def generate_model(self):
@@ -474,21 +474,21 @@ class SingleTastePoissonDirichlet(ChangepointModel):
         Returns:
             pymc3 model: Model class containing graph to run inference on
         """
-        spike_array = self.spike_array
+        data_array = self.data_array
         max_states = self.max_states
 
         mean_vals = np.array(
             [
                 np.mean(x, axis=-1)
-                for x in np.array_split(spike_array, max_states, axis=-1)
+                for x in np.array_split(data_array, max_states, axis=-1)
             ]
         ).T
         mean_vals = np.mean(mean_vals, axis=1)
         mean_vals += 0.01  # To avoid zero starting prob
 
-        nrns = spike_array.shape[1]
-        trials = spike_array.shape[0]
-        idx = np.arange(spike_array.shape[-1])
+        nrns = data_array.shape[1]
+        trials = data_array.shape[0]
+        idx = np.arange(data_array.shape[-1])
         length = idx.max() + 1
 
         with pm.Model() as model:
@@ -544,7 +544,7 @@ class SingleTastePoissonDirichlet(ChangepointModel):
             # =====================
             # Likelihood
             # =====================
-            observation = pm.Poisson("obs", lambda_, observed=spike_array)
+            observation = pm.Poisson("obs", lambda_, observed=data_array)
 
         return model
 
@@ -574,9 +574,9 @@ class SingleTastePoissonDirichlet(ChangepointModel):
 
 
 # For backward compatibility
-def single_taste_poisson_dirichlet(spike_array, max_states=10, **kwargs):
+def single_taste_poisson_dirichlet(data_array, max_states=10, **kwargs):
     """Wrapper function for backward compatibility"""
-    model_class = SingleTastePoissonDirichlet(spike_array, max_states, **kwargs)
+    model_class = SingleTastePoissonDirichlet(data_array, max_states, **kwargs)
     return model_class.generate_model()
 
 
@@ -587,15 +587,15 @@ class SingleTastePoisson(ChangepointModel):
     ** Note : This model does not have hierarchical structure for emissions
     """
 
-    def __init__(self, spike_array, states, **kwargs):
+    def __init__(self, data_array, states, **kwargs):
         """
         Args:
-            spike_array (3D Numpy array): trials x neurons x time
+            data_array (3D Numpy array): trials x neurons x time
             states (int): Number of states to model
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
-        self.spike_array = spike_array
+        self.data_array = data_array
         self.states = states
 
     def generate_model(self):
@@ -603,18 +603,18 @@ class SingleTastePoisson(ChangepointModel):
         Returns:
             pymc3 model: Model class containing graph to run inference on
         """
-        spike_array = self.spike_array
+        data_array = self.data_array
         states = self.states
 
         mean_vals = np.array(
-            [np.mean(x, axis=-1) for x in np.array_split(spike_array, states, axis=-1)]
+            [np.mean(x, axis=-1) for x in np.array_split(data_array, states, axis=-1)]
         ).T
         mean_vals = np.mean(mean_vals, axis=1)
         mean_vals += 0.01  # To avoid zero starting prob
 
-        nrns = spike_array.shape[1]
-        trials = spike_array.shape[0]
-        idx = np.arange(spike_array.shape[-1])
+        nrns = data_array.shape[1]
+        trials = data_array.shape[0]
+        idx = np.arange(data_array.shape[-1])
         length = idx.max() + 1
 
         with pm.Model() as model:
@@ -649,7 +649,7 @@ class SingleTastePoisson(ChangepointModel):
             weight_stack = np.multiply(weight_stack, inverse_stack)
 
             lambda_ = tt.tensordot(weight_stack, lambda_latent, [1, 1]).swapaxes(1, 2)
-            observation = pm.Poisson("obs", lambda_, observed=spike_array)
+            observation = pm.Poisson("obs", lambda_, observed=data_array)
 
         return model
 
@@ -678,9 +678,9 @@ class SingleTastePoisson(ChangepointModel):
 
 
 # For backward compatibility
-def single_taste_poisson(spike_array, states, **kwargs):
+def single_taste_poisson(data_array, states, **kwargs):
     """Wrapper function for backward compatibility"""
-    model_class = SingleTastePoisson(spike_array, states, **kwargs)
+    model_class = SingleTastePoisson(data_array, states, **kwargs)
     return model_class.generate_model()
 
 
@@ -708,15 +708,15 @@ class SingleTastePoissonVarsig(ChangepointModel):
     ** Note : This model does not have hierarchical structure for emissions
     """
 
-    def __init__(self, spike_array, states, **kwargs):
+    def __init__(self, data_array, states, **kwargs):
         """
         Args:
-            spike_array (3D Numpy array): trials x neurons x time
+            data_array (3D Numpy array): trials x neurons x time
             states (int): Number of states to model
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
-        self.spike_array = spike_array
+        self.data_array = data_array
         self.states = states
 
     def generate_model(self):
@@ -724,11 +724,11 @@ class SingleTastePoissonVarsig(ChangepointModel):
         Returns:
             pymc3 model: Model class containing graph to run inference on
         """
-        spike_array = self.spike_array
+        data_array = self.data_array
         states = self.states
 
         mean_vals = np.array(
-            [np.mean(x, axis=-1) for x in np.array_split(spike_array, states, axis=-1)]
+            [np.mean(x, axis=-1) for x in np.array_split(data_array, states, axis=-1)]
         ).T
         mean_vals = np.mean(mean_vals, axis=1)
         mean_vals += 0.01  # To avoid zero starting prob
@@ -736,9 +736,9 @@ class SingleTastePoissonVarsig(ChangepointModel):
         lambda_test_vals = np.diff(mean_vals, axis=-1)
         even_switches = np.linspace(0, 1, states + 1)[1:-1]
 
-        nrns = spike_array.shape[1]
-        trials = spike_array.shape[0]
-        idx = np.arange(spike_array.shape[-1])
+        nrns = data_array.shape[1]
+        trials = data_array.shape[0]
+        idx = np.arange(data_array.shape[-1])
         length = idx.max() + 1
 
         with pm.Model() as model:
@@ -808,7 +808,7 @@ class SingleTastePoissonVarsig(ChangepointModel):
             )
 
             # Add observations
-            observation = pm.Poisson("obs", lambda_bounded, observed=spike_array)
+            observation = pm.Poisson("obs", lambda_bounded, observed=data_array)
 
         return model
 
@@ -838,9 +838,9 @@ class SingleTastePoissonVarsig(ChangepointModel):
 
 
 # For backward compatibility
-def single_taste_poisson_varsig(spike_array, states, **kwargs):
+def single_taste_poisson_varsig(data_array, states, **kwargs):
     """Wrapper function for backward compatibility"""
-    model_class = SingleTastePoissonVarsig(spike_array, states, **kwargs)
+    model_class = SingleTastePoissonVarsig(data_array, states, **kwargs)
     return model_class.generate_model()
 
 
@@ -856,16 +856,16 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
     ** Note : This model does not have hierarchical structure for emissions
     """
 
-    def __init__(self, spike_array, states, inds_span=1, **kwargs):
+    def __init__(self, data_array, states, inds_span=1, **kwargs):
         """
         Args:
-            spike_array (3D Numpy array): trials x neurons x time
+            data_array (3D Numpy array): trials x neurons x time
             states (int): Number of states to model
             inds_span(float) : Number of indices to cover 5-95% change in sigmoid
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
-        self.spike_array = spike_array
+        self.data_array = data_array
         self.states = states
         self.inds_span = inds_span
 
@@ -874,12 +874,12 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
         Returns:
             pymc3 model: Model class containing graph to run inference on
         """
-        spike_array = self.spike_array
+        data_array = self.data_array
         states = self.states
         inds_span = self.inds_span
 
         mean_vals = np.array(
-            [np.mean(x, axis=-1) for x in np.array_split(spike_array, states, axis=-1)]
+            [np.mean(x, axis=-1) for x in np.array_split(data_array, states, axis=-1)]
         ).T
         mean_vals = np.mean(mean_vals, axis=1)
         mean_vals += 0.01  # To avoid zero starting prob
@@ -887,9 +887,9 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
         lambda_test_vals = np.diff(mean_vals, axis=-1)
         even_switches = np.linspace(0, 1, states + 1)[1:-1]
 
-        nrns = spike_array.shape[1]
-        trials = spike_array.shape[0]
-        idx = np.arange(spike_array.shape[-1])
+        nrns = data_array.shape[1]
+        trials = data_array.shape[0]
+        idx = np.arange(data_array.shape[-1])
         length = idx.max() + 1
 
         # Define sigmoid with given sharpness
@@ -960,7 +960,7 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
             )
 
             # Add observations
-            observation = pm.Poisson("obs", lambda_bounded, observed=spike_array)
+            observation = pm.Poisson("obs", lambda_bounded, observed=data_array)
 
         return model
 
@@ -992,10 +992,10 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
 
 
 # For backward compatibility
-def single_taste_poisson_varsig_fixed(spike_array, states, inds_span=1, **kwargs):
+def single_taste_poisson_varsig_fixed(data_array, states, inds_span=1, **kwargs):
     """Wrapper function for backward compatibility"""
     model_class = SingleTastePoissonVarsigFixed(
-        spike_array, states, inds_span, **kwargs
+        data_array, states, inds_span, **kwargs
     )
     return model_class.generate_model()
 
@@ -1006,15 +1006,15 @@ class AllTastePoisson(ChangepointModel):
     ** Largely taken from "_v1/poisson_all_tastes_changepoint_model.py"
     """
 
-    def __init__(self, spike_array, states, **kwargs):
+    def __init__(self, data_array, states, **kwargs):
         """
         Args:
-            spike_array (4D Numpy array): tastes, trials, neurons, time_bins
+            data_array (4D Numpy array): tastes, trials, neurons, time_bins
             states (int): Number of states to model
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
-        self.spike_array = spike_array
+        self.data_array = data_array
         self.states = states
 
     def generate_model(self):
@@ -1022,19 +1022,19 @@ class AllTastePoisson(ChangepointModel):
         Returns:
             pymc3 model: Model class containing graph to run inference on
         """
-        spike_array = self.spike_array
+        data_array = self.data_array
         states = self.states
 
         # Unroll arrays along taste axis
-        spike_array_long = np.concatenate(spike_array, axis=0)
+        data_array_long = np.concatenate(data_array, axis=0)
 
         # Find mean firing for initial values
-        tastes = spike_array.shape[0]
-        length = spike_array.shape[-1]
-        nrns = spike_array.shape[2]
-        trials = spike_array.shape[1]
+        tastes = data_array.shape[0]
+        length = data_array.shape[-1]
+        nrns = data_array.shape[2]
+        trials = data_array.shape[1]
 
-        split_list = np.array_split(spike_array, states, axis=-1)
+        split_list = np.array_split(data_array, states, axis=-1)
         # Cut all to the same size
         min_val = min([x.shape[-1] for x in split_list])
         split_array = np.array([x[..., :min_val] for x in split_list])
@@ -1043,12 +1043,12 @@ class AllTastePoisson(ChangepointModel):
         mean_nrn_vals = np.mean(mean_vals, axis=(0, 1))
 
         # Find evenly spaces switchpoints for initial values
-        idx = np.arange(spike_array.shape[-1])  # Index
-        array_idx = np.broadcast_to(idx, spike_array_long.shape)
+        idx = np.arange(data_array.shape[-1])  # Index
+        array_idx = np.broadcast_to(idx, data_array_long.shape)
         even_switches = np.linspace(0, idx.max(), states + 1)
         even_switches_normal = even_switches / np.max(even_switches)
 
-        taste_label = np.repeat(np.arange(spike_array.shape[0]), spike_array.shape[1])
+        taste_label = np.repeat(np.arange(data_array.shape[0]), data_array.shape[1])
         trial_num = array_idx.shape[0]
 
         # Being constructing model
@@ -1112,7 +1112,7 @@ class AllTastePoisson(ChangepointModel):
             lambda_latent = lambda_latent.dimshuffle(1, 2, 0, 3)
             lambda_ = tt.sum(lambda_latent * weight_stack, axis=1)
 
-            observation = pm.Poisson("obs", lambda_, observed=spike_array_long)
+            observation = pm.Poisson("obs", lambda_, observed=data_array_long)
 
         return model
 
@@ -1145,9 +1145,9 @@ class AllTastePoisson(ChangepointModel):
 
 
 # For backward compatibility
-def all_taste_poisson(spike_array, states, **kwargs):
+def all_taste_poisson(data_array, states, **kwargs):
     """Wrapper function for backward compatibility"""
-    model_class = AllTastePoisson(spike_array, states, **kwargs)
+    model_class = AllTastePoisson(data_array, states, **kwargs)
     return model_class.generate_model()
 
 
@@ -1157,16 +1157,16 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
     ** Largely taken from "_v1/poisson_all_tastes_changepoint_model.py"
     """
 
-    def __init__(self, spike_array, states, inds_span=1, **kwargs):
+    def __init__(self, data_array, states, inds_span=1, **kwargs):
         """
         Args:
-            spike_array (4D Numpy array): tastes, trials, neurons, time_bins
+            data_array (4D Numpy array): tastes, trials, neurons, time_bins
             states (int): Number of states to model
             inds_span(float): Number of indices to cover 5-95% change in sigmoid
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
-        self.spike_array = spike_array
+        self.data_array = data_array
         self.states = states
         self.inds_span = inds_span
 
@@ -1175,20 +1175,20 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
         Returns:
             pymc3 model: Model class containing graph to run inference on
         """
-        spike_array = self.spike_array
+        data_array = self.data_array
         states = self.states
         inds_span = self.inds_span
 
         # Unroll arrays along taste axis
-        spike_array_long = np.concatenate(spike_array, axis=0)
+        data_array_long = np.concatenate(data_array, axis=0)
 
         # Find mean firing for initial values
-        tastes = spike_array.shape[0]
-        length = spike_array.shape[-1]
-        nrns = spike_array.shape[2]
-        trials = spike_array.shape[1]
+        tastes = data_array.shape[0]
+        length = data_array.shape[-1]
+        nrns = data_array.shape[2]
+        trials = data_array.shape[1]
 
-        split_list = np.array_split(spike_array, states, axis=-1)
+        split_list = np.array_split(data_array, states, axis=-1)
         # Cut all to the same size
         min_val = min([x.shape[-1] for x in split_list])
         split_array = np.array([x[..., :min_val] for x in split_list])
@@ -1197,12 +1197,12 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
         mean_nrn_vals = np.mean(mean_vals, axis=(0, 1))
 
         # Find evenly spaces switchpoints for initial values
-        idx = np.arange(spike_array.shape[-1])  # Index
-        array_idx = np.broadcast_to(idx, spike_array_long.shape)
+        idx = np.arange(data_array.shape[-1])  # Index
+        array_idx = np.broadcast_to(idx, data_array_long.shape)
         even_switches = np.linspace(0, idx.max(), states + 1)
         even_switches_normal = even_switches / np.max(even_switches)
 
-        taste_label = np.repeat(np.arange(spike_array.shape[0]), spike_array.shape[1])
+        taste_label = np.repeat(np.arange(data_array.shape[0]), data_array.shape[1])
         trial_num = array_idx.shape[0]
 
         # Define sigmoid with given sharpness
@@ -1273,7 +1273,7 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
             lambda_latent = lambda_latent.dimshuffle(1, 2, 0, 3)
             lambda_ = tt.sum(lambda_latent * weight_stack, axis=1)
 
-            observation = pm.Poisson("obs", lambda_, observed=spike_array_long)
+            observation = pm.Poisson("obs", lambda_, observed=data_array_long)
 
         return model
 
@@ -1306,16 +1306,16 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
 
 
 # For backward compatibility
-def all_taste_poisson_varsig_fixed(spike_array, states, inds_span=1, **kwargs):
+def all_taste_poisson_varsig_fixed(data_array, states, inds_span=1, **kwargs):
     """Wrapper function for backward compatibility"""
-    model_class = AllTastePoissonVarsigFixed(spike_array, states, inds_span, **kwargs)
+    model_class = AllTastePoissonVarsigFixed(data_array, states, inds_span, **kwargs)
     return model_class.generate_model()
 
 
-# def single_taste_poisson_biased_tau_priors(spike_array,states):
+# def single_taste_poisson_biased_tau_priors(data_array,states):
 #     pass
 
-# def single_taste_poisson_hard_padding_tau(spike_array,states):
+# def single_taste_poisson_hard_padding_tau(data_array,states):
 #     pass
 
 
@@ -1325,16 +1325,16 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
     Changepoint distribution remains constant
     """
 
-    def __init__(self, spike_array, switch_components, states, **kwargs):
+    def __init__(self, data_array, switch_components, states, **kwargs):
         """
         Args:
-            spike_array (3D Numpy array): trials x neurons x time
+            data_array (3D Numpy array): trials x neurons x time
             switch_components (int): Number of trial switch components
             states (int): Number of states to model
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
-        self.spike_array = spike_array
+        self.data_array = data_array
         self.switch_components = switch_components
         self.states = states
 
@@ -1343,11 +1343,11 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
         Returns:
             pymc3 model: Model class containing graph to run inference on
         """
-        spike_array = self.spike_array
+        data_array = self.data_array
         switch_components = self.switch_components
         states = self.states
 
-        trial_num, nrn_num, time_bins = spike_array.shape
+        trial_num, nrn_num, time_bins = data_array.shape
 
         with pm.Model() as model:
             # Define Emissions
@@ -1458,7 +1458,7 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
             lambda_ = lambda_.dimshuffle(1, 0, 2)
 
             # Add observations
-            observation = pm.Poisson("obs", lambda_, observed=spike_array)
+            observation = pm.Poisson("obs", lambda_, observed=data_array)
 
         return model
 
@@ -1491,10 +1491,10 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
 
 
 # For backward compatibility
-def single_taste_poisson_trial_switch(spike_array, switch_components, states, **kwargs):
+def single_taste_poisson_trial_switch(data_array, switch_components, states, **kwargs):
     """Wrapper function for backward compatibility"""
     model_class = SingleTastePoissonTrialSwitch(
-        spike_array, switch_components, states, **kwargs
+        data_array, switch_components, states, **kwargs
     )
     return model_class.generate_model()
 
@@ -1505,16 +1505,16 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
     Changepoint distribution remains constant
     """
 
-    def __init__(self, spike_array, switch_components, states, **kwargs):
+    def __init__(self, data_array, switch_components, states, **kwargs):
         """
         Args:
-            spike_array (4D Numpy array): tastes, trials, neurons, time_bins
+            data_array (4D Numpy array): tastes, trials, neurons, time_bins
             switch_components (int): Number of trial switch components
             states (int): Number of states to model
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
-        self.spike_array = spike_array
+        self.data_array = data_array
         self.switch_components = switch_components
         self.states = states
 
@@ -1523,11 +1523,11 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
         Returns:
             pymc3 model: Model class containing graph to run inference on
         """
-        spike_array = self.spike_array
+        data_array = self.data_array
         switch_components = self.switch_components
         states = self.states
 
-        tastes, trial_num, nrn_num, time_bins = spike_array.shape
+        tastes, trial_num, nrn_num, time_bins = data_array.shape
 
         with pm.Model() as model:
             # Define Emissions
@@ -1678,7 +1678,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
             )
 
             # Add observations
-            observation = pm.Poisson("obs", lambda_, observed=spike_array)
+            observation = pm.Poisson("obs", lambda_, observed=data_array)
 
         return model
 
@@ -1714,10 +1714,10 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
 
 
 # For backward compatibility
-def all_taste_poisson_trial_switch(spike_array, switch_components, states, **kwargs):
+def all_taste_poisson_trial_switch(data_array, switch_components, states, **kwargs):
     """Wrapper function for backward compatibility"""
     model_class = AllTastePoissonTrialSwitch(
-        spike_array, switch_components, states, **kwargs
+        data_array, switch_components, states, **kwargs
     )
     return model_class.generate_model()
 
