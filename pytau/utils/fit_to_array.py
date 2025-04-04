@@ -34,9 +34,7 @@ for ind in trange(len(quin_clust_flat)):
     preprocess_parameters_values = [[2000, 4000], 50, None]
 
     model_params = dict(zip(model_parameters_keys, model_parameters_values))
-    preprocess_params = dict(
-        zip(preprocess_parameters_keys, preprocess_parameters_values)
-    )
+    preprocess_params = dict(zip(preprocess_parameters_keys, preprocess_parameters_values))
 
     preprocessor = changepoint_preprocess.preprocess_single_taste
     model_template = changepoint_model.single_taste_poisson

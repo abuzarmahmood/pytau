@@ -40,13 +40,9 @@ def fit_func(input_params):
         "experiment_name",
     ]
 
-    model_parameters = dict(
-        zip(model_parameters_keys, input_params[model_parameters_keys].iloc[0])
-    )
+    model_parameters = dict(zip(model_parameters_keys, input_params[model_parameters_keys].iloc[0]))
     preprocess_parameters = dict(
-        zip(
-            preprocess_parameters_keys, input_params[preprocess_parameters_keys].iloc[0]
-        )
+        zip(preprocess_parameters_keys, input_params[preprocess_parameters_keys].iloc[0])
     )
     FitHandler_kwargs = dict(
         zip(FitHandler_kwargs_keys, input_params[FitHandler_kwargs_keys].iloc[0])
@@ -57,9 +53,7 @@ def fit_func(input_params):
     handler.set_model_params(**model_parameters)
     handler.set_preprocess_params(**preprocess_parameters)
 
-    error_file_path = os.path.join(
-        handler.database_handler.model_save_dir, "error_log_file.txt"
-    )
+    error_file_path = os.path.join(handler.database_handler.model_save_dir, "error_log_file.txt")
 
     try:
         handler.run_inference()

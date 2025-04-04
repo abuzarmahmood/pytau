@@ -4,9 +4,7 @@ from time import sleep
 
 from tqdm import tqdm
 
-parallel_temp_path = (
-    "/media/bigdata/projects/pytau/pytau/utils" "/batch_utils/parallel_temp"
-)
+parallel_temp_path = "/media/bigdata/projects/pytau/pytau/utils" "/batch_utils/parallel_temp"
 
 
 def get_count():

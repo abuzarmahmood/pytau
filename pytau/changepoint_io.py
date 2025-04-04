@@ -121,9 +121,7 @@ class FitHandler:
     # SET PARAMS
     ########################################
 
-    def set_preprocess_params(
-        self, time_lims, bin_width, data_transform, file_path=None
-    ):
+    def set_preprocess_params(self, time_lims, bin_width, data_transform, file_path=None):
         """Load given params as "preprocess_params" attribute
 
         Args:
@@ -283,10 +281,7 @@ class FitHandler:
             self.load_spike_trains()
         if "preprocessor" not in dir(self):
             self.preprocess_selector()
-        print(
-            "Preprocessing spike trains, "
-            f"preprocessing func: <{self.preprocessor.__name__}>"
-        )
+        print("Preprocessing spike trains, " f"preprocessing func: <{self.preprocessor.__name__}>")
         self.preprocessed_data = self.preprocessor(self.data, **self.preprocess_params)
 
     def create_model(self):
@@ -417,9 +412,7 @@ class DatabaseHandler:
             pandas dataframe: Dataframe containing duplicated rows
             pandas series : Indices of duplicated rows
         """
-        dup_inds = self.fit_database.drop(self.unique_cols, axis=1).duplicated(
-            keep=keep
-        )
+        dup_inds = self.fit_database.drop(self.unique_cols, axis=1).duplicated(keep=keep)
         return self.fit_database.loc[dup_inds], dup_inds
 
     def drop_duplicates(self):
@@ -441,8 +434,7 @@ class DatabaseHandler:
         ]
         file_list = glob(os.path.join(self.model_save_base_dir, "*/*.pkl"))
         mismatch_from_file = [
-            not (x.split(".")[0] in list(self.fit_database["exp.save_path"]))
-            for x in file_list
+            not (x.split(".")[0] in list(self.fit_database["exp.save_path"])) for x in file_list
         ]
         print(
             f"{sum(mismatch_from_database)} mismatches from database"
@@ -473,9 +465,7 @@ class DatabaseHandler:
 
     def write_updated_database(self):
         """Can be called following clear_mismatched_entries to update current database"""
-        database_backup_dir = os.path.join(
-            self.model_save_base_dir, ".database_backups"
-        )
+        database_backup_dir = os.path.join(self.model_save_base_dir, ".database_backups")
         if not os.path.exists(database_backup_dir):
             os.makedirs(database_backup_dir)
         # current_date = date.today().strftime("%m-%d-%y")
@@ -486,9 +476,7 @@ class DatabaseHandler:
         )
         self.fit_database.to_csv(self.model_database_path, mode="w")
 
-    def set_run_params(
-        self, data_dir, experiment_name, taste_num, laser_type, region_name
-    ):
+    def set_run_params(self, data_dir, experiment_name, taste_num, laser_type, region_name):
         """Store metadata related to inference run
 
         Args:
@@ -543,9 +531,7 @@ class DatabaseHandler:
             dict: Dictionary of metadata given to FitHandler class
         """
         if "external_metadata" not in dir(self):
-            raise Exception(
-                "Fit run metdata needs to be ingested " "into data_handler first"
-            )
+            raise Exception("Fit run metdata needs to be ingested " "into data_handler first")
 
         data_details = dict(
             zip(
@@ -600,9 +586,7 @@ class DatabaseHandler:
         """Write out metadata to database"""
         agg_metadata = self.aggregate_metadata()
         # Convert model_kwargs to str so that they are save appropriately
-        agg_metadata["model"]["model_kwargs"] = str(
-            agg_metadata["model"]["model_kwargs"]
-        )
+        agg_metadata["model"]["model_kwargs"] = str(agg_metadata["model"]["model_kwargs"])
         flat_metadata = pd.json_normalize(agg_metadata)
         if not os.path.isfile(self.model_database_path):
             flat_metadata.to_csv(self.model_database_path, mode="a")

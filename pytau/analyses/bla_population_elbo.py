@@ -47,9 +47,7 @@ wanted_frame = pd.read_json(os.path.join(data_dir, "bla_population_elbo_repeat.j
 wanted_counts = [4, 5]
 wanted_basenames = []
 for num, val in enumerate(wanted_counts):
-    this_basenames = wanted_frame.groupby("data.animal_name")["data.basename"].unique()[
-        num
-    ][:val]
+    this_basenames = wanted_frame.groupby("data.animal_name")["data.basename"].unique()[num][:val]
     wanted_basenames.append(this_basenames)
 wanted_basenames = [x for y in wanted_basenames for x in y]
 wanted_frame = wanted_frame[wanted_frame["data.basename"].isin(wanted_basenames)]
@@ -102,9 +100,7 @@ wanted_columns = [
 ]
 analysis_frame = wanted_frame[wanted_columns].reset_index(drop=True)
 # Remove 2 Taste sessions
-analysis_frame = analysis_frame[
-    ~analysis_frame["data.basename"].str.contains("2Tastes")
-]
+analysis_frame = analysis_frame[~analysis_frame["data.basename"].str.contains("2Tastes")]
 # Remove simulated models
 analysis_frame = analysis_frame[
     ~analysis_frame["preprocess.data_transform"].str.contains("simulated")
@@ -232,9 +228,7 @@ fig, ax = plt.subplots(figsize=(5, 7))
 heatmap = ax.pcolor(num_rank_array, cmap=cmap, edgecolors="w", linewidth=1)
 patch_list = []
 for label, color_val in type_map.items():
-    patch_list.append(
-        mpatches.Patch(color=plt.cm.viridis(norm(color_val)), label=label)
-    )
+    patch_list.append(mpatches.Patch(color=plt.cm.viridis(norm(color_val)), label=label))
 ax.legend(handles=patch_list, bbox_to_anchor=(0.5, 1.1), ncol=3, loc="upper center")
 ax.set_xlabel("Number of states")
 ax.set_ylabel("ELBO Rank")
@@ -263,9 +257,7 @@ sns.lineplot(
     legend=False,
 )
 # plt.show()
-fig.savefig(
-    os.path.join(data_dir, f"{wanted_exp_name}_elbo_ranks.svg"), format="svg", dpi=300
-)
+fig.savefig(os.path.join(data_dir, f"{wanted_exp_name}_elbo_ranks.svg"), format="svg", dpi=300)
 plt.close(fig)
 
 # g = sns.lineplot(data = analysis_frame,
@@ -308,9 +300,7 @@ plt.ylabel("Model Ranks")
 plt.suptitle(f"Exp : {wanted_exp_name}" + "_State Rankings")
 plt.tight_layout()
 # plt.show()
-fig.savefig(
-    os.path.join(data_dir, f"{wanted_exp_name}_state_ranks.svg"), format="svg", dpi=300
-)
+fig.savefig(os.path.join(data_dir, f"{wanted_exp_name}_state_ranks.svg"), format="svg", dpi=300)
 plt.close(fig)
 # plt.legend()
 

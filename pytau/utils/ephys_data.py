@@ -53,10 +53,8 @@ class EphysData:
                 "{}) {} \n".format(num, os.path.basename(file))
                 for num, file in enumerate(hdf5_path)
             ]
-            selection_string = (
-                "Multiple HDF5 files detected, please select a number:\n{}".format(
-                    "".join(selection_list)
-                )
+            selection_string = "Multiple HDF5 files detected, please select a number:\n{}".format(
+                "".join(selection_list)
             )
             file_selection = input(selection_string)
             return hdf5_path[int(file_selection)]
@@ -72,9 +70,7 @@ class EphysData:
             hf5 (Pytables file obj): Handler for HDF5 file
         """
         if path_to_node in hf5:
-            hf5.remove_node(
-                os.path.dirname(path_to_node), os.path.basename(path_to_node)
-            )
+            hf5.remove_node(os.path.dirname(path_to_node), os.path.basename(path_to_node))
 
     ####################
     # Initialize instance
@@ -103,21 +99,16 @@ class EphysData:
     def check_laser(self):
         """Check whether session contains laser variables"""
         with tables.open_file(self.hdf5_path, "r+") as hf5:
-            dig_in_list = [
-                x for x in hf5.list_nodes("/spike_trains") if "dig_in" in x.__str__()
-            ]
+            dig_in_list = [x for x in hf5.list_nodes("/spike_trains") if "dig_in" in x.__str__()]
 
             # Mark whether laser exists or not
             self.laser_durations_exists = (
-                sum([dig_in.__contains__("laser_durations") for dig_in in dig_in_list])
-                > 0
+                sum([dig_in.__contains__("laser_durations") for dig_in in dig_in_list]) > 0
             )
 
             # If it does, pull out laser durations
             if self.laser_durations_exists:
-                self.laser_durations = [
-                    dig_in.laser_durations[:] for dig_in in dig_in_list
-                ]
+                self.laser_durations = [dig_in.laser_durations[:] for dig_in in dig_in_list]
 
                 non_zero_laser_durations = np.sum(self.laser_durations) > 0
 
@@ -141,9 +132,7 @@ class EphysData:
         with tables.open_file(self.hdf5_path, "r+") as hf5:
             if "/spike_trains" in hf5:
                 dig_in_list = [
-                    x
-                    for x in hf5.list_nodes("/spike_trains")
-                    if "dig_in" in x.__str__()
+                    x for x in hf5.list_nodes("/spike_trains") if "dig_in" in x.__str__()
                 ]
             else:
                 raise Exception("No spike trains found in HF5")
@@ -163,16 +152,10 @@ class EphysData:
         if self.laser_exists:
             self.laser_spikes = {}
             self.laser_spikes["on"] = np.array(
-                [
-                    taste[laser > 0]
-                    for taste, laser in zip(self.spikes, self.laser_durations)
-                ]
+                [taste[laser > 0] for taste, laser in zip(self.spikes, self.laser_durations)]
             )
             self.laser_spikes["off"] = np.array(
-                [
-                    taste[laser == 0]
-                    for taste, laser in zip(self.spikes, self.laser_durations)
-                ]
+                [taste[laser == 0] for taste, laser in zip(self.spikes, self.laser_durations)]
             )
         else:
             raise Exception("No laser trials in this experiment")
@@ -188,9 +171,7 @@ class EphysData:
         if os.path.exists(json_path):
             json_dict = json.load(open(json_path, "r"))
             self.region_electrode_dict = json_dict["electrode_layout"]
-            self.region_names = [
-                x for x in self.region_electrode_dict.keys() if x != "emg"
-            ]
+            self.region_names = [x for x in self.region_electrode_dict.keys() if x != "emg"]
         else:
             raise Exception("Cannot find json file. Make sure it's present")
 
@@ -234,9 +215,7 @@ class EphysData:
                     if elec in car:
                         region_ind_vec[elec_num] = region_num
 
-        self.region_units = [
-            np.where(region_ind_vec == x)[0] for x in np.unique(region_ind_vec)
-        ]
+        self.region_units = [np.where(region_ind_vec == x)[0] for x in np.unique(region_ind_vec)]
 
     def return_region_spikes(self, region_name="all", laser=None):
         """Use metadata to return spike trains by region
@@ -265,9 +244,7 @@ class EphysData:
             this_spikes = self.spikes
 
         if region_name != "all":
-            region_ind = [
-                num for num, x in enumerate(self.region_names) if x == region_name
-            ]
+            region_ind = [num for num, x in enumerate(self.region_names) if x == region_name]
             if not len(region_ind) == 1:
                 raise Exception(
                     "Region name not found, or too many matches found, "

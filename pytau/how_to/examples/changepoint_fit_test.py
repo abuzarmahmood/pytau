@@ -115,9 +115,7 @@ for num, this_iter in iter_frame.iterrows():
     handler.set_model_params(**model_parameters)
     handler.set_preprocess_params(**preprocess_parameters)
 
-    error_file_path = os.path.join(
-        handler.database_handler.model_save_dir, "error_log_file.txt"
-    )
+    error_file_path = os.path.join(handler.database_handler.model_save_dir, "error_log_file.txt")
 
     try:
         handler.run_inference()

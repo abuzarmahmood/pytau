@@ -18,13 +18,9 @@ from pytau.changepoint_model import (
     SingleTastePoissonTrialSwitch,
     SingleTastePoissonVarsig,
     SingleTastePoissonVarsigFixed,
-    AllTastePoisson,
-    AllTastePoissonVarsigFixed,
-    SingleTastePoissonTrialSwitch,
-    AllTastePoissonTrialSwitch,
-    gen_test_array,
+    advi_fit,
     extract_inferred_values,
-    advi_fit
+    gen_test_array,
 )
 
 
@@ -63,20 +59,22 @@ def test_gen_test_array():
 
 # Test model initialization and basic functionality
 @pytest.mark.slow
-@pytest.mark.parametrize("model_class,data_shape,n_states,extra_args", [
-    (GaussianChangepointMeanVar2D, (10, 100), 3, {}),
-    (GaussianChangepointMeanDirichlet, (10, 100), None, {"max_states": 5}),
-    (GaussianChangepointMean2D, (10, 100), 3, {}),
-    (SingleTastePoissonDirichlet, (5, 10, 100), None, {"max_states": 5}),
-    (SingleTastePoisson, (5, 10, 100), 3, {}),
-    (SingleTastePoissonVarsig, (5, 10, 100), 3, {}),
-    (SingleTastePoissonVarsigFixed, (5, 10, 100), 3, {"inds_span": 1}),
-    (AllTastePoisson, (2, 5, 10, 100), 3, {}),
-    (AllTastePoissonVarsigFixed, (2, 5, 10, 100), 3, {"inds_span": 1}),
-    (SingleTastePoissonTrialSwitch, (5, 10, 100), 3, {"switch_components": 2}),
-    (AllTastePoissonTrialSwitch, (2, 5, 10, 100), 3, {"switch_components": 2}),
-])
-
+@pytest.mark.parametrize(
+    "model_class,data_shape,n_states,extra_args",
+    [
+        (GaussianChangepointMeanVar2D, (10, 100), 3, {}),
+        (GaussianChangepointMeanDirichlet, (10, 100), None, {"max_states": 5}),
+        (GaussianChangepointMean2D, (10, 100), 3, {}),
+        (SingleTastePoissonDirichlet, (5, 10, 100), None, {"max_states": 5}),
+        (SingleTastePoisson, (5, 10, 100), 3, {}),
+        (SingleTastePoissonVarsig, (5, 10, 100), 3, {}),
+        (SingleTastePoissonVarsigFixed, (5, 10, 100), 3, {"inds_span": 1}),
+        (AllTastePoisson, (2, 5, 10, 100), 3, {}),
+        (AllTastePoissonVarsigFixed, (2, 5, 10, 100), 3, {"inds_span": 1}),
+        (SingleTastePoissonTrialSwitch, (5, 10, 100), 3, {"switch_components": 2}),
+        (AllTastePoissonTrialSwitch, (2, 5, 10, 100), 3, {"switch_components": 2}),
+    ],
+)
 def test_model_initialization(model_class, data_shape, n_states, extra_args):
     """Test that models can be initialized and generate a model."""
     # Generate test data
@@ -96,20 +94,14 @@ def test_model_initialization(model_class, data_shape, n_states, extra_args):
 
     # Initialize model
     if n_states is None:
-        model_instance = model_class(
-                data_array = test_data, 
-                **extra_args
-                )
+        model_instance = model_class(data_array=test_data, **extra_args)
     else:
-        model_instance = model_class(
-                data_array = test_data, 
-                n_states = n_states, 
-                **extra_args
-                )
+        model_instance = model_class(data_array=test_data, n_states=n_states, **extra_args)
 
     # Check that model can be generated
     model = model_instance.generate_model()
     assert model is not None
+
 
 # Test the run_all_tests function
 @pytest.mark.slow
@@ -117,17 +109,20 @@ def test_run_all_tests():
     """Test that run_all_tests can be imported and executed."""
     try:
         from pytau.changepoint_model import run_all_tests
+
         assert callable(run_all_tests)
-        
+
         # We don't actually run the full tests here to avoid long runtime in CI
         # Just verify the function exists and is callable
         # For full testing, run the function directly
     except ImportError:
         pytest.skip("run_all_tests function not found in changepoint_model module")
 
+
 # Test the utility functions
 def test_extract_inferred_values():
     """Test the extract_inferred_values function."""
+
     # Create a mock trace
     class MockTrace:
         def __init__(self):
@@ -142,11 +137,12 @@ def test_extract_inferred_values():
 
     trace = MockTrace()
     result = extract_inferred_values(trace)
-    
-    assert 'tau_samples' in result
-    assert 'lambda_stack' in result
-    assert result['tau_samples'].shape == trace['tau'].shape
-    assert result['lambda_stack'].shape == (5, 10, 3)  # Swapped axes
+
+    assert "tau_samples" in result
+    assert "lambda_stack" in result
+    assert result["tau_samples"].shape == trace["tau"].shape
+    assert result["lambda_stack"].shape == (5, 10, 3)  # Swapped axes
+
 
 @pytest.mark.slow
 def test_advi_fit():
@@ -154,11 +150,13 @@ def test_advi_fit():
     # This is a more complex test that would require mocking PyMC3
     # For now, we'll just check that the function exists and is callable
     assert callable(advi_fit)
-    
+
     # Skip actual testing as it would require a full PyMC3 model
     pytest.skip("Full testing of advi_fit requires a PyMC3 model")
+
 
 def test_module_import():
     """Test that the changepoint_model module can be imported."""
     import pytau.changepoint_model
+
     assert pytau.changepoint_model is not None

@@ -20,9 +20,7 @@ def entry_checker(msg, check_func, fail_response):
     return msg_input, continue_bool
 
 
-parallel_temp_path = (
-    "/media/bigdata/projects/pytau/pytau/utils" "/batch_utils/parallel_temp"
-)
+parallel_temp_path = "/media/bigdata/projects/pytau/pytau/utils" "/batch_utils/parallel_temp"
 # dir_list_path = '/media/bigdata/projects/pytau/pytau/data/fin_inter_list_3_14_22.txt'
 # dir_list_path = '/media/bigdata/projects/pytau/pytau/data/all_gc_dirs.txt'
 # dir_list_path = '/media/bigdata/projects/pytau/pytau/data/bla_dirs.txt'

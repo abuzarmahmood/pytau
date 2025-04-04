@@ -27,9 +27,7 @@ def get_transition_snips(spike_array, tau_array, window_radius=300):
     n_trials, n_neurons, n_bins = spike_array.shape
     n_transitions = tau_array.shape[1]
     transition_snips = np.zeros((n_trials, n_neurons, 2 * window_radius, n_transitions))
-    window_lims = np.stack(
-        [tau_array - window_radius, tau_array + window_radius], axis=-1
-    )
+    window_lims = np.stack([tau_array - window_radius, tau_array + window_radius], axis=-1)
 
     # Make sure no lims are outside the bounds of the data
     if (window_lims < 0).sum(axis=None) or (window_lims > n_bins).sum(axis=None):
@@ -118,9 +116,7 @@ def calc_significant_neurons_snippets(transition_snips, p_val=0.05):
     """
     # Calculate pairwise t-tests for each transition
     # shape : [before, after] x trials x neurons x transitions
-    mean_transition_snips = np.stack(np.array_split(transition_snips, 2, axis=2)).mean(
-        axis=3
-    )
+    mean_transition_snips = np.stack(np.array_split(transition_snips, 2, axis=2)).mean(axis=3)
     pairwise_p_val_array = np.zeros(mean_transition_snips.shape[2:])
     n_neuron, n_transitions = pairwise_p_val_array.shape
     for neuron in range(n_neuron):
@@ -147,20 +143,14 @@ class _firing:
         self.processed_spikes = processed_spikes
         self.metadata = metadata
         self._EphysData = EphysData(self.metadata["data"]["data_dir"])
-        temp_spikes = self._EphysData.return_region_spikes(
-            self.metadata["data"]["region_name"]
-        )
+        temp_spikes = self._EphysData.return_region_spikes(self.metadata["data"]["region_name"])
         taste_num = self.metadata["data"]["taste_num"]
         if taste_num != "all":
             self.raw_spikes = temp_spikes[taste_num]
         else:
             self.raw_spikes = temp_spikes
-        self.state_firing = get_state_firing(
-            self.processed_spikes, self.tau.raw_mode_tau
-        )
-        self.transition_snips = get_transition_snips(
-            self.raw_spikes, self.tau.scaled_mode_tau
-        )
+        self.state_firing = get_state_firing(self.processed_spikes, self.tau.raw_mode_tau)
+        self.transition_snips = get_transition_snips(self.raw_spikes, self.tau.scaled_mode_tau)
         (
             self.anova_p_val_array,
             self.anova_significant_neurons,
