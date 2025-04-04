@@ -2,10 +2,6 @@
 Fit models to given spike array
 """
 
-from pytau.utils import EphysData
-from pytau import changepoint_model, changepoint_preprocess
-import theano
-import pymc3
 import json
 import os
 import pickle
@@ -18,8 +14,13 @@ from glob import glob
 import numpy as np
 import pandas as pd
 import pingouin as pg
+import pymc3
 import seaborn as sns
+import theano
 from tqdm import tqdm, trange
+
+from pytau import changepoint_model, changepoint_preprocess
+from pytau.utils import EphysData
 
 base_dir = "/media/bigdata/projects/pytau"
 sys.path.append(base_dir)

@@ -1,21 +1,23 @@
-from pytau.changepoint_io import DatabaseHandler
-from pytau.changepoint_analysis import PklHandler
-from tqdm import tqdm, trange
-from scipy.stats import zscore
-from scipy.stats import mannwhitneyu as mwu
-from matplotlib import colors
-from ephys_data import ephys_data
-import visualize as vz
-import seaborn as sns
-import pingouin as pg
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import matplotlib as mpl
-import os
 import itertools as it
+import os
 import sys
+
+import matplotlib as mpl
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pingouin as pg
+import seaborn as sns
+import visualize as vz
+from ephys_data import ephys_data
+from matplotlib import colors
+from scipy.stats import mannwhitneyu as mwu
+from scipy.stats import zscore
+from tqdm import tqdm, trange
+
+from pytau.changepoint_analysis import PklHandler
+from pytau.changepoint_io import DatabaseHandler
 
 sys.path.append("/media/bigdata/firing_space_plot/ephys_data")
 sys.path.append("/media/bigdata/projects/pytau")

@@ -1,12 +1,13 @@
-from tqdm import tqdm
-from ephys_data import ephys_data
-from changepoint_io import fit_handler
-import pandas as pd
-import numpy as np
-import os
-import itertools as it
 import ast
+import itertools as it
+import os
 import sys
+
+import numpy as np
+import pandas as pd
+from changepoint_io import fit_handler
+from ephys_data import ephys_data
+from tqdm import tqdm
 
 sys.path.append("/media/bigdata/firing_space_plot/ephys_data")
 sys.path.append("/media/bigdata/firing_space_plot/changepoint_mcmc/v2")

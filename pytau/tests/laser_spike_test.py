@@ -2,13 +2,15 @@
 Test to make sure that the pipeline properly extracts laser vs non-laser trials
 """
 
-from pytau.changepoint_io import FitHandler
-import tables
-import pandas as pd
-import numpy as np
-from glob import glob
 import os
 import sys
+from glob import glob
+
+import numpy as np
+import pandas as pd
+import tables
+
+from pytau.changepoint_io import FitHandler
 
 base_dir = "/media/bigdata/projects/pytau"
 # sys.path.append(os.path.join(base_dir, 'utils'))

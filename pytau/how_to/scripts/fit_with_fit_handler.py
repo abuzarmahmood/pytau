@@ -1,10 +1,12 @@
 # Import modules
-from pytau.changepoint_analysis import PklHandler
-from pytau.changepoint_io import DatabaseHandler
-from pytau.utils import plotting
-from pytau.changepoint_io import FitHandler
-import pylab as plt
 import sys
+
+import pylab as plt
+
+from pytau.changepoint_analysis import PklHandler
+from pytau.changepoint_io import DatabaseHandler, FitHandler
+from pytau.utils import plotting
+
 base_dir = "/media/bigdata/projects/pytau"
 
 sys.path.append(base_dir)

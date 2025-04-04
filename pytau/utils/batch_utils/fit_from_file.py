@@ -1,9 +1,11 @@
-from pytau.changepoint_io import FitHandler
-import pandas as pd
-import numpy as np
 import argparse
 import os
 import sys
+
+import numpy as np
+import pandas as pd
+
+from pytau.changepoint_io import FitHandler
 
 base_dir = "/media/bigdata/projects/pytau"
 # sys.path.append(os.path.join(base_dir, 'utils'))

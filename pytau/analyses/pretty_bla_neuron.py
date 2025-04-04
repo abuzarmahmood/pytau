@@ -1,12 +1,13 @@
-from tqdm import tqdm, trange
-from ephys_data import ephys_data
-from changepoint_io import database_handler
-from changepoint_analysis import pkl_handler
-import visualize as vz
-import pandas as pd
-import matplotlib.pyplot as plt
 import os
 import sys
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import visualize as vz
+from changepoint_analysis import pkl_handler
+from changepoint_io import database_handler
+from ephys_data import ephys_data
+from tqdm import tqdm, trange
 
 sys.path.append("/media/bigdata/firing_space_plot/ephys_data")
 sys.path.append("/media/bigdata/firing_space_plot/changepoint_mcmc/v2")
