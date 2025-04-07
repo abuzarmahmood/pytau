@@ -287,6 +287,6 @@ While general-purpose changepoint detection tools are valuable, `pytau` addresse
 
 # Acknowledgements
 
-We acknowledge contributions from collaborators and support during the development of this project. Special thanks to the PyMC3 development team for providing the Bayesian modeling framework that powers the core functionality of `pytau`.
+We acknowledge contributions from collaborators and support from the Katz Lab during the development of this project. Special thanks to the PyMC development team for providing the Bayesian modeling framework that powers the core functionality of `pytau`.
 
 # References
