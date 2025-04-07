@@ -167,6 +167,22 @@ For users interested in learning how to effectively use the `pytau` package, a s
 
 These tutorials provide comprehensive guidance on various features and use cases of the package, helping users to get started quickly and efficiently with changepoint analysis of neural data.
 
+# References to Recent Works
+
+The `pytau` package has been utilized in several published and ongoing research projects in neuroscience, demonstrating its practical utility for analyzing neural dynamics:
+
+- **Published Research**:
+  - @Mahmood2023 used `pytau` to analyze the coupled dynamics between gustatory cortex and basolateral amygdala during taste processing, revealing coordinated state transitions across these regions.
+  - @Flores2023 applied the package to investigate how taste experience enhances cortical response reliability during taste aversion learning.
+
+- **Ongoing Research**:
+  - @MazzioInPrep is using `pytau` to study cortical dynamics underlying learned and non-learned aversive behavior.
+  - @BaasThomas2023 is investigating neural signals driving consummatory responses in rats.
+  - @MahmoodInPrep is examining asymmetric interactions between basolateral amygdala and gustatory cortex during taste processing.
+  - @CaliaBoganInPrep is analyzing taste-evoked intra-state dynamics in the gustatory cortex.
+
+These applications demonstrate the versatility of `pytau` for analyzing state transitions in neural activity across different experimental paradigms and brain regions.
+
 # Model types and features
 
 `pytau` implements several types of changepoint models to accommodate different analysis needs:
