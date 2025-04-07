@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: ['3.6.10']
+        python-version: ['3.6.10', '3.7', '3.8', '3.9', '3.10']
 
     steps:
     - uses: actions/checkout@v2
@@ -28,3 +28,6 @@ jobs:
     - name: Run tests
       run: |
         pytest --cov=pytau tests/
+    - name: Generate GitHub Step Summary
+      if: success()
+      run: echo "All tests passed for Python ${{ matrix.python-version }}" >> $GITHUB_STEP_SUMMARY
