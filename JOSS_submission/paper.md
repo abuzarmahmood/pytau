@@ -21,7 +21,7 @@ bibliography: paper.bib
 
 # Summary
 
-Analyzing complex biological data, particularly time-series data from neuroscience experiments, often requires sophisticated statistical modeling to identify significant changes in system dynamics. Several decades of research has emphasized that the dynamics of neural activity may show sharp changes accurately captured by models detecting state transitions such as Hidden aMarkov Models and changepoint models [@Seidemann1994, @Jones2007, @Saravani2019]. `pytau` is a Python software package designed to perform streamlined, batched inference for changepoint models across different parameter grids and datasets. It provides tools to efficiently query and analyze the results from sets of fitted models, facilitating the study of dynamic processes in biological systems, such as neural ensemble activity in response to stimuli. The package integrates with PyMC3 for Bayesian inference of these models (providing estimates of uncertainty in inference which are critical for noisy datasets usually with small sample sizes and low channelc counts common in neuroscience) and provides utilities for data preprocessing, model fitting, and result visualization. The package has been successfully used in published research [@Mahmood2023, @Flores2023] and is currently being utilized in several ongoing studies [@MazzioInPrep, @BaasThomasInPrep, @MahmoodInPrep, @CaliaBoganInPrep].
+Analyzing complex biological data, particularly time-series data from neuroscience experiments, often requires sophisticated statistical modeling to identify significant changes in system dynamics. Several decades of research has emphasized that the dynamics of neural activity may show sharp changes accurately captured by models detecting state transitions such as Hidden aMarkov Models and changepoint models [@Seidemann1994; @Jones2007; @Saravani2019]. `pytau` is a Python software package designed to perform streamlined, batched inference for changepoint models across different parameter grids and datasets. It provides tools to efficiently query and analyze the results from sets of fitted models, facilitating the study of dynamic processes in biological systems, such as neural ensemble activity in response to stimuli. The package integrates with PyMC3 for Bayesian inference of these models (providing estimates of uncertainty in inference which are critical for noisy datasets usually with small sample sizes and low channelc counts common in neuroscience) and provides utilities for data preprocessing, model fitting, and result visualization. The package has been successfully used in published research [@Mahmood2023; @Flores2023] and is currently being utilized in several ongoing studies [@MazzioInPrep; @BaasThomasInPrep; @MahmoodInPrep, @CaliaBoganInPrep].
 
 # Statement of need
 
@@ -48,7 +48,7 @@ These features make `pytau` particularly valuable for neuroscientists studying s
 
 # Implementation and architecture
 
-`pytau` is implemented in Python and built on several key libraries including NumPy, SciPy, PyMC3, and Matplotlib [@numpy, @pymc3]. The package is organized into several modules:
+`pytau` is implemented in Python and built on several key libraries including NumPy, SciPy, PyMC3, and Matplotlib [@numpy; @pymc3]. The package is organized into several modules:
 
 1. **changepoint_model.py**: Contains model definitions for various changepoint models including Poisson and Gaussian models for neural data
 2. **changepoint_io.py**: Handles data loading, preprocessing, and result storage through the `FitHandler` and `DatabaseHandler` classes
@@ -289,7 +289,7 @@ Several tools exist for changepoint detection, including:
 1. **ruptures** [@ruptures]: A Python package for offline change point detection
 2. **bayesloop**: A probabilistic programming framework for time series analysis
 3. **PyChange**: A Python package for change point detection in time series
-4. **Bayesian online changepoint detection** [@adams2007bayesian, @fearnhead2007line]: Methods for online detection of changepoints
+4. **Bayesian online changepoint detection** [@adams2007bayesian; @fearnhead2007line]: Methods for online detection of changepoints
 
 `pytau` differs from these tools in its specific focus on neuroscience applications, particularly for analyzing neural ensemble data across multiple experimental conditions. It provides specialized functionality for:
 
