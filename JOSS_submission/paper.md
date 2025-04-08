@@ -21,11 +21,11 @@ bibliography: paper.bib
 
 # Summary
 
-Analyzing complex biological data, particularly time-series data from neuroscience experiments, often requires sophisticated statistical modeling to identify significant changes in system dynamics. Several decades of research has emphasized that the dynamics of neural activity may show sharp changes accurately captured by models detecting state transitions such as Hidden aMarkov Models and changepoint models [@Seidemann1994, @Jones2007, @Saravani2019]. `pytau` is a Python software package designed to perform streamlined, batched inference for changepoint models across different parameter grids and datasets. It provides tools to efficiently query and analyze the results from sets of fitted models, facilitating the study of dynamic processes in biological systems, such as neural ensemble activity in response to stimuli. The package integrates with PyMC3 for Bayesian inference of these models (providing estimates of uncertainty in inference which are critical for noisy datasets usually with small sample sizes and low channelc counts common in neuroscience) and provides utilities for data preprocessing, model fitting, and result visualization.
+Analyzing complex biological data, particularly time-series data from neuroscience experiments, often requires sophisticated statistical modeling to identify significant changes in system dynamics. Several decades of research has emphasized that the dynamics of neural activity may show sharp changes accurately captured by models detecting state transitions such as Hidden aMarkov Models and changepoint models [@Seidemann1994, @Jones2007, @Saravani2019]. `pytau` is a Python software package designed to perform streamlined, batched inference for changepoint models across different parameter grids and datasets. It provides tools to efficiently query and analyze the results from sets of fitted models, facilitating the study of dynamic processes in biological systems, such as neural ensemble activity in response to stimuli. The package integrates with PyMC3 for Bayesian inference of these models (providing estimates of uncertainty in inference which are critical for noisy datasets usually with small sample sizes and low channelc counts common in neuroscience) and provides utilities for data preprocessing, model fitting, and result visualization. The package has been successfully used in published research [@Mahmood2023, @Flores2023] and is currently being utilized in several ongoing studies [@MazzioInPrep, @BaasThomasInPrep, @MahmoodInPrep, @CaliaBoganInPrep].
 
 # Statement of need
 
-Understanding how neural populations encode information often involves analyzing activity changes over time, potentially across different experimental conditions, parameters, or subjects. Fitting and comparing complex models like Bayesian changepoint models across numerous datasets or parameter settings can be computationally intensive and logistically challenging. There is a need for tools that streamline this process, enabling researchers to efficiently apply these models in batch, manage the results, and compare outcomes across conditions. `pytau` aims to fill this gap by providing a modularized pipeline specifically for fitting and analyzing changepoint models applied to neuroscience data, enabling efficient comparisons and analysis.
+Understanding how neural populations encode information often involves analyzing activity changes over time, potentially across different experimental conditions, parameters, or subjects. Fitting and comparing complex models like Bayesian changepoint models across numerous datasets or parameter settings can be computationally intensive and logistically challenging. There is a need for tools that streamline this process, enabling researchers to efficiently apply these models in batch, manage the results, and compare outcomes across conditions. `pytau` aims to fill this gap by providing a modularized pipeline specifically for fitting and analyzing changepoint models applied to neuroscience data, enabling efficient comparisons and analysis. This need is demonstrated by the tool's adoption in recent studies examining neural dynamics in taste processing [@Mahmood2023] and taste aversion learning [@Flores2023].
 
 The package offers several key advantages:
 
@@ -166,6 +166,22 @@ For users interested in learning how to effectively use the `pytau` package, a s
 3. **Test data**: Scripts to download test datasets for practicing with the package. This allows users to experiment with the package features without needing their own data initially.
 
 These tutorials provide comprehensive guidance on various features and use cases of the package, helping users to get started quickly and efficiently with changepoint analysis of neural data.
+
+# References to Recent Works
+
+The `pytau` package has been utilized in several published and ongoing research projects in neuroscience, demonstrating its practical utility for analyzing neural dynamics:
+
+- **Published Research**:
+  - @Mahmood2023 used `pytau` to analyze the coupled dynamics between gustatory cortex and basolateral amygdala during taste processing, revealing coordinated state transitions across these regions.
+  - @Flores2023 applied the package to investigate how taste experience enhances cortical response reliability during taste aversion learning.
+
+- **Ongoing Research**:
+  - @MazzioInPrep is using `pytau` to study cortical dynamics underlying learned and non-learned aversive behavior.
+  - @BaasThomas2023 is investigating neural signals driving consummatory responses in rats.
+  - @MahmoodInPrep is examining asymmetric interactions between basolateral amygdala and gustatory cortex during taste processing.
+  - @CaliaBoganInPrep is analyzing taste-evoked intra-state dynamics in the gustatory cortex.
+
+These applications demonstrate the versatility of `pytau` for analyzing state transitions in neural activity across different experimental paradigms and brain regions.
 
 # Model types and features
 
