@@ -181,6 +181,7 @@ The `pytau` package has been utilized in several published and ongoing research 
   - @BaasThomas2023 is investigating neural signals driving consummatory responses in rats.
   - @MahmoodInPrep is examining asymmetric interactions between basolateral amygdala and gustatory cortex during taste processing.
   - @CaliaBoganInPrep is analyzing taste-evoked intra-state dynamics in the gustatory cortex.
+  - @RaymondInPrep is using inferred changepoints to align neural activity with free consumption behaviors in a rat model.
 
 These applications demonstrate the versatility of `pytau` for analyzing state transitions in neural activity across different experimental paradigms and brain regions.
 
