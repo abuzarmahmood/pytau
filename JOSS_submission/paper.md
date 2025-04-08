@@ -253,12 +253,12 @@ The package also provides tools for statistical analysis of fitted models, inclu
 ![**Transition-aligned activity**: Alignment of neural activity to transitions across trials allows us to visualize patterns of change across different transitions.](figs/transition_aligned_activity.png)
 
 These visualization and analysis functions enable researchers to:
-  - Examine neural activity with overlaid changepoints
-  - Visualize the distribution of changepoints across trials
-  - Analyze neural activity aligned to state transitions
-  - Compare firing rates across different states
-  - Identify neurons with significant state-dependent activity
-  - Detect neurons that respond significantly to state transitions
+   - Examine neural activity with overlaid changepoints
+   - Visualize the distribution of changepoints across trials
+   - Analyze neural activity aligned to state transitions
+   - Compare firing rates across different states
+   - Identify neurons with significant state-dependent activity
+   - Detect neurons that respond significantly to state transitions
 
 # Comparison with existing tools
 
