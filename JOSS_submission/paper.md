@@ -11,7 +11,7 @@ authors:
     orcid: 0000-0002-2448-4818
     affiliation: "1,2"
 affiliations:
- - name: Swartz Foundational Computational Neuroscience Fellow, Volen Center for Complex Systems, Brandeis University, Waltham, MA, USA
+ - name: Swartz Foundation Computational Neuroscience Fellow, Volen Center for Complex Systems, Brandeis University, Waltham, MA, USA
    index: 1
  - name: Department of Psychology, Brandeis University, Waltham, MA, USA
    index: 2
@@ -21,7 +21,7 @@ bibliography: paper.bib
 
 # Summary
 
-Analyzing complex biological data, particularly time-series data from neuroscience experiments, often requires sophisticated statistical modeling to identify significant changes in system dynamics. Several decades of research has emphasized that the dynamics of neural activity may show sharp changes accurately captured by models detecting state transitions such as Hidden aMarkov Models and changepoint models [@Seidemann1994; @Jones2007; @Saravani2019]. `pytau` is a Python software package designed to perform streamlined, batched inference for changepoint models across different parameter grids and datasets. It provides tools to efficiently query and analyze the results from sets of fitted models, facilitating the study of dynamic processes in biological systems, such as neural ensemble activity in response to stimuli. The package integrates with PyMC3 for Bayesian inference of these models (providing estimates of uncertainty in inference which are critical for noisy datasets usually with small sample sizes and low channelc counts common in neuroscience) and provides utilities for data preprocessing, model fitting, and result visualization. The package has been successfully used in published research [@Mahmood2023; @Flores2023] and is currently being utilized in several ongoing studies [@MazzioInPrep; @BaasThomasInPrep; @MahmoodInPrep; @CaliaBoganInPrep].
+Analyzing complex biological data, particularly time-series data from neuroscience experiments, often requires sophisticated statistical modeling to identify significant changes in system dynamics. Several decades of research has emphasized that the dynamics of neural activity may show sharp changes accurately captured by models detecting state transitions such as Hidden aMarkov Models and changepoint models [@Seidemann1994; @Jones2007; @Saravani2019]. `pytau` is a Python software package designed to perform streamlined, batched inference for changepoint models across different parameter grids and datasets. It provides tools to efficiently query and analyze the results from sets of fitted models, facilitating the study of dynamic processes in biological systems, such as neural ensemble activity in response to stimuli. The package integrates with PyMC3 for Bayesian inference of these models (providing estimates of uncertainty in inference which are critical for noisy datasets usually with small sample sizes and low channel counts common in neuroscience) and provides utilities for data preprocessing, model fitting, and result visualization. The package has been successfully used in published research [@Mahmood2023; @Flores2023] and is currently being utilized in several ongoing studies [@MazzioInPrep; @BaasThomasInPrep; @MahmoodInPrep; @CaliaBoganInPrep].
 
 # Statement of need
 
@@ -253,36 +253,12 @@ The package also provides tools for statistical analysis of fitted models, inclu
 ![**Transition-aligned activity**: Alignment of neural activity to transitions across trials allows us to visualize patterns of change across different transitions.](figs/transition_aligned_activity.png)
 
 These visualization and analysis functions enable researchers to:
-- Examine neural activity with overlaid changepoints
-- Visualize the distribution of changepoints across trials
-- Analyze neural activity aligned to state transitions
-- Compare firing rates across different states
-- Identify neurons with significant state-dependent activity
-- Detect neurons that respond significantly to state transitions
-
-# Analysis capabilities
-
-The `PklHandler` class in `changepoint_analysis.py` provides a comprehensive interface for analyzing fitted models:
-
-```python
-# Load a fitted model
-pkl_handler = PklHandler('/path/to/model.pkl')
-
-# Access key components
-tau = pkl_handler.tau           # Changepoint times and transformations
-firing = pkl_handler.firing     # Firing rate analysis
-
-# Access raw data
-raw_spikes = firing.raw_spikes  # Original spike data
-processed_spikes = firing.processed_spikes  # Preprocessed spike data
-
-# Access analysis results
-state_firing = firing.state_firing  # State-dependent firing rates
-transition_snips = firing.transition_snips  # Activity around transitions
-significant_neurons = firing.anova_significant_neurons  # Neurons with significant state modulation
-```
-
-This structured approach allows researchers to easily access both raw data and analysis results, facilitating comprehensive examination of neural dynamics.
+  - Examine neural activity with overlaid changepoints
+  - Visualize the distribution of changepoints across trials
+  - Analyze neural activity aligned to state transitions
+  - Compare firing rates across different states
+  - Identify neurons with significant state-dependent activity
+  - Detect neurons that respond significantly to state transitions
 
 # Comparison with existing tools
 
