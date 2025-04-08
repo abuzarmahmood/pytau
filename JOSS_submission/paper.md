@@ -21,7 +21,7 @@ bibliography: paper.bib
 
 # Summary
 
-Analyzing complex biological data, particularly time-series data from neuroscience experiments, often requires sophisticated statistical modeling to identify significant changes in system dynamics. Several decades of research has emphasized that the dynamics of neural activity may show sharp changes accurately captured by models detecting state transitions such as Hidden aMarkov Models and changepoint models [@Seidemann1994; @Jones2007; @Saravani2019]. `pytau` is a Python software package designed to perform streamlined, batched inference for changepoint models across different parameter grids and datasets. It provides tools to efficiently query and analyze the results from sets of fitted models, facilitating the study of dynamic processes in biological systems, such as neural ensemble activity in response to stimuli. The package integrates with PyMC3 for Bayesian inference of these models (providing estimates of uncertainty in inference which are critical for noisy datasets usually with small sample sizes and low channelc counts common in neuroscience) and provides utilities for data preprocessing, model fitting, and result visualization. The package has been successfully used in published research [@Mahmood2023; @Flores2023] and is currently being utilized in several ongoing studies [@MazzioInPrep; @BaasThomasInPrep; @MahmoodInPrep, @CaliaBoganInPrep].
+Analyzing complex biological data, particularly time-series data from neuroscience experiments, often requires sophisticated statistical modeling to identify significant changes in system dynamics. Several decades of research has emphasized that the dynamics of neural activity may show sharp changes accurately captured by models detecting state transitions such as Hidden aMarkov Models and changepoint models [@Seidemann1994; @Jones2007; @Saravani2019]. `pytau` is a Python software package designed to perform streamlined, batched inference for changepoint models across different parameter grids and datasets. It provides tools to efficiently query and analyze the results from sets of fitted models, facilitating the study of dynamic processes in biological systems, such as neural ensemble activity in response to stimuli. The package integrates with PyMC3 for Bayesian inference of these models (providing estimates of uncertainty in inference which are critical for noisy datasets usually with small sample sizes and low channelc counts common in neuroscience) and provides utilities for data preprocessing, model fitting, and result visualization. The package has been successfully used in published research [@Mahmood2023; @Flores2023] and is currently being utilized in several ongoing studies [@MazzioInPrep; @BaasThomasInPrep; @MahmoodInPrep; @CaliaBoganInPrep].
 
 # Statement of need
 
@@ -42,7 +42,7 @@ The package offers several key advantages:
    - Pairwise t-tests for transition-triggered neural activity
    - Cross-trial analysis of state transitions
 
-![**Fig 1. Spike rasters with changepoint overlays** provide a first visualization of the inferred changepoints](figs/state_raster_overlay.png)
+![**Spike rasters with changepoint overlays** provide a first visualization of the inferred changepoints](figs/state_raster_overlay.png)
 
 These features make `pytau` particularly valuable for neuroscientists studying state transitions in neural activity, such as taste processing, decision-making, or learning paradigms.
 
@@ -152,8 +152,9 @@ plot_changepoint_raster(pkl_handler.processed_spikes, pkl_handler.tau.scaled_mod
 plot_state_firing_rates(pkl_handler.processed_spikes, pkl_handler.tau.scaled_mode_tau)
 ```
 
-![**Fig 2. Overview of state timing**: A general overview of state-durations across trials fit, as well as the distribution of transition times.](figs/state_timing_overview.png)
-![**Fig 3. State-specific neuron activity**: Visuaizing state-specific firing rates of neurons allows assessment of the fraction of neurons showing differential activity and distribution of firing rates and firing-rate changes between neurons](figs/state_specific_neuron_activity.png)
+![**Overview of state timing**: A general overview of state-durations across trials fit, as well as the distribution of transition times.](figs/state_timing_overview.png)
+
+![**State-specific neuron activity**: Visuaizing state-specific firing rates of neurons allows assessment of the fraction of neurons showing differential activity and distribution of firing rates and firing-rate changes between neurons](figs/state_specific_neuron_activity.png)
 
 This example demonstrates the streamlined workflow for fitting a changepoint model to taste response data, analyzing the results, and visualizing the findings.
 
@@ -248,7 +249,7 @@ The package also provides tools for statistical analysis of fitted models, inclu
    plot_elbo_history(fit_model, final_window=0.05)
    ```
 
-![**Fig 4. Transition-aligned activity**: Alignment of neural activity to transitions across trials allows us to visualize patterns of change across different transitions.](figs/transition_aligned_activity.png)
+![**Transition-aligned activity**: Alignment of neural activity to transitions across trials allows us to visualize patterns of change across different transitions.](figs/transition_aligned_activity.png)
 
 These visualization and analysis functions enable researchers to:
 - Examine neural activity with overlaid changepoints
