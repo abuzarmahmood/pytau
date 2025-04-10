@@ -130,7 +130,7 @@ def plot_changepoint_overview(tau, plot_lims):
 
     fig, ax = plt.subplots(2, 1, figsize=(15, 10), sharex=True)
     ax[0].pcolormesh(np.arange(plot_lims[1]),
-                     np.arange(n_trials), state_durations)
+                     np.arange(n_trials + 1), state_durations)
     ax[0].set_xlim(plot_lims)
     ax[0].set_ylabel("Trial")
     ax[0].set_xlabel("State")
