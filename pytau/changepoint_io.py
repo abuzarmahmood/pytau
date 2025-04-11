@@ -1,7 +1,7 @@
 """
 Pipeline to handle model fitting from data extraction to saving results
 """
-#%% Import Modules
+# %% Import Modules
 import json
 import os
 import pickle
@@ -22,7 +22,8 @@ from .utils import EphysData
 # import changepoint_preprocess
 # from utils import EphysData
 
-#%% FitHandler
+
+# %% FitHandler
 class FitHandler:
     """Class to handle pipeline of model fitting including:
     1) Loading data
@@ -41,7 +42,7 @@ class FitHandler:
         experiment_name=None,
         model_params_path=None,
         preprocess_params_path=None,
-        MODEL_SAVE_DIR = None
+        MODEL_SAVE_DIR=None,
     ):
         """Initialize FitHandler class
 
@@ -95,7 +96,8 @@ class FitHandler:
                 [data_dir, experiment_name, taste_num, laser_type, region_name],
             )
         )
-        self.database_handler = DatabaseHandler(MODEL_SAVE_DIR = self.MODEL_SAVE_DIR)
+        self.database_handler = DatabaseHandler(
+            MODEL_SAVE_DIR=self.MODEL_SAVE_DIR)
         self.database_handler.set_run_params(**data_handler_init_kwargs)
 
         if model_params_path is None:
@@ -384,16 +386,18 @@ class FitHandler:
 class DatabaseHandler:
     """Class to handle transactions with model database"""
 
-    def __init__(self,MODEL_SAVE_DIR=None):
+    def __init__(self, MODEL_SAVE_DIR=None):
         if MODEL_SAVE_DIR is None:
             # Use a local directory for model saving instead of reading from a parameter file
-            MODEL_SAVE_DIR = os.path.join(os.path.expanduser("~"), "pytau", "models")
+            MODEL_SAVE_DIR = os.path.join(
+                os.path.expanduser("~"), "pytau", "models")
             if not os.path.exists(MODEL_SAVE_DIR):
                 os.makedirs(MODEL_SAVE_DIR)
                 print("Created directory: {}".format(MODEL_SAVE_DIR))
             else:
                 print("Using directory: {}".format(MODEL_SAVE_DIR))
-        MODEL_DATABASE_PATH = os.path.join(MODEL_SAVE_DIR, "model_database.csv")
+        MODEL_DATABASE_PATH = os.path.join(
+            MODEL_SAVE_DIR, "model_database.csv")
 
         """Initialize DatabaseHandler class"""
         self.unique_cols = ["exp.model_id", "exp.save_path", "exp.fit_date"]
