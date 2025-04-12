@@ -48,7 +48,7 @@ exp_model_parameters = {
 exp_preprocess_parameters = {
     "time_lims": [[2000, 4000]],
     "bin_width": [50],
-    "data_transform": ["None"]  # ,
+    "data_transform": ["None"],  # ,
     # 'spike_shuffled',
     # 'trial_shuffled']
 }
