@@ -33,6 +33,18 @@ jupyter notebook
 # Run a notebook
 ```
 
+## Testing
+
+To ensure that everything is working correctly, you can run the tests using `pytest`. Make sure you have all the development dependencies installed, which are listed in `requirements-dev.txt`.
+
+```bash
+# Install development dependencies
+pip install -r requirements-dev.txt
+
+# Run tests
+pytest
+```
+
 ## Data Organization
 
 - Models stored in CENTRAL LOCATION and accessed by indexing an info file,
