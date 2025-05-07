@@ -465,7 +465,8 @@ class TDistributionChangepointModel(ChangepointModel):
         with pm.Model() as model:
             mu = pm.Normal("mu", mu=mean_vals, sd=1, shape=(y_dim, n_states))
             sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim, n_states))
-            nu = pm.Exponential("nu", 1/30, shape=(y_dim, n_states))  # Degrees of freedom
+            # Degrees of freedom
+            nu = pm.Exponential("nu", 1 / 30, shape=(y_dim, n_states))
 
             a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
             b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
@@ -490,7 +491,8 @@ class TDistributionChangepointModel(ChangepointModel):
             mu_latent = mu.dot(weight_stack)
             sigma_latent = sigma.dot(weight_stack)
             observation = pm.StudentT(
-                "obs", nu=nu, mu=mu_latent, sd=sigma_latent, observed=data_array)
+                "obs", nu=nu, mu=mu_latent, sd=sigma_latent, observed=data_array
+            )
 
         return model
 
