@@ -131,7 +131,7 @@ Data stored in models:
 
 - Parallelization
     - Parallelization is currently performed using GNU Parallel by setting separate a theano compiledir for each job. This prevents compilation clashes. Refer to [this file](https://github.com/abuzarmahmood/pytau/blob/master/pytau/utils/batch_utils/single_process.sh) and [this commit](https://github.com/abuzarmahmood/pytau/pull/19/commits/231dd33b846cf278549b1b5815fdae5e76fa14a2)
- 
+
 ## Contributing
 
 We welcome contributions to PyTau! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute to the project.
