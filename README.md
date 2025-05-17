@@ -13,6 +13,10 @@ https://abuzarmahmood.github.io/pytau/
 
 ## Installation
 ```
+
+## Contributing
+
+We welcome contributions to PyTau! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute to the project.
 # Create and activate conda environment
 conda create -n "pytau_env" python=3.6.13 ipython notebook -y
 conda activate pytau_env
