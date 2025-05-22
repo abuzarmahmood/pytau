@@ -210,64 +210,6 @@ class GaussianChangepointMeanVar2D(ChangepointModel):
         print("Test for GaussianChangepointMeanVar2D passed")
         return True
 
-
-class TDistributionChangepointModel(ChangepointModel):
-    """Model for t-distribution data detecting changes in mean and variance."""
-
-    def __init__(self, data_array, n_states, **kwargs):
-        super().__init__(**kwargs)
-        self.data_array = data_array
-        self.n_states = n_states
-
-    def generate_model(self):
-        data_array = self.data_array
-        n_states = self.n_states
-
-        mean_vals = np.array(
-            [np.mean(x, axis=-1)
-             for x in np.array_split(data_array, n_states, axis=-1)]
-        ).T
-        mean_vals += 0.01  # To avoid zero starting prob
-
-        y_dim = data_array.shape[0]
-        idx = np.arange(data_array.shape[-1])
-        length = idx.max() + 1
-
-        with pm.Model() as model:
-            mu = pm.Normal("mu", mu=mean_vals, sd=1, shape=(y_dim, n_states))
-            sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim, n_states))
-            # Degrees of freedom
-            nu = pm.Exponential("nu", 1 / 30, shape=(y_dim, n_states))
-
-            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
-            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
-
-            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
-            tau_latent = pm.Beta(
-                "tau_latent", a_tau, b_tau, testval=even_switches, shape=(n_states - 1)
-            ).sort(axis=-1)
-
-            tau = pm.Deterministic(
-                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
-
-            weight_stack = tt.nnet.sigmoid(
-                idx[np.newaxis, :] - tau[:, np.newaxis])
-            weight_stack = tt.concatenate(
-                [np.ones((1, length)), weight_stack], axis=0)
-            inverse_stack = 1 - weight_stack[1:]
-            inverse_stack = tt.concatenate(
-                [inverse_stack, np.ones((1, length))], axis=0)
-            weight_stack = np.multiply(weight_stack, inverse_stack)
-
-            mu_latent = mu.dot(weight_stack)
-            sigma_latent = sigma.dot(weight_stack)
-            observation = pm.StudentT(
-                "obs", nu=nu, mu=mu_latent, sd=sigma_latent, observed=data_array
-            )
-
-        return model
-
-
 def stick_breaking(beta):
     portion_remaining = tt.concatenate(
         [[1], tt.extra_ops.cumprod(1 - beta)[:-1]])
