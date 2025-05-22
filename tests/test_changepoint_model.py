@@ -73,8 +73,8 @@ def test_gen_test_array():
         (AllTastePoissonVarsigFixed, (2, 5, 10, 100), 3, {"inds_span": 1}),
         (SingleTastePoissonTrialSwitch,
          (5, 10, 100), 3, {"switch_components": 2}),
-        (AllTastePoissonTrialSwitch, (2, 5, 10, 100),
-         3, {"switch_components": 2}),
+        (AllTastePoissonTrialSwitch, (2, 5, 10, 100), 3, {"switch_components": 2}),
+        (TDistributionChangepointModel, (10, 100), 3, {}),
         (TDistributionChangepointModel, (10, 100), 3, {}),
     ]
 def test_model_initialization(model_class, data_shape, n_states, extra_args):
