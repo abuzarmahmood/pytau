@@ -75,7 +75,7 @@ def test_gen_test_array():
          (5, 10, 100), 3, {"switch_components": 2}),
         (AllTastePoissonTrialSwitch, (2, 5, 10, 100),
          3, {"switch_components": 2}),
-    ],
+        (CategoricalChangepoint3D, (5, 10, 100), 3, {}),
 )
 def test_model_initialization(model_class, data_shape, n_states, extra_args):
     """Test that models can be initialized and generate a model."""
@@ -106,7 +106,18 @@ def test_model_initialization(model_class, data_shape, n_states, extra_args):
     assert model is not None
 
 
-# Test the run_all_tests function
+def test_categorical_changepoint_3d():
+    """Test the CategoricalChangepoint3D model."""
+    data = np.random.randint(0, 3, size=(5, 10, 100))
+    model_instance = CategoricalChangepoint3D(data_array=data, n_states=3)
+    model = model_instance.generate_model()
+    with model:
+        inference = pm.ADVI()
+        approx = pm.fit(n=10, method=inference)
+        trace = approx.sample(draws=10)
+    assert model is not None
+    assert "tau" in trace.varnames
+
 @pytest.mark.slow
 def test_run_all_tests():
     """Test that run_all_tests can be imported and executed."""

@@ -1727,6 +1727,43 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
         return True
 
 
+class CategoricalChangepoint3D(ChangepointModel):
+    """Model for categorical data changepoint detection on 3D arrays."""
+
+    def __init__(self, data_array, n_states, **kwargs):
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.n_states = n_states
+
+    def generate_model(self):
+        data_array = self.data_array
+        n_states = self.n_states
+        trials, features, time = data_array.shape
+        with pm.Model() as model:
+            p = pm.Dirichlet('p', a=np.ones((trials, features, n_states)), shape=(trials, features, n_states))
+            category = pm.Categorical('category', p=p, observed=data_array)
+            
+            # Infer changepoint locations
+            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
+            tau_latent = pm.Beta("tau_latent", a_tau, b_tau, shape=(trials, n_states - 1)).sort(axis=-1)
+            tau = pm.Deterministic("tau", np.arange(time)[np.newaxis, :] * tau_latent)
+        return model
+
+    def test(self):
+        test_data = np.random.randint(0, self.n_states, size=(5, 10, 100))
+        test_model = CategoricalChangepoint3D(test_data, self.n_states)
+        model = test_model.generate_model()
+        with model:
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+        assert "p" in trace.varnames
+        assert "tau" in trace.varnames
+        print("Test for CategoricalChangepoint3D passed")
+        return True
+
+
 # For backward compatibility
 def all_taste_poisson_trial_switch(data_array, switch_components, n_states, **kwargs):
     """Wrapper function for backward compatibility"""
