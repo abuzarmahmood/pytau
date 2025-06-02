@@ -74,7 +74,7 @@ def test_gen_test_array():
         (SingleTastePoissonTrialSwitch, (5, 10, 100), 3, {"switch_components": 2}),
         (AllTastePoissonTrialSwitch, (2, 5, 10, 100), 3, {"switch_components": 2}),
         (CategoricalChangepoint3D, (5, 10, 100), 3, {}),
-    ],
+    ]
 def test_model_initialization(model_class, data_shape, n_states, extra_args):
     """Test that models can be initialized and generate a model."""
     # Generate test data
