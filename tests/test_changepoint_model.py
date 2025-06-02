@@ -71,14 +71,16 @@ def test_gen_test_array():
         (SingleTastePoissonVarsigFixed, (5, 10, 100), 3, {"inds_span": 1}),
         (AllTastePoisson, (2, 5, 10, 100), 3, {}),
         (AllTastePoissonVarsigFixed, (2, 5, 10, 100), 3, {"inds_span": 1}),
-        (SingleTastePoissonTrialSwitch, (5, 10, 100), 3, {"switch_components": 2}),
-        (AllTastePoissonTrialSwitch, (2, 5, 10, 100), 3, {"switch_components": 2}),
+        (SingleTastePoissonTrialSwitch,
+         (5, 10, 100), 3, {"switch_components": 2}),
+        (AllTastePoissonTrialSwitch, (2, 5, 10, 100),
+         3, {"switch_components": 2}),
         (CategoricalChangepoint3D, (5, 10, 100), 3, {}),
     ]
 def test_model_initialization(model_class, data_shape, n_states, extra_args):
     """Test that models can be initialized and generate a model."""
     # Generate test data
-    data_type = (
+    data_type=(
         "normal"
         if model_class
         in [
@@ -88,35 +90,35 @@ def test_model_initialization(model_class, data_shape, n_states, extra_args):
         ]
         else "poisson"
     )
-    test_data = gen_test_array(
+    test_data=gen_test_array(
         data_shape, n_states=3 if n_states is None else n_states, type=data_type
     )
 
     # Initialize model
     if n_states is None:
-        model_instance = model_class(data_array=test_data, **extra_args)
+        model_instance=model_class(data_array=test_data, **extra_args)
     else:
-        model_instance = model_class(
+        model_instance=model_class(
             data_array=test_data, n_states=n_states, **extra_args)
 
     # Check that model can be generated
-    model = model_instance.generate_model()
+    model=model_instance.generate_model()
     assert model is not None
 
 
 def test_categorical_changepoint_3d():
     """Test the CategoricalChangepoint3D model."""
-    data = np.random.randint(0, 3, size=(5, 10, 100))
-    model_instance = CategoricalChangepoint3D(data_array=data, n_states=3)
-    model = model_instance.generate_model()
+    data=np.random.randint(0, 3, size=(5, 10, 100))
+    model_instance=CategoricalChangepoint3D(data_array=data, n_states=3)
+    model=model_instance.generate_model()
     with model:
-        inference = pm.ADVI()
-        approx = pm.fit(n=10, method=inference)
-        trace = approx.sample(draws=10)
+        inference=pm.ADVI()
+        approx=pm.fit(n=10, method=inference)
+        trace=approx.sample(draws=10)
     assert model is not None
     assert "tau" in trace.varnames
 
-@pytest.mark.slow
+@ pytest.mark.slow
 def test_run_all_tests():
     """Test that run_all_tests can be imported and executed."""
     try:
@@ -139,8 +141,8 @@ def test_extract_inferred_values():
     # Create a mock trace
     class MockTrace:
         def __init__(self):
-            self.varnames = ["tau", "lambda"]
-            self._data = {
+            self.varnames=["tau", "lambda"]
+            self._data={
                 "tau": np.random.rand(10, 5, 2),
                 "lambda": np.random.rand(10, 5, 3),
             }
@@ -148,8 +150,8 @@ def test_extract_inferred_values():
         def __getitem__(self, key):
             return self._data[key]
 
-    trace = MockTrace()
-    result = extract_inferred_values(trace)
+    trace=MockTrace()
+    result=extract_inferred_values(trace)
 
     assert "tau_samples" in result
     assert "lambda_stack" in result
@@ -157,7 +159,7 @@ def test_extract_inferred_values():
     assert result["lambda_stack"].shape == (5, 10, 3)  # Swapped axes
 
 
-@pytest.mark.slow
+@ pytest.mark.slow
 def test_advi_fit():
     """Test the advi_fit function."""
     # This is a more complex test that would require mocking PyMC3

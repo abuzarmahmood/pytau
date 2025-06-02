@@ -1740,14 +1740,19 @@ class CategoricalChangepoint3D(ChangepointModel):
         n_states = self.n_states
         trials, features, time = data_array.shape
         with pm.Model() as model:
-            p = pm.Dirichlet('p', a=np.ones((trials, features, n_states)), shape=(trials, features, n_states))
-            category = pm.Categorical('category', p=p, observed=data_array)
-            
+            p = pm.Dirichlet(
+                "p", a=np.ones((trials, features, n_states)), shape=(trials, features, n_states)
+            )
+            category = pm.Categorical("category", p=p, observed=data_array)
+
             # Infer changepoint locations
             a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
             b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
-            tau_latent = pm.Beta("tau_latent", a_tau, b_tau, shape=(trials, n_states - 1)).sort(axis=-1)
-            tau = pm.Deterministic("tau", np.arange(time)[np.newaxis, :] * tau_latent)
+            tau_latent = pm.Beta("tau_latent", a_tau, b_tau, shape=(trials, n_states - 1)).sort(
+                axis=-1
+            )
+            tau = pm.Deterministic("tau", np.arange(
+                time)[np.newaxis, :] * tau_latent)
         return model
 
     def test(self):
