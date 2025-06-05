@@ -157,7 +157,7 @@ class GaussianChangepointMeanVar2D(ChangepointModel):
         length = idx.max() + 1
 
         with pm.Model() as model:
-            mu = pm.Normal("mu", mu=mean_vals, sd=1, shape=(y_dim, n_states))
+            mu = pm.Normal("mu", mu=mean_vals, sigma=1, shape=(y_dim, n_states))
             sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim, n_states))
 
             a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
@@ -183,7 +183,7 @@ class GaussianChangepointMeanVar2D(ChangepointModel):
             mu_latent = mu.dot(weight_stack)
             sigma_latent = sigma.dot(weight_stack)
             observation = pm.Normal(
-                "obs", mu=mu_latent, sd=sigma_latent, observed=data_array)
+                "obs", mu=mu_latent, sigma=sigma_latent, observed=data_array)
 
         return model
 
@@ -385,7 +385,7 @@ class GaussianChangepointMean2D(ChangepointModel):
         length = idx.max() + 1
 
         with pm.Model() as model:
-            mu = pm.Normal("mu", mu=mean_vals, sd=1, shape=(y_dim, n_states))
+            mu = pm.Normal("mu", mu=mean_vals, sigma=1, shape=(y_dim, n_states))
             # One variance for each dimension
             sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim))
 
@@ -412,7 +412,7 @@ class GaussianChangepointMean2D(ChangepointModel):
             mu_latent = mu.dot(weight_stack)
             sigma_latent = sigma.dimshuffle(0, "x")
             observation = pm.Normal(
-                "obs", mu=mu_latent, sd=sigma_latent, observed=data_array)
+                "obs", mu=mu_latent, sigma=sigma_latent, observed=data_array)
 
         return model
 
@@ -637,7 +637,7 @@ class SingleTastePoisson(ChangepointModel):
                 "tau_latent",
                 a_tau,
                 b_tau,
-                initval=even_switches,
+                # initval=even_switches,
                 shape=(trials, n_states - 1),
             ).sort(axis=-1)
 
@@ -779,7 +779,9 @@ class SingleTastePoissonVarsig(ChangepointModel):
             b = pm.HalfCauchy("b_tau", 10, shape=n_states - 1)
 
             tau_latent = pm.Beta(
-                "tau_latent", a, b, initval=even_switches, shape=(trials, n_states - 1)
+                "tau_latent", a, b, 
+                # initval=even_switches, 
+                shape=(trials, n_states - 1)
             ).sort(axis=-1)
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
@@ -938,7 +940,9 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
             b = pm.HalfCauchy("b_tau", 10, shape=n_states - 1)
 
             tau_latent = pm.Beta(
-                "tau_latent", a, b, initval=even_switches, shape=(trials, n_states - 1)
+                "tau_latent", a, b, 
+                # initval=even_switches, 
+                shape=(trials, n_states - 1)
             ).sort(axis=-1)
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
@@ -1393,7 +1397,9 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
 
             even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
             tau_latent = pm.Beta(
-                "tau_latent", a, b, initval=even_switches, shape=(trial_num, n_states - 1)
+                "tau_latent", a, b, 
+                # initval=even_switches, 
+                shape=(trial_num, n_states - 1)
             ).sort(axis=-1)
 
             # Trials x Changepoints
@@ -1585,7 +1591,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
                 "tau_latent",
                 a,
                 b,
-                initval=even_switches,
+                # initval=even_switches,
                 shape=(tastes, trial_num, n_states - 1),
             ).sort(axis=-1)
 
