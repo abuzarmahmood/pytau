@@ -165,7 +165,7 @@ class GaussianChangepointMeanVar2D(ChangepointModel):
 
             even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
             tau_latent = pm.Beta(
-                "tau_latent", a_tau, b_tau, testval=even_switches, shape=(n_states - 1)
+                "tau_latent", a_tau, b_tau, initval=even_switches, shape=(n_states - 1)
             ).sort(axis=-1)
 
             tau = pm.Deterministic(
@@ -394,7 +394,7 @@ class GaussianChangepointMean2D(ChangepointModel):
 
             even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
             tau_latent = pm.Beta(
-                "tau_latent", a_tau, b_tau, testval=even_switches, shape=(n_states - 1)
+                "tau_latent", a_tau, b_tau, initval=even_switches, shape=(n_states - 1)
             ).sort(axis=-1)
 
             tau = pm.Deterministic(
@@ -637,7 +637,7 @@ class SingleTastePoisson(ChangepointModel):
                 "tau_latent",
                 a_tau,
                 b_tau,
-                testval=even_switches,
+                initval=even_switches,
                 shape=(trials, n_states - 1),
             ).sort(axis=-1)
 
@@ -755,7 +755,7 @@ class SingleTastePoissonVarsig(ChangepointModel):
 
             # Initial value
             s0 = pm.Exponential(
-                "state0", 1 / (np.mean(mean_vals)), shape=nrns, testval=mean_vals[:, 0]
+                "state0", 1 / (np.mean(mean_vals)), shape=nrns, initval=mean_vals[:, 0]
             )
 
             # Changes to lambda
@@ -764,7 +764,7 @@ class SingleTastePoissonVarsig(ChangepointModel):
                 mu=0,
                 sigma=10,
                 shape=(nrns, n_states - 1),
-                testval=lambda_test_vals,
+                initval=lambda_test_vals,
             )
 
             # This is only here to be extracted at the end of sampling
@@ -779,7 +779,7 @@ class SingleTastePoissonVarsig(ChangepointModel):
             b = pm.HalfCauchy("b_tau", 10, shape=n_states - 1)
 
             tau_latent = pm.Beta(
-                "tau_latent", a, b, testval=even_switches, shape=(trials, n_states - 1)
+                "tau_latent", a, b, initval=even_switches, shape=(trials, n_states - 1)
             ).sort(axis=-1)
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
@@ -914,7 +914,7 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
         with pm.Model() as model:
             # Initial value
             s0 = pm.Exponential(
-                "state0", 1 / (np.mean(mean_vals)), shape=nrns, testval=mean_vals[:, 0]
+                "state0", 1 / (np.mean(mean_vals)), shape=nrns, initval=mean_vals[:, 0]
             )
 
             # Changes to lambda
@@ -923,7 +923,7 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
                 mu=0,
                 sigma=10,
                 shape=(nrns, n_states - 1),
-                testval=lambda_test_vals,
+                initval=lambda_test_vals,
             )
 
             # This is only here to be extracted at the end of sampling
@@ -938,7 +938,7 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
             b = pm.HalfCauchy("b_tau", 10, shape=n_states - 1)
 
             tau_latent = pm.Beta(
-                "tau_latent", a, b, testval=even_switches, shape=(trials, n_states - 1)
+                "tau_latent", a, b, initval=even_switches, shape=(trials, n_states - 1)
             ).sort(axis=-1)
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
@@ -1081,7 +1081,7 @@ class AllTastePoisson(ChangepointModel):
             lambda_latent = pm.Exponential(
                 "lambda",
                 lambda_state[np.newaxis, :, :],
-                testval=mean_vals,
+                initval=mean_vals,
                 shape=(mean_vals.shape),
             )
 
@@ -1099,7 +1099,7 @@ class AllTastePoisson(ChangepointModel):
                 a,
                 b,
                 shape=(trial_num, n_states - 1),
-                testval=tt.tile(even_switches_normal[1:(
+                initval=tt.tile(even_switches_normal[1:(
                     n_states)], (array_idx.shape[0], 1)),
             ).sort(axis=-1)
 
@@ -1243,7 +1243,7 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
             lambda_latent = pm.Exponential(
                 "lambda",
                 lambda_state[np.newaxis, :, :],
-                testval=mean_vals,
+                initval=mean_vals,
                 shape=(mean_vals.shape),
             )
 
@@ -1261,7 +1261,7 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
                 a,
                 b,
                 shape=(trial_num, n_states - 1),
-                testval=tt.tile(even_switches_normal[1:(
+                initval=tt.tile(even_switches_normal[1:(
                     n_states)], (array_idx.shape[0], 1)),
             ).sort(axis=-1)
 
@@ -1393,7 +1393,7 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
 
             even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
             tau_latent = pm.Beta(
-                "tau_latent", a, b, testval=even_switches, shape=(trial_num, n_states - 1)
+                "tau_latent", a, b, initval=even_switches, shape=(trial_num, n_states - 1)
             ).sort(axis=-1)
 
             # Trials x Changepoints
@@ -1408,7 +1408,7 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
                 "tau_trial_latent",
                 1,
                 1,
-                testval=even_trial_switches,
+                initval=even_trial_switches,
                 shape=(switch_components - 1),
             ).sort(axis=-1)
 
@@ -1585,7 +1585,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
                 "tau_latent",
                 a,
                 b,
-                testval=even_switches,
+                initval=even_switches,
                 shape=(tastes, trial_num, n_states - 1),
             ).sort(axis=-1)
 
@@ -1604,7 +1604,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
                 "tau_trial_latent",
                 1,
                 1,
-                testval=even_trial_switches,
+                initval=even_trial_switches,
                 shape=(switch_components - 1),
             ).sort(axis=-1)
 
