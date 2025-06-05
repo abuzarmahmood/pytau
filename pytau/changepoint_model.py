@@ -3,16 +3,41 @@ PyMC3 Blackbox Variational Inference implementation
 of Poisson Likelihood Changepoint for spike trains.
 """
 
+import os
+import time
+
+import numpy as np
+
 ########################################
 # Import
 ########################################
 import pymc as pm
-# import theano
 import pytensor.tensor as tt
 import numpy as np
 import os
 import time
 from tqdm import tqdm
+
+############################################################
+# Base Model Class
+############################################################
+
+
+class ChangepointModel:
+    """Base class for all changepoint models"""
+
+    def __init__(self, **kwargs):
+        """Initialize model with keyword arguments"""
+        self.kwargs = kwargs
+
+    def generate_model(self):
+        """Generate PyMC3 model - to be implemented by subclasses"""
+        raise NotImplementedError("Subclasses must implement generate_model()")
+
+    def test(self):
+        """Test model functionality - to be implemented by subclasses"""
+        raise NotImplementedError("Subclasses must implement test()")
+
 
 ############################################################
 # Functions
@@ -23,7 +48,7 @@ def theano_lock_present():
     """
     Check if theano compilation lock is present
     """
-    return os.path.exists(os.path.join(theano.config.compiledir, 'lock_dir'))
+    return os.path.exists(os.path.join(theano.config.compiledir, "lock_dir"))
 
 
 def compile_wait():
@@ -33,16 +58,16 @@ def compile_wait():
     10 secs of waiting shouldn't be a problem for long fits (~mins)
     And wait a random time in the beginning to stagger fits
     """
-    time.sleep(np.random.random()*10)
+    time.sleep(np.random.random() * 10)
     while theano_lock_present():
-        print('Lock present...waiting')
+        print("Lock present...waiting")
         time.sleep(10)
     while theano_lock_present():
-        print('Lock present...waiting')
+        print("Lock present...waiting")
         time.sleep(10)
 
 
-def gen_test_array(array_size, n_states, type='poisson'):
+def gen_test_array(array_size, n_states, type="poisson"):
     """
     Generate test array for model fitting
     Last 2 dimensions consist of a single trial
@@ -55,9 +80,9 @@ def gen_test_array(array_size, n_states, type='poisson'):
             - normal
             - poisson
     """
-    assert array_size[-1] > n_states, 'Array too small for states'
+    assert array_size[-1] > n_states, "Array too small for states"
     assert type in [
-        'normal', 'poisson'], 'Invalid type, please use normal or poisson'
+        "normal", "poisson"], "Invalid type, please use normal or poisson"
 
     # Generate transition times
     transition_times = np.random.random((*array_size[:-2], n_states))
@@ -68,7 +93,7 @@ def gen_test_array(array_size, n_states, type='poisson'):
     transition_times = np.vectorize(int)(transition_times)
 
     # Generate state bounds
-    state_bounds = np.zeros((*array_size[:-2], n_states+1), dtype=int)
+    state_bounds = np.zeros((*array_size[:-2], n_states + 1), dtype=int)
     state_bounds[..., 1:] = transition_times
 
     # Generate state rates
@@ -81,64 +106,118 @@ def gen_test_array(array_size, n_states, type='poisson'):
         this_lambda = lambda_vals[this_ind[:-2]][:, this_ind[-1]]
         this_state_bounds = [
             state_bounds[(*this_ind[:-2], this_ind[-1])],
-            state_bounds[(*this_ind[:-2], this_ind[-1]+1)]]
+            state_bounds[(*this_ind[:-2], this_ind[-1] + 1)],
+        ]
         rate_array[this_ind[:-2]][:,
                                   slice(*this_state_bounds)] = this_lambda[:, None]
 
-    if type == 'poisson':
+    if type == "poisson":
         return np.random.poisson(rate_array)
     else:
         return np.random.normal(loc=rate_array, scale=0.1)
 
 
-def gaussian_changepoint_mean_var_2d(data_array, n_states, **kwargs):
+############################################################
+# Models
+############################################################
+
+
+class GaussianChangepointMeanVar2D(ChangepointModel):
     """Model for gaussian data on 2D array detecting changes in both
     mean and variance.
-
-    Args:
-        data_array (2D Numpy array): <dimension> x time
-        n_states (int): Number of states to model
-
-    Returns:
-        pymc3 model: Model class containing graph to run inference on
     """
-    mean_vals = np.array([np.mean(x, axis=-1)
-                          for x in np.array_split(data_array, n_states, axis=-1)]).T
-    mean_vals += 0.01  # To avoid zero starting prob
 
-    y_dim = data_array.shape[0]
-    idx = np.arange(data_array.shape[-1])
-    length = idx.max() + 1
+    def __init__(self, data_array, n_states, **kwargs):
+        """
+        Args:
+            data_array (2D Numpy array): <dimension> x time
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.n_states = n_states
 
-    with pm.Model() as model:
-        mu = pm.Normal('mu', mu=mean_vals, sd=1, shape=(y_dim, n_states))
-        sigma = pm.HalfCauchy('sigma', 3., shape=(y_dim, n_states))
+    def generate_model(self):
+        """
+        Returns:
+            pymc3 model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        n_states = self.n_states
 
-        a_tau = pm.HalfCauchy('a_tau', 3., shape=n_states - 1)
-        b_tau = pm.HalfCauchy('b_tau', 3., shape=n_states - 1)
+        mean_vals = np.array(
+            [np.mean(x, axis=-1)
+             for x in np.array_split(data_array, n_states, axis=-1)]
+        ).T
+        mean_vals += 0.01  # To avoid zero starting prob
 
-        even_switches = np.linspace(0, 1, n_states+1)[1:-1]
-        tau_latent = pm.Beta('tau_latent', a_tau, b_tau,
-                             testval=even_switches,
-                             shape=(n_states-1)).sort(axis=-1)
+        y_dim = data_array.shape[0]
+        idx = np.arange(data_array.shape[-1])
+        length = idx.max() + 1
 
-        tau = pm.Deterministic('tau',
-                               idx.min() + (idx.max() - idx.min()) * tau_latent)
+        with pm.Model() as model:
+            mu = pm.Normal("mu", mu=mean_vals, sd=1, shape=(y_dim, n_states))
+            sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim, n_states))
 
-        weight_stack = tt.math.sigmoid(idx[np.newaxis, :]-tau[:, np.newaxis])
-        weight_stack = tt.concatenate(
-            [np.ones((1, length)), weight_stack], axis=0)
-        inverse_stack = 1 - weight_stack[1:]
-        inverse_stack = tt.concatenate(
-            [inverse_stack, np.ones((1, length))], axis=0)
-        weight_stack = np.multiply(weight_stack, inverse_stack)
+            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
 
-        mu_latent = mu.dot(weight_stack)
-        sigma_latent = sigma.dot(weight_stack)
-        observation = pm.Normal("obs", mu=mu_latent, sd=sigma_latent,
-                                observed=data_array)
+            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
+            tau_latent = pm.Beta(
+                "tau_latent", a_tau, b_tau, testval=even_switches, shape=(n_states - 1)
+            ).sort(axis=-1)
 
-    return model
+            tau = pm.Deterministic(
+                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
+
+            weight_stack = tt.math.sigmoid(
+                idx[np.newaxis, :] - tau[:, np.newaxis])
+            weight_stack = tt.concatenate(
+                [np.ones((1, length)), weight_stack], axis=0)
+            inverse_stack = 1 - weight_stack[1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((1, length))], axis=0)
+            weight_stack = np.multiply(weight_stack, inverse_stack)
+
+            mu_latent = mu.dot(weight_stack)
+            sigma_latent = sigma.dot(weight_stack)
+            observation = pm.Normal(
+                "obs", mu=mu_latent, sd=sigma_latent, observed=data_array)
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data
+        test_data = gen_test_array(
+            (10, 100), n_states=self.n_states, type="normal")
+
+        # Create model with test data
+        test_model = GaussianChangepointMeanVar2D(test_data, self.n_states)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "mu" in trace.varnames
+        assert "sigma" in trace.varnames
+        assert "tau" in trace.varnames
+
+        print("Test for GaussianChangepointMeanVar2D passed")
+        return True
+
+
+# For backward compatibility
+def gaussian_changepoint_mean_var_2d(data_array, n_states, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = GaussianChangepointMeanVar2D(data_array, n_states, **kwargs)
+    return model_class.generate_model()
 
 
 def stick_breaking(beta):
@@ -147,284 +226,469 @@ def stick_breaking(beta):
     return beta * portion_remaining
 
 
-def gaussian_changepoint_mean_dirichlet(data_array, max_states=15):
-    """Model for gaussian data on 2D array detecting changes only in 
+class GaussianChangepointMeanDirichlet(ChangepointModel):
+    """Model for gaussian data on 2D array detecting changes only in
     the mean. Number of states determined using dirichlet process prior.
-
-    Args:
-        data_array (2D Numpy array): <dimension> x time
-        max_states (int): Max number of states to include in truncated dirichlet process 
-
-    Returns:
-        pymc3 model: Model class containing graph to run inference on
     """
 
-    y_dim = data_array.shape[0]
-    idx = np.arange(data_array.shape[-1])
-    length = idx.max() + 1
+    def __init__(self, data_array, max_states=15, **kwargs):
+        """
+        Args:
+            data_array (2D Numpy array): <dimension> x time
+            max_states (int): Max number of states to include in truncated dirichlet process
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.max_states = max_states
 
-    mean_vals = np.array([np.mean(x, axis=-1)
-                          for x in np.array_split(data_array, max_states, axis=-1)]).T
-    mean_vals += 0.01  # To avoid zero starting prob
-    test_std = np.std(data_array, axis=-1)
+    def generate_model(self):
+        """
+        Returns:
+            pymc3 model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        max_states = self.max_states
 
-    with pm.Model() as model:
-        # ===================
-        # Emissions Variables
-        # ===================
-        lambda_latent = pm.Normal('lambda',
-                                  mu=mean_vals, sigma=10,
-                                  shape=(y_dim, max_states))
-        # One variance for each dimension
-        sigma = pm.HalfCauchy('sigma', test_std, shape=(y_dim))
+        y_dim = data_array.shape[0]
+        idx = np.arange(data_array.shape[-1])
+        length = idx.max() + 1
 
-        # =====================
-        # Changepoint Variables
-        # =====================
+        mean_vals = np.array(
+            [np.mean(x, axis=-1)
+             for x in np.array_split(data_array, max_states, axis=-1)]
+        ).T
+        mean_vals += 0.01  # To avoid zero starting prob
+        test_std = np.std(data_array, axis=-1)
 
-        # Hyperpriors on alpha
-        a_gamma = pm.Gamma('a_gamma', 10, 1)
-        b_gamma = pm.Gamma('b_gamma', 1.5, 1)
+        with pm.Model() as model:
+            # ===================
+            # Emissions Variables
+            # ===================
+            lambda_latent = pm.Normal(
+                "lambda", mu=mean_vals, sigma=10, shape=(y_dim, max_states))
+            # One variance for each dimension
+            sigma = pm.HalfCauchy("sigma", test_std, shape=(y_dim))
 
-        # Concentration parameter for beta
-        alpha = pm.Gamma('alpha', a_gamma, b_gamma)
+            # =====================
+            # Changepoint Variables
+            # =====================
 
-        # Draw beta's to calculate stick lengths
-        beta = pm.Beta('beta', 1, alpha, shape=max_states)
+            # Hyperpriors on alpha
+            a_gamma = pm.Gamma("a_gamma", 10, 1)
+            b_gamma = pm.Gamma("b_gamma", 1.5, 1)
 
-        # Calculate stick lengths using stick_breaking process
-        w_raw = pm.Deterministic('w_raw', stick_breaking(beta))
+            # Concentration parameter for beta
+            alpha = pm.Gamma("alpha", a_gamma, b_gamma)
 
-        # Make sure lengths add to 1, and scale to length of data
-        w_latent = pm.Deterministic('w_latent', w_raw / w_raw.sum())
-        tau = pm.Deterministic('tau', tt.cumsum(w_latent * length)[:-1])
+            # Draw beta's to calculate stick lengths
+            beta = pm.Beta("beta", 1, alpha, shape=max_states)
 
-        # Weight stack to assign lambda's to point in time
-        weight_stack = tt.math.sigmoid(idx[np.newaxis, :]-tau[:, np.newaxis])
-        weight_stack = tt.concatenate(
-            [np.ones((1, length)), weight_stack], axis=0)
-        inverse_stack = 1 - weight_stack[1:]
-        inverse_stack = tt.concatenate(
-            [inverse_stack, np.ones((1, length))], axis=0)
-        weight_stack = np.multiply(weight_stack, inverse_stack)
+            # Calculate stick lengths using stick_breaking process
+            w_raw = pm.Deterministic("w_raw", stick_breaking(beta))
 
-        # Create timeseries for latent variable (mean emission)
-        lambda_ = pm.Deterministic('lambda_',
-                                   tt.tensordot(
-                                       lambda_latent,
-                                       weight_stack,
-                                       axes=(1, 0)
-                                   )
-                                   )
-        sigma_latent = sigma.dimshuffle(0, 'x')
+            # Make sure lengths add to 1, and scale to length of data
+            w_latent = pm.Deterministic("w_latent", w_raw / w_raw.sum())
+            tau = pm.Deterministic("tau", tt.cumsum(w_latent * length)[:-1])
 
-        # Likelihood for observations
-        observation = pm.Normal(
-            "obs", mu=lambda_, sigma=sigma_latent, observed=data_array)
-    return model
+            # Weight stack to assign lambda's to point in time
+            weight_stack = tt.math.sigmoid(
+                idx[np.newaxis, :] - tau[:, np.newaxis])
+            weight_stack = tt.concatenate(
+                [np.ones((1, length)), weight_stack], axis=0)
+            inverse_stack = 1 - weight_stack[1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((1, length))], axis=0)
+            weight_stack = np.multiply(weight_stack, inverse_stack)
+
+            # Create timeseries for latent variable (mean emission)
+            lambda_ = pm.Deterministic(
+                "lambda_", tt.tensordot(
+                    lambda_latent, weight_stack, axes=(1, 0))
+            )
+            sigma_latent = sigma.dimshuffle(0, "x")
+
+            # Likelihood for observations
+            observation = pm.Normal(
+                "obs", mu=lambda_, sigma=sigma_latent, observed=data_array)
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data
+        test_data = gen_test_array((10, 100), n_states=3, type="normal")
+
+        # Create model with test data
+        test_model = GaussianChangepointMeanDirichlet(test_data, max_states=5)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "lambda" in trace.varnames
+        assert "sigma" in trace.varnames
+        assert "tau" in trace.varnames
+        assert "w_latent" in trace.varnames
+
+        print("Test for GaussianChangepointMeanDirichlet passed")
+        return True
+
+
+# For backward compatibility
+def gaussian_changepoint_mean_dirichlet(data_array, max_states=15, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = GaussianChangepointMeanDirichlet(
+        data_array, max_states, **kwargs)
+    return model_class.generate_model()
+
 
 # TODO: Convenience function for taking out non-significant states
 
 
-def gaussian_changepoint_mean_2d(data_array, n_states, **kwargs):
-    """Model for gaussian data on 2D array detecting changes only in 
+class GaussianChangepointMean2D(ChangepointModel):
+    """Model for gaussian data on 2D array detecting changes only in
     the mean.
-
-    Args:
-        data_array (2D Numpy array): <dimension> x time
-        n_states (int): Number of states to model
-
-    Returns:
-        pymc3 model: Model class containing graph to run inference on
     """
-    mean_vals = np.array([np.mean(x, axis=-1)
-                          for x in np.array_split(data_array, n_states, axis=-1)]).T
-    mean_vals += 0.01  # To avoid zero starting prob
 
-    y_dim = data_array.shape[0]
-    idx = np.arange(data_array.shape[-1])
-    length = idx.max() + 1
+    def __init__(self, data_array, n_states, **kwargs):
+        """
+        Args:
+            data_array (2D Numpy array): <dimension> x time
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.n_states = n_states
 
-    with pm.Model() as model:
-        mu = pm.Normal('mu', mu=mean_vals, sd=1, shape=(y_dim, n_states))
-        # One variance for each dimension
-        sigma = pm.HalfCauchy('sigma', 3., shape=(y_dim))
+    def generate_model(self):
+        """
+        Returns:
+            pymc3 model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        n_states = self.n_states
 
-        a_tau = pm.HalfCauchy('a_tau', 3., shape=n_states - 1)
-        b_tau = pm.HalfCauchy('b_tau', 3., shape=n_states - 1)
+        mean_vals = np.array(
+            [np.mean(x, axis=-1)
+             for x in np.array_split(data_array, n_states, axis=-1)]
+        ).T
+        mean_vals += 0.01  # To avoid zero starting prob
 
-        even_switches = np.linspace(0, 1, n_states+1)[1:-1]
-        tau_latent = pm.Beta('tau_latent', a_tau, b_tau,
-                             testval=even_switches,
-                             shape=(n_states-1)).sort(axis=-1)
+        y_dim = data_array.shape[0]
+        idx = np.arange(data_array.shape[-1])
+        length = idx.max() + 1
 
-        tau = pm.Deterministic('tau',
-                               idx.min() + (idx.max() - idx.min()) * tau_latent)
+        with pm.Model() as model:
+            mu = pm.Normal("mu", mu=mean_vals, sd=1, shape=(y_dim, n_states))
+            # One variance for each dimension
+            sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim))
 
-        weight_stack = tt.math.sigmoid(idx[np.newaxis, :]-tau[:, np.newaxis])
-        weight_stack = tt.concatenate(
-            [np.ones((1, length)), weight_stack], axis=0)
-        inverse_stack = 1 - weight_stack[1:]
-        inverse_stack = tt.concatenate(
-            [inverse_stack, np.ones((1, length))], axis=0)
-        weight_stack = np.multiply(weight_stack, inverse_stack)
+            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
 
-        mu_latent = mu.dot(weight_stack)
-        sigma_latent = sigma.dimshuffle(0, 'x')
-        observation = pm.Normal("obs", mu=mu_latent, sd=sigma_latent,
-                                observed=data_array)
+            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
+            tau_latent = pm.Beta(
+                "tau_latent", a_tau, b_tau, testval=even_switches, shape=(n_states - 1)
+            ).sort(axis=-1)
 
-    return model
+            tau = pm.Deterministic(
+                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
+
+            weight_stack = tt.math.sigmoid(
+                idx[np.newaxis, :] - tau[:, np.newaxis])
+            weight_stack = tt.concatenate(
+                [np.ones((1, length)), weight_stack], axis=0)
+            inverse_stack = 1 - weight_stack[1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((1, length))], axis=0)
+            weight_stack = np.multiply(weight_stack, inverse_stack)
+
+            mu_latent = mu.dot(weight_stack)
+            sigma_latent = sigma.dimshuffle(0, "x")
+            observation = pm.Normal(
+                "obs", mu=mu_latent, sd=sigma_latent, observed=data_array)
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data
+        test_data = gen_test_array(
+            (10, 100), n_states=self.n_states, type="normal")
+
+        # Create model with test data
+        test_model = GaussianChangepointMean2D(test_data, self.n_states)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "mu" in trace.varnames
+        assert "sigma" in trace.varnames
+        assert "tau" in trace.varnames
+
+        print("Test for GaussianChangepointMean2D passed")
+        return True
+
+
+# For backward compatibility
+def gaussian_changepoint_mean_2d(data_array, n_states, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = GaussianChangepointMean2D(data_array, n_states, **kwargs)
+    return model_class.generate_model()
 
 
 def stick_breaking_trial(this_beta, trial_count):
     portion_remaining = tt.concatenate(
         [
             np.ones((trial_count, 1)),
-            tt.extra_ops.cumprod(1 - this_beta, axis=-1)[:, :-1]
+            tt.extra_ops.cumprod(1 - this_beta, axis=-1)[:, :-1],
         ],
-        axis=-1)
+        axis=-1,
+    )
     return this_beta * portion_remaining
 
 
-def single_taste_poisson_dirichlet(
-        spike_array,
-        max_states=10,
-        **kwargs):
+class SingleTastePoissonDirichlet(ChangepointModel):
     """
     Model for changepoint on single taste using dirichlet process prior
-
-    Args:
-        spike_array (3D Numpy array): trials x neurons x time
-        max_states (int): Maximum number of states to model
-
-    Returns:
-        pymc3 model: Model class containing graph to run inference on
     """
-    mean_vals = np.array([np.mean(x, axis=-1)
-                          for x in np.array_split(spike_array, max_states, axis=-1)]).T
-    mean_vals = np.mean(mean_vals, axis=1)
-    mean_vals += 0.01  # To avoid zero starting prob
 
-    nrns = spike_array.shape[1]
-    trials = spike_array.shape[0]
-    idx = np.arange(spike_array.shape[-1])
-    length = idx.max() + 1
+    def __init__(self, data_array, max_states=10, **kwargs):
+        """
+        Args:
+            data_array (3D Numpy array): trials x neurons x time
+            max_states (int): Maximum number of states to model
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.max_states = max_states
 
-    with pm.Model() as model:
-        # ===================
-        # Emissions Variables
-        # ===================
-        lambda_latent = pm.Exponential('lambda',
-                                       1/mean_vals,
-                                       shape=(nrns, max_states))
+    def generate_model(self):
+        """
+        Returns:
+            pymc3 model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        max_states = self.max_states
 
-        # =====================
-        # Changepoint Variables
-        # =====================
+        mean_vals = np.array(
+            [np.mean(x, axis=-1)
+             for x in np.array_split(data_array, max_states, axis=-1)]
+        ).T
+        mean_vals = np.mean(mean_vals, axis=1)
+        mean_vals += 0.01  # To avoid zero starting prob
 
-        # Hyperpriors on alpha
-        a_gamma = pm.Gamma('a_gamma', 10, 1)
-        b_gamma = pm.Gamma('b_gamma', 1.5, 1)
+        nrns = data_array.shape[1]
+        trials = data_array.shape[0]
+        idx = np.arange(data_array.shape[-1])
+        length = idx.max() + 1
 
-        # Concentration parameter for beta
-        alpha = pm.Gamma('alpha', a_gamma, b_gamma)
+        with pm.Model() as model:
+            # ===================
+            # Emissions Variables
+            # ===================
+            lambda_latent = pm.Exponential(
+                "lambda", 1 / mean_vals, shape=(nrns, max_states))
 
-        # Draw beta's to calculate stick lengths
-        beta = pm.Beta('beta', 1, alpha, shape=(trials, max_states))
+            # =====================
+            # Changepoint Variables
+            # =====================
 
-        # Calculate stick lengths using stick_breaking process
-        w_raw = pm.Deterministic('w_raw', stick_breaking_trial(beta, trials))
+            # Hyperpriors on alpha
+            a_gamma = pm.Gamma("a_gamma", 10, 1)
+            b_gamma = pm.Gamma("b_gamma", 1.5, 1)
 
-        # Make sure lengths add to 1, and scale to length of data
-        w_latent = pm.Deterministic(
-            'w_latent', w_raw / w_raw.sum(axis=-1)[:, None])
-        tau = pm.Deterministic('tau', tt.cumsum(
-            w_latent * length, axis=-1)[:, :-1])
+            # Concentration parameter for beta
+            alpha = pm.Gamma("alpha", a_gamma, b_gamma)
 
-        # =====================
-        # Rate over time
-        # =====================
+            # Draw beta's to calculate stick lengths
+            beta = pm.Beta("beta", 1, alpha, shape=(trials, max_states))
 
-        # Weight stack to assign lambda's to point in time
-        weight_stack = tt.math.sigmoid(
-            idx[np.newaxis, :]-tau[:, :, np.newaxis])
-        weight_stack = tt.concatenate(
-            [np.ones((trials, 1, length)), weight_stack], axis=1)
-        inverse_stack = 1 - weight_stack[:, 1:]
-        inverse_stack = tt.concatenate(
-            [inverse_stack, np.ones((trials, 1, length))], axis=1)
-        # Trials x States x Time
-        weight_stack = np.multiply(weight_stack, inverse_stack)
+            # Calculate stick lengths using stick_breaking process
+            w_raw = pm.Deterministic(
+                "w_raw", stick_breaking_trial(beta, trials))
 
-        lambda_ = pm.Deterministic('lambda_',
-            tt.tensordot(weight_stack, lambda_latent, [1, 1]).swapaxes(1, 2))
+            # Make sure lengths add to 1, and scale to length of data
+            w_latent = pm.Deterministic(
+                "w_latent", w_raw / w_raw.sum(axis=-1)[:, None])
+            tau = pm.Deterministic("tau", tt.cumsum(
+                w_latent * length, axis=-1)[:, :-1])
 
-        # =====================
-        # Likelihood
-        # =====================
-        observation = pm.Poisson("obs", lambda_, observed=spike_array)
+            # =====================
+            # Rate over time
+            # =====================
 
-    return model
+            # Weight stack to assign lambda's to point in time
+            weight_stack = tt.math.sigmoid(
+                idx[np.newaxis, :] - tau[:, :, np.newaxis])
+            weight_stack = tt.concatenate(
+                [np.ones((trials, 1, length)), weight_stack], axis=1)
+            inverse_stack = 1 - weight_stack[:, 1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((trials, 1, length))], axis=1)
+            # Trials x States x Time
+            weight_stack = np.multiply(weight_stack, inverse_stack)
+
+            lambda_ = pm.Deterministic(
+                "lambda_",
+                tt.tensordot(weight_stack, lambda_latent,
+                             [1, 1]).swapaxes(1, 2),
+            )
+
+            # =====================
+            # Likelihood
+            # =====================
+            observation = pm.Poisson("obs", lambda_, observed=data_array)
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data
+        test_data = gen_test_array((5, 10, 100), n_states=3, type="poisson")
+
+        # Create model with test data
+        test_model = SingleTastePoissonDirichlet(test_data, max_states=5)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "lambda" in trace.varnames
+        assert "tau" in trace.varnames
+        assert "w_latent" in trace.varnames
+
+        print("Test for SingleTastePoissonDirichlet passed")
+        return True
 
 
-def single_taste_poisson(
-        spike_array,
-        states,
-        **kwargs):
+# For backward compatibility
+def single_taste_poisson_dirichlet(data_array, max_states=10, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = SingleTastePoissonDirichlet(data_array, max_states, **kwargs)
+    return model_class.generate_model()
+
+
+class SingleTastePoisson(ChangepointModel):
     """Model for changepoint on single taste
 
     ** Largely taken from "non_hardcoded_changepoint_test_3d.ipynb"
     ** Note : This model does not have hierarchical structure for emissions
-
-    Args:
-        spike_array (3D Numpy array): trials x neurons x time
-        states (int): Number of states to model
-
-    Returns:
-        pymc3 model: Model class containing graph to run inference on
     """
 
-    mean_vals = np.array([np.mean(x, axis=-1)
-                          for x in np.array_split(spike_array, states, axis=-1)]).T
-    mean_vals = np.mean(mean_vals, axis=1)
-    mean_vals += 0.01  # To avoid zero starting prob
+    def __init__(self, data_array, n_states, **kwargs):
+        """
+        Args:
+            data_array (3D Numpy array): trials x neurons x time
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.n_states = n_states
 
-    nrns = spike_array.shape[1]
-    trials = spike_array.shape[0]
-    idx = np.arange(spike_array.shape[-1])
-    length = idx.max() + 1
+    def generate_model(self):
+        """
+        Returns:
+            pymc3 model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        n_states = self.n_states
 
-    with pm.Model() as model:
-        lambda_latent = pm.Exponential('lambda',
-                                       1/mean_vals,
-                                       shape=(nrns, states))
+        mean_vals = np.array(
+            [np.mean(x, axis=-1)
+             for x in np.array_split(data_array, n_states, axis=-1)]
+        ).T
+        mean_vals = np.mean(mean_vals, axis=1)
+        mean_vals += 0.01  # To avoid zero starting prob
 
-        a_tau = pm.HalfCauchy('a_tau', 3., shape=states - 1)
-        b_tau = pm.HalfCauchy('b_tau', 3., shape=states - 1)
+        nrns = data_array.shape[1]
+        trials = data_array.shape[0]
+        idx = np.arange(data_array.shape[-1])
+        length = idx.max() + 1
 
-        even_switches = np.linspace(0, 1, states+1)[1:-1]
-        tau_latent = pm.Beta('tau_latent', a_tau, b_tau,
-                             testval=even_switches,
-                             shape=(trials, states-1)).sort(axis=-1)
+        with pm.Model() as model:
+            lambda_latent = pm.Exponential(
+                "lambda", 1 / mean_vals, shape=(nrns, n_states))
 
-        tau = pm.Deterministic('tau',
-                               idx.min() + (idx.max() - idx.min()) * tau_latent)
+            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
 
-        weight_stack = tt.math.sigmoid(
-            idx[np.newaxis, :]-tau[:, :, np.newaxis])
-        weight_stack = tt.concatenate(
-            [np.ones((trials, 1, length)), weight_stack], axis=1)
-        inverse_stack = 1 - weight_stack[:, 1:]
-        inverse_stack = tt.concatenate(
-            [inverse_stack, np.ones((trials, 1, length))], axis=1)
-        weight_stack = np.multiply(weight_stack, inverse_stack)
+            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
+            tau_latent = pm.Beta(
+                "tau_latent",
+                a_tau,
+                b_tau,
+                testval=even_switches,
+                shape=(trials, n_states - 1),
+            ).sort(axis=-1)
 
-        lambda_ = tt.tensordot(weight_stack, lambda_latent, [
-                               1, 1]).swapaxes(1, 2)
-        observation = pm.Poisson("obs", lambda_, observed=spike_array)
+            tau = pm.Deterministic(
+                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-    return model
+            weight_stack = tt.math.sigmoid(
+                idx[np.newaxis, :] - tau[:, :, np.newaxis])
+            weight_stack = tt.concatenate(
+                [np.ones((trials, 1, length)), weight_stack], axis=1)
+            inverse_stack = 1 - weight_stack[:, 1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((trials, 1, length))], axis=1)
+            weight_stack = np.multiply(weight_stack, inverse_stack)
+
+            lambda_ = tt.tensordot(weight_stack, lambda_latent, [
+                                   1, 1]).swapaxes(1, 2)
+            observation = pm.Poisson("obs", lambda_, observed=data_array)
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data
+        test_data = gen_test_array(
+            (5, 10, 100), n_states=self.n_states, type="poisson")
+
+        # Create model with test data
+        test_model = SingleTastePoisson(test_data, self.n_states)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "lambda" in trace.varnames
+        assert "tau" in trace.varnames
+
+        print("Test for SingleTastePoisson passed")
+        return True
+
+
+# For backward compatibility
+def single_taste_poisson(data_array, n_states, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = SingleTastePoisson(data_array, n_states, **kwargs)
+    return model_class.generate_model()
 
 
 def var_sig_exp_tt(x, b):
@@ -432,7 +696,7 @@ def var_sig_exp_tt(x, b):
     x -->
     b -->
     """
-    return 1/(1+tt.exp(-tt.exp(b)*x))
+    return 1 / (1 + tt.exp(-tt.exp(b) * x))
 
 
 def var_sig_tt(x, b):
@@ -440,680 +704,1079 @@ def var_sig_tt(x, b):
     x -->
     b -->
     """
-    return 1/(1+tt.exp(-b*x))
+    return 1 / (1 + tt.exp(-b * x))
 
 
-def single_taste_poisson_varsig(
-        spike_array,
-        states,
-        **kwargs):
+class SingleTastePoissonVarsig(ChangepointModel):
     """Model for changepoint on single taste
-        **Uses variables sigmoid slope inferred from data
+    **Uses variables sigmoid slope inferred from data
 
     ** Largely taken from "non_hardcoded_changepoint_test_3d.ipynb"
     ** Note : This model does not have hierarchical structure for emissions
-
-    Args:
-        spike_array (3D Numpy array): trials x neurons x time
-        states (int): Number of states to model
-
-    Returns:
-        pymc3 model: Model class containing graph to run inference on
     """
 
-    mean_vals = np.array([np.mean(x, axis=-1)
-                          for x in np.array_split(spike_array, states, axis=-1)]).T
-    mean_vals = np.mean(mean_vals, axis=1)
-    mean_vals += 0.01  # To avoid zero starting prob
+    def __init__(self, data_array, n_states, **kwargs):
+        """
+        Args:
+            data_array (3D Numpy array): trials x neurons x time
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.n_states = n_states
 
-    lambda_test_vals = np.diff(mean_vals, axis=-1)
-    even_switches = np.linspace(0, 1, states+1)[1:-1]
+    def generate_model(self):
+        """
+        Returns:
+            pymc3 model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        n_states = self.n_states
 
-    nrns = spike_array.shape[1]
-    trials = spike_array.shape[0]
-    idx = np.arange(spike_array.shape[-1])
-    length = idx.max() + 1
+        mean_vals = np.array(
+            [np.mean(x, axis=-1)
+             for x in np.array_split(data_array, n_states, axis=-1)]
+        ).T
+        mean_vals = np.mean(mean_vals, axis=1)
+        mean_vals += 0.01  # To avoid zero starting prob
 
-    with pm.Model() as model:
+        lambda_test_vals = np.diff(mean_vals, axis=-1)
+        even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
 
-        # Sigmoid slope
-        sig_b = pm.Normal('sig_b', -1, 2, shape=states-1)
+        nrns = data_array.shape[1]
+        trials = data_array.shape[0]
+        idx = np.arange(data_array.shape[-1])
+        length = idx.max() + 1
 
-        # Initial value
-        s0 = pm.Exponential('state0',
-                            1/(np.mean(mean_vals)),
-                            shape=nrns,
-                            testval=mean_vals[:, 0])
+        with pm.Model() as model:
+            # Sigmoid slope
+            sig_b = pm.Normal("sig_b", -1, 2, shape=n_states - 1)
 
-        # Changes to lambda
-        lambda_diff = pm.Normal('lambda_diff',
-                                mu=0, sigma=10,
-                                shape=(nrns, states-1),
-                                testval=lambda_test_vals)
+            # Initial value
+            s0 = pm.Exponential(
+                "state0", 1 / (np.mean(mean_vals)), shape=nrns, testval=mean_vals[:, 0]
+            )
 
-        # This is only here to be extracted at the end of sampling
-        # NOT USED DIRECTLY IN MODEL
-        lambda_fin = pm.Deterministic('lambda',
-                                      tt.concatenate(
-                                          [s0[:, np.newaxis], lambda_diff], axis=-1)
-                                      )
+            # Changes to lambda
+            lambda_diff = pm.Normal(
+                "lambda_diff",
+                mu=0,
+                sigma=10,
+                shape=(nrns, n_states - 1),
+                testval=lambda_test_vals,
+            )
 
-        # Changepoint positions
-        a = pm.HalfCauchy('a_tau', 10, shape=states - 1)
-        b = pm.HalfCauchy('b_tau', 10, shape=states - 1)
+            # This is only here to be extracted at the end of sampling
+            # NOT USED DIRECTLY IN MODEL
+            lambda_fin = pm.Deterministic(
+                "lambda", tt.concatenate(
+                    [s0[:, np.newaxis], lambda_diff], axis=-1)
+            )
 
-        tau_latent = pm.Beta('tau_latent', a, b,
-                             testval=even_switches,
-                             shape=(trials, states-1)).sort(axis=-1)
-        tau = pm.Deterministic('tau',
-                               idx.min() + (idx.max() - idx.min()) * tau_latent)
+            # Changepoint positions
+            a = pm.HalfCauchy("a_tau", 10, shape=n_states - 1)
+            b = pm.HalfCauchy("b_tau", 10, shape=n_states - 1)
 
-        # Mechanical manipulations to generate firing rates
-        idx_temp = np.tile(idx[np.newaxis, np.newaxis, :],
-                           (trials, states-1, 1))
-        tau_temp = tt.tile(tau[:, :, np.newaxis], (1, 1, len(idx)))
-        sig_b_temp = tt.tile(
-            sig_b[np.newaxis, :, np.newaxis], (trials, 1, len(idx)))
+            tau_latent = pm.Beta(
+                "tau_latent", a, b, testval=even_switches, shape=(trials, n_states - 1)
+            ).sort(axis=-1)
+            tau = pm.Deterministic(
+                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-        weight_stack = var_sig_exp_tt(idx_temp-tau_temp, sig_b_temp)
-        weight_stack_temp = tt.tile(
-            weight_stack[:, np.newaxis, :, :], (1, nrns, 1, 1))
+            # Mechanical manipulations to generate firing rates
+            idx_temp = np.tile(
+                idx[np.newaxis, np.newaxis, :], (trials, n_states - 1, 1))
+            tau_temp = tt.tile(tau[:, :, np.newaxis], (1, 1, len(idx)))
+            sig_b_temp = tt.tile(
+                sig_b[np.newaxis, :, np.newaxis], (trials, 1, len(idx)))
 
-        s0_temp = tt.tile(s0[np.newaxis, :, np.newaxis,
-                          np.newaxis], (trials, 1, states-1, len(idx)))
-        lambda_diff_temp = tt.tile(
-            lambda_diff[np.newaxis, :, :, np.newaxis], (trials, 1, 1, len(idx)))
+            weight_stack = var_sig_exp_tt(idx_temp - tau_temp, sig_b_temp)
+            weight_stack_temp = tt.tile(
+                weight_stack[:, np.newaxis, :, :], (1, nrns, 1, 1))
 
-        # Calculate lambda
-        lambda_ = pm.Deterministic('lambda_',
-                                   tt.sum(s0_temp + (weight_stack_temp*lambda_diff_temp), axis=2))
-        # Bound lambda to prevent the diffs from making it negative
-        # Don't let it go down to zero otherwise we have trouble with probabilities
-        lambda_bounded = pm.Deterministic("lambda_bounded",
-                                          tt.switch(lambda_ >= 0.01, lambda_, 0.01))
+            s0_temp = tt.tile(
+                s0[np.newaxis, :, np.newaxis, np.newaxis],
+                (trials, 1, n_states - 1, len(idx)),
+            )
+            lambda_diff_temp = tt.tile(
+                lambda_diff[np.newaxis, :, :,
+                            np.newaxis], (trials, 1, 1, len(idx))
+            )
 
-        # Add observations
-        observation = pm.Poisson("obs", lambda_bounded, observed=spike_array)
+            # Calculate lambda
+            lambda_ = pm.Deterministic(
+                "lambda_",
+                tt.sum(s0_temp + (weight_stack_temp * lambda_diff_temp), axis=2),
+            )
+            # Bound lambda to prevent the diffs from making it negative
+            # Don't let it go down to zero otherwise we have trouble with probabilities
+            lambda_bounded = pm.Deterministic(
+                "lambda_bounded", tt.switch(lambda_ >= 0.01, lambda_, 0.01)
+            )
 
-    return model
+            # Add observations
+            observation = pm.Poisson(
+                "obs", lambda_bounded, observed=data_array)
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data
+        test_data = gen_test_array(
+            (5, 10, 100), n_states=self.n_states, type="poisson")
+
+        # Create model with test data
+        test_model = SingleTastePoissonVarsig(test_data, self.n_states)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "lambda" in trace.varnames
+        assert "tau" in trace.varnames
+        assert "sig_b" in trace.varnames
+
+        print("Test for SingleTastePoissonVarsig passed")
+        return True
+
+
+# For backward compatibility
+def single_taste_poisson_varsig(data_array, n_states, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = SingleTastePoissonVarsig(data_array, n_states, **kwargs)
+    return model_class.generate_model()
 
 
 def inds_to_b(x_span):
-    return 5.8889/x_span
+    return 5.8889 / x_span
 
 
-def single_taste_poisson_varsig_fixed(
-        spike_array,
-        states,
-        inds_span=1):
+class SingleTastePoissonVarsigFixed(ChangepointModel):
     """Model for changepoint on single taste
-        **Uses sigmoid with given slope
+    **Uses sigmoid with given slope
 
     ** Largely taken from "non_hardcoded_changepoint_test_3d.ipynb"
     ** Note : This model does not have hierarchical structure for emissions
-
-    Args:
-        spike_array (3D Numpy array): trials x neurons x time
-        states (int): Number of states to model
-        inds_span(float) : Number of indices to cover 5-95% change in sigmoid
-
-    Returns:
-        pymc3 model: Model class containing graph to run inference on
     """
 
-    mean_vals = np.array([np.mean(x, axis=-1)
-                          for x in np.array_split(spike_array, states, axis=-1)]).T
-    mean_vals = np.mean(mean_vals, axis=1)
-    mean_vals += 0.01  # To avoid zero starting prob
+    def __init__(self, data_array, n_states, inds_span=1, **kwargs):
+        """
+        Args:
+            data_array (3D Numpy array): trials x neurons x time
+            n_states (int): Number of states to model
+            inds_span(float) : Number of indices to cover 5-95% change in sigmoid
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.n_states = n_states
+        self.inds_span = inds_span
 
-    lambda_test_vals = np.diff(mean_vals, axis=-1)
-    even_switches = np.linspace(0, 1, states+1)[1:-1]
+    def generate_model(self):
+        """
+        Returns:
+            pymc3 model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        n_states = self.n_states
+        inds_span = self.inds_span
 
-    nrns = spike_array.shape[1]
-    trials = spike_array.shape[0]
-    idx = np.arange(spike_array.shape[-1])
-    length = idx.max() + 1
+        mean_vals = np.array(
+            [np.mean(x, axis=-1)
+             for x in np.array_split(data_array, n_states, axis=-1)]
+        ).T
+        mean_vals = np.mean(mean_vals, axis=1)
+        mean_vals += 0.01  # To avoid zero starting prob
 
-    # Define sigmoid with given sharpness
-    sig_b = inds_to_b(inds_span)
+        lambda_test_vals = np.diff(mean_vals, axis=-1)
+        even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
 
-    def sigmoid(x):
-        b_temp = tt.tile(
-            np.array(sig_b)[None, None, None], x.tag.test_value.shape)
-        return 1/(1+tt.exp(-b_temp*x))
+        nrns = data_array.shape[1]
+        trials = data_array.shape[0]
+        idx = np.arange(data_array.shape[-1])
+        length = idx.max() + 1
 
-    with pm.Model() as model:
+        # Define sigmoid with given sharpness
+        sig_b = inds_to_b(inds_span)
 
-        # Initial value
-        s0 = pm.Exponential('state0',
-                            1/(np.mean(mean_vals)),
-                            shape=nrns,
-                            testval=mean_vals[:, 0])
+        def sigmoid(x):
+            b_temp = tt.tile(
+                np.array(sig_b)[None, None, None], x.tag.test_value.shape)
+            return 1 / (1 + tt.exp(-b_temp * x))
 
-        # Changes to lambda
-        lambda_diff = pm.Normal('lambda_diff',
-                                mu=0, sigma=10,
-                                shape=(nrns, states-1),
-                                testval=lambda_test_vals)
+        with pm.Model() as model:
+            # Initial value
+            s0 = pm.Exponential(
+                "state0", 1 / (np.mean(mean_vals)), shape=nrns, testval=mean_vals[:, 0]
+            )
 
-        # This is only here to be extracted at the end of sampling
-        # NOT USED DIRECTLY IN MODEL
-        lambda_fin = pm.Deterministic('lambda',
-                                      tt.concatenate(
-                                          [s0[:, np.newaxis], lambda_diff], axis=-1)
-                                      )
+            # Changes to lambda
+            lambda_diff = pm.Normal(
+                "lambda_diff",
+                mu=0,
+                sigma=10,
+                shape=(nrns, n_states - 1),
+                testval=lambda_test_vals,
+            )
 
-        # Changepoint positions
-        a = pm.HalfCauchy('a_tau', 10, shape=states - 1)
-        b = pm.HalfCauchy('b_tau', 10, shape=states - 1)
+            # This is only here to be extracted at the end of sampling
+            # NOT USED DIRECTLY IN MODEL
+            lambda_fin = pm.Deterministic(
+                "lambda", tt.concatenate(
+                    [s0[:, np.newaxis], lambda_diff], axis=-1)
+            )
 
-        tau_latent = pm.Beta('tau_latent', a, b,
-                             testval=even_switches,
-                             shape=(trials, states-1)).sort(axis=-1)
-        tau = pm.Deterministic('tau',
-                               idx.min() + (idx.max() - idx.min()) * tau_latent)
+            # Changepoint positions
+            a = pm.HalfCauchy("a_tau", 10, shape=n_states - 1)
+            b = pm.HalfCauchy("b_tau", 10, shape=n_states - 1)
 
-        # Mechanical manipulations to generate firing rates
-        idx_temp = np.tile(idx[np.newaxis, np.newaxis, :],
-                           (trials, states-1, 1))
-        tau_temp = tt.tile(tau[:, :, np.newaxis], (1, 1, len(idx)))
+            tau_latent = pm.Beta(
+                "tau_latent", a, b, testval=even_switches, shape=(trials, n_states - 1)
+            ).sort(axis=-1)
+            tau = pm.Deterministic(
+                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-        weight_stack = sigmoid(idx_temp-tau_temp)
-        weight_stack_temp = tt.tile(
-            weight_stack[:, np.newaxis, :, :], (1, nrns, 1, 1))
+            # Mechanical manipulations to generate firing rates
+            idx_temp = np.tile(
+                idx[np.newaxis, np.newaxis, :], (trials, n_states - 1, 1))
+            tau_temp = tt.tile(tau[:, :, np.newaxis], (1, 1, len(idx)))
 
-        s0_temp = tt.tile(s0[np.newaxis, :, np.newaxis,
-                          np.newaxis], (trials, 1, states-1, len(idx)))
-        lambda_diff_temp = tt.tile(
-            lambda_diff[np.newaxis, :, :, np.newaxis], (trials, 1, 1, len(idx)))
+            weight_stack = sigmoid(idx_temp - tau_temp)
+            weight_stack_temp = tt.tile(
+                weight_stack[:, np.newaxis, :, :], (1, nrns, 1, 1))
 
-        # Calculate lambda
-        lambda_ = pm.Deterministic('lambda_',
-                                   tt.sum(s0_temp + (weight_stack_temp*lambda_diff_temp), axis=2))
-        # Bound lambda to prevent the diffs from making it negative
-        # Don't let it go down to zero otherwise we have trouble with probabilities
-        lambda_bounded = pm.Deterministic("lambda_bounded",
-                                          tt.switch(lambda_ >= 0.01, lambda_, 0.01))
+            s0_temp = tt.tile(
+                s0[np.newaxis, :, np.newaxis, np.newaxis],
+                (trials, 1, n_states - 1, len(idx)),
+            )
+            lambda_diff_temp = tt.tile(
+                lambda_diff[np.newaxis, :, :,
+                            np.newaxis], (trials, 1, 1, len(idx))
+            )
 
-        # Add observations
-        observation = pm.Poisson("obs", lambda_bounded, observed=spike_array)
+            # Calculate lambda
+            lambda_ = pm.Deterministic(
+                "lambda_",
+                tt.sum(s0_temp + (weight_stack_temp * lambda_diff_temp), axis=2),
+            )
+            # Bound lambda to prevent the diffs from making it negative
+            # Don't let it go down to zero otherwise we have trouble with probabilities
+            lambda_bounded = pm.Deterministic(
+                "lambda_bounded", tt.switch(lambda_ >= 0.01, lambda_, 0.01)
+            )
 
-    return model
+            # Add observations
+            observation = pm.Poisson(
+                "obs", lambda_bounded, observed=data_array)
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data
+        test_data = gen_test_array(
+            (5, 10, 100), n_states=self.n_states, type="poisson")
+
+        # Create model with test data
+        test_model = SingleTastePoissonVarsigFixed(
+            test_data, self.n_states, self.inds_span)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "lambda" in trace.varnames
+        assert "tau" in trace.varnames
+        assert "state0" in trace.varnames
+
+        print("Test for SingleTastePoissonVarsigFixed passed")
+        return True
 
 
-def all_taste_poisson(
-        spike_array,
-        states,
-        **kwargs):
+# For backward compatibility
+def single_taste_poisson_varsig_fixed(data_array, n_states, inds_span=1, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = SingleTastePoissonVarsigFixed(
+        data_array, n_states, inds_span, **kwargs)
+    return model_class.generate_model()
+
+
+class AllTastePoisson(ChangepointModel):
     """
-    ** Model to fit changepoint to single taste **
+    ** Model to fit changepoint to all tastes **
     ** Largely taken from "_v1/poisson_all_tastes_changepoint_model.py"
-
-    spike_array :: Shape : tastes, trials, neurons, time_bins
-    states :: number of states to include in the model 
     """
 
-    # If model already doesn't exist, then create new one
-    #spike_array = this_dat_binned
-    # Unroll arrays along taste axis
-    #spike_array_long = np.reshape(spike_array,(-1,*spike_array.shape[-2:]))
-    spike_array_long = np.concatenate(spike_array, axis=0)
+    def __init__(self, data_array, n_states, **kwargs):
+        """
+        Args:
+            data_array (4D Numpy array): tastes, trials, neurons, time_bins
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.n_states = n_states
 
-    # Find mean firing for initial values
-    tastes = spike_array.shape[0]
-    length = spike_array.shape[-1]
-    nrns = spike_array.shape[2]
-    trials = spike_array.shape[1]
+    def generate_model(self):
+        """
+        Returns:
+            pymc3 model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        n_states = self.n_states
 
-    split_list = np.array_split(spike_array, states, axis=-1)
-    # Cut all to the same size
-    min_val = min([x.shape[-1] for x in split_list])
-    split_array = np.array([x[..., :min_val] for x in split_list])
-    mean_vals = np.mean(split_array, axis=(2, -1)).swapaxes(0, 1)
-    mean_vals += 0.01  # To avoid zero starting prob
-    mean_nrn_vals = np.mean(mean_vals, axis=(0, 1))
+        # Unroll arrays along taste axis
+        data_array_long = np.concatenate(data_array, axis=0)
 
-    # Find evenly spaces switchpoints for initial values
-    idx = np.arange(spike_array.shape[-1])  # Index
-    array_idx = np.broadcast_to(idx, spike_array_long.shape)
-    even_switches = np.linspace(0, idx.max(), states+1)
-    even_switches_normal = even_switches/np.max(even_switches)
+        # Find mean firing for initial values
+        tastes = data_array.shape[0]
+        length = data_array.shape[-1]
+        nrns = data_array.shape[2]
+        trials = data_array.shape[1]
 
-    taste_label = np.repeat(
-        np.arange(spike_array.shape[0]), spike_array.shape[1])
-    trial_num = array_idx.shape[0]
+        split_list = np.array_split(data_array, n_states, axis=-1)
+        # Cut all to the same size
+        min_val = min([x.shape[-1] for x in split_list])
+        split_array = np.array([x[..., :min_val] for x in split_list])
+        mean_vals = np.mean(split_array, axis=(2, -1)).swapaxes(0, 1)
+        mean_vals += 0.01  # To avoid zero starting prob
+        mean_nrn_vals = np.mean(mean_vals, axis=(0, 1))
 
-    # Being constructing model
-    with pm.Model() as model:
+        # Find evenly spaces switchpoints for initial values
+        idx = np.arange(data_array.shape[-1])  # Index
+        array_idx = np.broadcast_to(idx, data_array_long.shape)
+        even_switches = np.linspace(0, idx.max(), n_states + 1)
+        even_switches_normal = even_switches / np.max(even_switches)
 
-        # Hierarchical firing rates
-        # Refer to model diagram
-        # Mean firing rate of neuron AT ALL TIMES
-        lambda_nrn = pm.Exponential('lambda_nrn',
-                                    1/mean_nrn_vals,
-                                    shape=(mean_vals.shape[-1]))
-        # Priors for each state, derived from each neuron
-        # Mean firing rate of neuron IN EACH STATE (averaged across tastes)
-        lambda_state = pm.Exponential('lambda_state',
-                                      lambda_nrn,
-                                      shape=(mean_vals.shape[1:]))
-        # Mean firing rate of neuron PER STATE PER TASTE
-        lambda_latent = pm.Exponential('lambda',
-                                       lambda_state[np.newaxis, :, :],
-                                       testval=mean_vals,
-                                       shape=(mean_vals.shape))
+        taste_label = np.repeat(
+            np.arange(data_array.shape[0]), data_array.shape[1])
+        trial_num = array_idx.shape[0]
 
-        # Changepoint time variable
-        # INDEPENDENT TAU FOR EVERY TRIAL
-        a = pm.HalfNormal('a_tau', 3., shape=states - 1)
-        b = pm.HalfNormal('b_tau', 3., shape=states - 1)
+        # Being constructing model
+        with pm.Model() as model:
+            # Hierarchical firing rates
+            # Refer to model diagram
+            # Mean firing rate of neuron AT ALL TIMES
+            lambda_nrn = pm.Exponential(
+                "lambda_nrn", 1 / mean_nrn_vals, shape=(mean_vals.shape[-1])
+            )
+            # Priors for each state, derived from each neuron
+            # Mean firing rate of neuron IN EACH STATE (averaged across tastes)
+            lambda_state = pm.Exponential(
+                "lambda_state", lambda_nrn, shape=(mean_vals.shape[1:]))
+            # Mean firing rate of neuron PER STATE PER TASTE
+            lambda_latent = pm.Exponential(
+                "lambda",
+                lambda_state[np.newaxis, :, :],
+                testval=mean_vals,
+                shape=(mean_vals.shape),
+            )
 
-        # Stack produces states x trials --> That gets transposed
-        # to trials x states and gets sorted along states (axis=-1)
-        # Sort should work the same way as the Ordered transform -->
-        # see rv_sort_test.ipynb
-        tau_latent = pm.Beta('tau_latent', a, b,
-                             shape=(trial_num, states-1),
-                             testval=tt.tile(even_switches_normal[1:(states)],
-                                             (array_idx.shape[0], 1))).sort(axis=-1)
+            # Changepoint time variable
+            # INDEPENDENT TAU FOR EVERY TRIAL
+            a = pm.HalfNormal("a_tau", 3.0, shape=n_states - 1)
+            b = pm.HalfNormal("b_tau", 3.0, shape=n_states - 1)
 
-        tau = pm.Deterministic('tau',
-                               idx.min() + (idx.max() - idx.min()) * tau_latent)
+            # Stack produces n_states x trials --> That gets transposed
+            # to trials x n_states and gets sorted along n_states (axis=-1)
+            # Sort should work the same way as the Ordered transform -->
+            # see rv_sort_test.ipynb
+            tau_latent = pm.Beta(
+                "tau_latent",
+                a,
+                b,
+                shape=(trial_num, n_states - 1),
+                testval=tt.tile(even_switches_normal[1:(
+                    n_states)], (array_idx.shape[0], 1)),
+            ).sort(axis=-1)
 
-        weight_stack = tt.math.sigmoid(
-            idx[np.newaxis, :]-tau[:, :, np.newaxis])
-        weight_stack = tt.concatenate(
-            [np.ones((tastes*trials, 1, length)), weight_stack], axis=1)
-        inverse_stack = 1 - weight_stack[:, 1:]
-        inverse_stack = tt.concatenate([inverse_stack, np.ones(
-            (tastes*trials, 1, length))], axis=1)
-        weight_stack = weight_stack*inverse_stack
-        weight_stack = tt.tile(weight_stack[:, :, None, :], (1, 1, nrns, 1))
+            tau = pm.Deterministic(
+                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-        lambda_latent = lambda_latent.dimshuffle(2, 0, 1)
-        lambda_latent = tt.repeat(lambda_latent, trials, axis=1)
-        lambda_latent = tt.tile(
-            lambda_latent[..., None], (1, 1, 1, length))
-        lambda_latent = lambda_latent.dimshuffle(1, 2, 0, 3)
-        lambda_ = tt.sum(lambda_latent * weight_stack, axis=1)
+            weight_stack = tt.math.sigmoid(
+                idx[np.newaxis, :] - tau[:, :, np.newaxis])
+            weight_stack = tt.concatenate(
+                [np.ones((tastes * trials, 1, length)), weight_stack], axis=1
+            )
+            inverse_stack = 1 - weight_stack[:, 1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((tastes * trials, 1, length))], axis=1
+            )
+            weight_stack = weight_stack * inverse_stack
+            weight_stack = tt.tile(
+                weight_stack[:, :, None, :], (1, 1, nrns, 1))
 
-        observation = pm.Poisson("obs", lambda_, observed=spike_array_long)
+            lambda_latent = lambda_latent.dimshuffle(2, 0, 1)
+            lambda_latent = tt.repeat(lambda_latent, trials, axis=1)
+            lambda_latent = tt.tile(
+                lambda_latent[..., None], (1, 1, 1, length))
+            lambda_latent = lambda_latent.dimshuffle(1, 2, 0, 3)
+            lambda_ = tt.sum(lambda_latent * weight_stack, axis=1)
 
-    return model
+            observation = pm.Poisson("obs", lambda_, observed=data_array_long)
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data
+        test_data = gen_test_array(
+            (2, 5, 10, 100), n_states=self.n_states, type="poisson")
+
+        # Create model with test data
+        test_model = AllTastePoisson(test_data, self.n_states)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "lambda" in trace.varnames
+        assert "tau" in trace.varnames
+        assert "lambda_nrn" in trace.varnames
+        assert "lambda_state" in trace.varnames
+
+        print("Test for AllTastePoisson passed")
+        return True
 
 
-def all_taste_poisson_varsig_fixed(
-        spike_array,
-        states,
-        inds_span=1):
+# For backward compatibility
+def all_taste_poisson(data_array, n_states, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = AllTastePoisson(data_array, n_states, **kwargs)
+    return model_class.generate_model()
+
+
+class AllTastePoissonVarsigFixed(ChangepointModel):
     """
-    ** Model to fit changepoint to single taste **
+    ** Model to fit changepoint to all tastes with fixed sigmoid **
     ** Largely taken from "_v1/poisson_all_tastes_changepoint_model.py"
-
-    spike_array :: Shape : tastes, trials, neurons, time_bins
-    states :: number of states to include in the model 
     """
 
-    # If model already doesn't exist, then create new one
-    #spike_array = this_dat_binned
-    # Unroll arrays along taste axis
-    #spike_array_long = np.reshape(spike_array,(-1,*spike_array.shape[-2:]))
-    spike_array_long = np.concatenate(spike_array, axis=0)
+    def __init__(self, data_array, n_states, inds_span=1, **kwargs):
+        """
+        Args:
+            data_array (4D Numpy array): tastes, trials, neurons, time_bins
+            n_states (int): Number of states to model
+            inds_span(float): Number of indices to cover 5-95% change in sigmoid
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.n_states = n_states
+        self.inds_span = inds_span
 
-    # Find mean firing for initial values
-    tastes = spike_array.shape[0]
-    length = spike_array.shape[-1]
-    nrns = spike_array.shape[2]
-    trials = spike_array.shape[1]
+    def generate_model(self):
+        """
+        Returns:
+            pymc3 model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        n_states = self.n_states
+        inds_span = self.inds_span
 
-    split_list = np.array_split(spike_array, states, axis=-1)
-    # Cut all to the same size
-    min_val = min([x.shape[-1] for x in split_list])
-    split_array = np.array([x[..., :min_val] for x in split_list])
-    mean_vals = np.mean(split_array, axis=(2, -1)).swapaxes(0, 1)
-    mean_vals += 0.01  # To avoid zero starting prob
-    mean_nrn_vals = np.mean(mean_vals, axis=(0, 1))
+        # Unroll arrays along taste axis
+        data_array_long = np.concatenate(data_array, axis=0)
 
-    # Find evenly spaces switchpoints for initial values
-    idx = np.arange(spike_array.shape[-1])  # Index
-    array_idx = np.broadcast_to(idx, spike_array_long.shape)
-    even_switches = np.linspace(0, idx.max(), states+1)
-    even_switches_normal = even_switches/np.max(even_switches)
+        # Find mean firing for initial values
+        tastes = data_array.shape[0]
+        length = data_array.shape[-1]
+        nrns = data_array.shape[2]
+        trials = data_array.shape[1]
 
-    taste_label = np.repeat(
-        np.arange(spike_array.shape[0]), spike_array.shape[1])
-    trial_num = array_idx.shape[0]
+        split_list = np.array_split(data_array, n_states, axis=-1)
+        # Cut all to the same size
+        min_val = min([x.shape[-1] for x in split_list])
+        split_array = np.array([x[..., :min_val] for x in split_list])
+        mean_vals = np.mean(split_array, axis=(2, -1)).swapaxes(0, 1)
+        mean_vals += 0.01  # To avoid zero starting prob
+        mean_nrn_vals = np.mean(mean_vals, axis=(0, 1))
 
-    # Define sigmoid with given sharpness
-    sig_b = inds_to_b(inds_span)
+        # Find evenly spaces switchpoints for initial values
+        idx = np.arange(data_array.shape[-1])  # Index
+        array_idx = np.broadcast_to(idx, data_array_long.shape)
+        even_switches = np.linspace(0, idx.max(), n_states + 1)
+        even_switches_normal = even_switches / np.max(even_switches)
 
-    def sigmoid(x):
-        b_temp = tt.tile(
-            np.array(sig_b)[None, None, None], x.tag.test_value.shape)
-        return 1/(1+tt.exp(-b_temp*x))
+        taste_label = np.repeat(
+            np.arange(data_array.shape[0]), data_array.shape[1])
+        trial_num = array_idx.shape[0]
 
-    # Being constructing model
-    with pm.Model() as model:
+        # Define sigmoid with given sharpness
+        sig_b = inds_to_b(inds_span)
 
-        # Hierarchical firing rates
-        # Refer to model diagram
-        # Mean firing rate of neuron AT ALL TIMES
-        lambda_nrn = pm.Exponential('lambda_nrn',
-                                    1/mean_nrn_vals,
-                                    shape=(mean_vals.shape[-1]))
-        # Priors for each state, derived from each neuron
-        # Mean firing rate of neuron IN EACH STATE (averaged across tastes)
-        lambda_state = pm.Exponential('lambda_state',
-                                      lambda_nrn,
-                                      shape=(mean_vals.shape[1:]))
-        # Mean firing rate of neuron PER STATE PER TASTE
-        lambda_latent = pm.Exponential('lambda',
-                                       lambda_state[np.newaxis, :, :],
-                                       testval=mean_vals,
-                                       shape=(mean_vals.shape))
+        def sigmoid(x):
+            b_temp = tt.tile(
+                np.array(sig_b)[None, None, None], x.tag.test_value.shape)
+            return 1 / (1 + tt.exp(-b_temp * x))
 
-        # Changepoint time variable
-        # INDEPENDENT TAU FOR EVERY TRIAL
-        a = pm.HalfNormal('a_tau', 3., shape=states - 1)
-        b = pm.HalfNormal('b_tau', 3., shape=states - 1)
+        # Being constructing model
+        with pm.Model() as model:
+            # Hierarchical firing rates
+            # Refer to model diagram
+            # Mean firing rate of neuron AT ALL TIMES
+            lambda_nrn = pm.Exponential(
+                "lambda_nrn", 1 / mean_nrn_vals, shape=(mean_vals.shape[-1])
+            )
+            # Priors for each state, derived from each neuron
+            # Mean firing rate of neuron IN EACH STATE (averaged across tastes)
+            lambda_state = pm.Exponential(
+                "lambda_state", lambda_nrn, shape=(mean_vals.shape[1:]))
+            # Mean firing rate of neuron PER STATE PER TASTE
+            lambda_latent = pm.Exponential(
+                "lambda",
+                lambda_state[np.newaxis, :, :],
+                testval=mean_vals,
+                shape=(mean_vals.shape),
+            )
 
-        # Stack produces states x trials --> That gets transposed
-        # to trials x states and gets sorted along states (axis=-1)
-        # Sort should work the same way as the Ordered transform -->
-        # see rv_sort_test.ipynb
-        tau_latent = pm.Beta('tau_latent', a, b,
-                             shape=(trial_num, states-1),
-                             testval=tt.tile(even_switches_normal[1:(states)],
-                                             (array_idx.shape[0], 1))).sort(axis=-1)
+            # Changepoint time variable
+            # INDEPENDENT TAU FOR EVERY TRIAL
+            a = pm.HalfNormal("a_tau", 3.0, shape=n_states - 1)
+            b = pm.HalfNormal("b_tau", 3.0, shape=n_states - 1)
 
-        tau = pm.Deterministic('tau',
-                               idx.min() + (idx.max() - idx.min()) * tau_latent)
+            # Stack produces n_states x trials --> That gets transposed
+            # to trials x n_states and gets sorted along n_states (axis=-1)
+            # Sort should work the same way as the Ordered transform -->
+            # see rv_sort_test.ipynb
+            tau_latent = pm.Beta(
+                "tau_latent",
+                a,
+                b,
+                shape=(trial_num, n_states - 1),
+                testval=tt.tile(even_switches_normal[1:(
+                    n_states)], (array_idx.shape[0], 1)),
+            ).sort(axis=-1)
 
-        weight_stack = sigmoid(
-            idx[np.newaxis, :]-tau[:, :, np.newaxis])
-        weight_stack = tt.concatenate(
-            [np.ones((tastes*trials, 1, length)), weight_stack], axis=1)
-        inverse_stack = 1 - weight_stack[:, 1:]
-        inverse_stack = tt.concatenate([inverse_stack, np.ones(
-            (tastes*trials, 1, length))], axis=1)
-        weight_stack = weight_stack*inverse_stack
-        weight_stack = tt.tile(weight_stack[:, :, None, :], (1, 1, nrns, 1))
+            tau = pm.Deterministic(
+                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-        lambda_latent = lambda_latent.dimshuffle(2, 0, 1)
-        lambda_latent = tt.repeat(lambda_latent, trials, axis=1)
-        lambda_latent = tt.tile(
-            lambda_latent[..., None], (1, 1, 1, length))
-        lambda_latent = lambda_latent.dimshuffle(1, 2, 0, 3)
-        lambda_ = tt.sum(lambda_latent * weight_stack, axis=1)
+            weight_stack = sigmoid(idx[np.newaxis, :] - tau[:, :, np.newaxis])
+            weight_stack = tt.concatenate(
+                [np.ones((tastes * trials, 1, length)), weight_stack], axis=1
+            )
+            inverse_stack = 1 - weight_stack[:, 1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((tastes * trials, 1, length))], axis=1
+            )
+            weight_stack = weight_stack * inverse_stack
+            weight_stack = tt.tile(
+                weight_stack[:, :, None, :], (1, 1, nrns, 1))
 
-        observation = pm.Poisson("obs", lambda_, observed=spike_array_long)
+            lambda_latent = lambda_latent.dimshuffle(2, 0, 1)
+            lambda_latent = tt.repeat(lambda_latent, trials, axis=1)
+            lambda_latent = tt.tile(
+                lambda_latent[..., None], (1, 1, 1, length))
+            lambda_latent = lambda_latent.dimshuffle(1, 2, 0, 3)
+            lambda_ = tt.sum(lambda_latent * weight_stack, axis=1)
 
-    return model
+            observation = pm.Poisson("obs", lambda_, observed=data_array_long)
 
-# def single_taste_poisson_biased_tau_priors(spike_array,states):
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data
+        test_data = gen_test_array(
+            (2, 5, 10, 100), n_states=self.n_states, type="poisson")
+
+        # Create model with test data
+        test_model = AllTastePoissonVarsigFixed(
+            test_data, self.n_states, self.inds_span)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "lambda" in trace.varnames
+        assert "tau" in trace.varnames
+        assert "lambda_nrn" in trace.varnames
+        assert "lambda_state" in trace.varnames
+
+        print("Test for AllTastePoissonVarsigFixed passed")
+        return True
+
+
+# For backward compatibility
+def all_taste_poisson_varsig_fixed(data_array, n_states, inds_span=1, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = AllTastePoissonVarsigFixed(
+        data_array, n_states, inds_span, **kwargs)
+    return model_class.generate_model()
+
+
+# def single_taste_poisson_biased_tau_priors(data_array,states):
 #     pass
 
-# def single_taste_poisson_hard_padding_tau(spike_array,states):
+# def single_taste_poisson_hard_padding_tau(data_array,states):
 #     pass
 
 
-def single_taste_poisson_trial_switch(
-        spike_array,
-        switch_components,
-        states):
+class SingleTastePoissonTrialSwitch(ChangepointModel):
     """
     Assuming only emissions change across trials
     Changepoint distribution remains constant
-
-    spike_array :: trials x nrns x time
-    states :: number of states to include in the model 
     """
 
-    trial_num, nrn_num, time_bins = spike_array.shape
+    def __init__(self, data_array, switch_components, n_states, **kwargs):
+        """
+        Args:
+            data_array (3D Numpy array): trials x neurons x time
+            switch_components (int): Number of trial switch components
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.switch_components = switch_components
+        self.n_states = n_states
 
-    with pm.Model() as model:
+    def generate_model(self):
+        """
+        Returns:
+            pymc3 model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        switch_components = self.switch_components
+        n_states = self.n_states
 
-        # Define Emissions
+        trial_num, nrn_num, time_bins = data_array.shape
 
-        # nrns
-        nrn_lambda = pm.Exponential('nrn_lambda', 10, shape=(nrn_num))
+        with pm.Model() as model:
+            # Define Emissions
 
-        # nrns x switch_comps
-        trial_lambda = pm.Exponential('trial_lambda',
-                                      nrn_lambda.dimshuffle(0, 'x'),
-                                      shape=(nrn_num, switch_components))
+            # nrns
+            nrn_lambda = pm.Exponential("nrn_lambda", 10, shape=(nrn_num))
 
-        # nrns x switch_comps x states
-        state_lambda = pm.Exponential('state_lambda',
-                                      trial_lambda.dimshuffle(0, 1, 'x'),
-                                      shape=(nrn_num, switch_components, states))
+            # nrns x switch_comps
+            trial_lambda = pm.Exponential(
+                "trial_lambda",
+                nrn_lambda.dimshuffle(0, "x"),
+                shape=(nrn_num, switch_components),
+            )
 
-        # Define Changepoints
-        # Assuming distribution of changepoints remains
-        # the same across all trials
+            # nrns x switch_comps x n_states
+            state_lambda = pm.Exponential(
+                "state_lambda",
+                trial_lambda.dimshuffle(0, 1, "x"),
+                shape=(nrn_num, switch_components, n_states),
+            )
 
-        a = pm.HalfCauchy('a_tau', 3., shape=states - 1)
-        b = pm.HalfCauchy('b_tau', 3., shape=states - 1)
+            # Define Changepoints
+            # Assuming distribution of changepoints remains
+            # the same across all trials
 
-        even_switches = np.linspace(0, 1, states+1)[1:-1]
-        tau_latent = pm.Beta('tau_latent', a, b,
-                             testval=even_switches,
-                             shape=(trial_num, states-1)).sort(axis=-1)
+            a = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
 
-        # Trials x Changepoints
-        tau = pm.Deterministic('tau', time_bins * tau_latent)
+            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
+            tau_latent = pm.Beta(
+                "tau_latent", a, b, testval=even_switches, shape=(trial_num, n_states - 1)
+            ).sort(axis=-1)
 
-        # Define trial switches
-        # Will have same structure as regular changepoints
+            # Trials x Changepoints
+            tau = pm.Deterministic("tau", time_bins * tau_latent)
 
-        even_trial_switches = np.linspace(0, 1, switch_components+1)[1:-1]
-        tau_trial_latent = pm.Beta('tau_trial_latent', 1, 1,
-                                   testval=even_trial_switches,
-                                   shape=(switch_components-1)).sort(axis=-1)
+            # Define trial switches
+            # Will have same structure as regular changepoints
 
-        # Trial_changepoints
-        tau_trial = pm.Deterministic('tau_trial', trial_num * tau_trial_latent)
+            even_trial_switches = np.linspace(
+                0, 1, switch_components + 1)[1:-1]
+            tau_trial_latent = pm.Beta(
+                "tau_trial_latent",
+                1,
+                1,
+                testval=even_trial_switches,
+                shape=(switch_components - 1),
+            ).sort(axis=-1)
 
-        trial_idx = np.arange(trial_num)
-        trial_selector = tt.math.sigmoid(
-            trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, 'x'))
+            # Trial_changepoints
+            tau_trial = pm.Deterministic(
+                "tau_trial", trial_num * tau_trial_latent)
 
-        trial_selector = tt.concatenate(
-            [np.ones((1, trial_num)), trial_selector], axis=0)
-        inverse_trial_selector = 1 - trial_selector[1:, :]
-        inverse_trial_selector = tt.concatenate([inverse_trial_selector,
-                                                np.ones((1, trial_num))], axis=0)
+            trial_idx = np.arange(trial_num)
+            trial_selector = tt.math.sigmoid(
+                trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, "x")
+            )
 
-        # First, we can "select" sets of emissions depending on trial_changepoints
-        # switch_comps x trials
-        trial_selector = np.multiply(trial_selector, inverse_trial_selector)
+            trial_selector = tt.concatenate(
+                [np.ones((1, trial_num)), trial_selector], axis=0)
+            inverse_trial_selector = 1 - trial_selector[1:, :]
+            inverse_trial_selector = tt.concatenate(
+                [inverse_trial_selector, np.ones((1, trial_num))], axis=0
+            )
 
-        # state_lambda: nrns x switch_comps x states
+            # First, we can "select" sets of emissions depending on trial_changepoints
+            # switch_comps x trials
+            trial_selector = np.multiply(
+                trial_selector, inverse_trial_selector)
 
-        # selected_trial_lambda : nrns x states x trials
-        selected_trial_lambda = pm.Deterministic('selected_trial_lambda',
-                                                 tt.sum(
-                                                     # "nrns" x switch_comps x "states" x trials
-                                                     trial_selector.dimshuffle(
-                                                         'x', 0, 'x', 1) * state_lambda.dimshuffle(0, 1, 2, 'x'),
-                                                     axis=1)
-                                                 )
+            # state_lambda: nrns x switch_comps x states
 
-        # Then, we can select state_emissions for every trial
-        idx = np.arange(time_bins)
+            # selected_trial_lambda : nrns x states x trials
+            selected_trial_lambda = pm.Deterministic(
+                "selected_trial_lambda",
+                tt.sum(
+                    # "nrns" x switch_comps x "states" x trials
+                    trial_selector.dimshuffle("x", 0, "x", 1)
+                    * state_lambda.dimshuffle(0, 1, 2, "x"),
+                    axis=1,
+                ),
+            )
 
-        # tau : Trials x Changepoints
-        weight_stack = tt.math.sigmoid(
-            idx[np.newaxis, :]-tau[:, :, np.newaxis])
-        weight_stack = tt.concatenate(
-            [np.ones((trial_num, 1, time_bins)), weight_stack], axis=1)
-        inverse_stack = 1 - weight_stack[:, 1:]
-        inverse_stack = tt.concatenate(
-            [inverse_stack, np.ones((trial_num, 1, time_bins))], axis=1)
+            # Then, we can select state_emissions for every trial
+            idx = np.arange(time_bins)
 
-        # Trials x states x Time
-        weight_stack = np.multiply(weight_stack, inverse_stack)
+            # tau : Trials x Changepoints
+            weight_stack = tt.math.sigmoid(
+                idx[np.newaxis, :] - tau[:, :, np.newaxis])
+            weight_stack = tt.concatenate(
+                [np.ones((trial_num, 1, time_bins)), weight_stack], axis=1
+            )
+            inverse_stack = 1 - weight_stack[:, 1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((trial_num, 1, time_bins))], axis=1
+            )
 
-        # Convert selected_trial_lambda : nrns x trials x states x "time"
+            # Trials x states x Time
+            weight_stack = np.multiply(weight_stack, inverse_stack)
 
-        # nrns x trials x time
-        lambda_ = tt.sum(selected_trial_lambda.dimshuffle(0, 2, 1, 'x') * weight_stack.dimshuffle('x', 0, 1, 2),
-                         axis=2)
+            # Convert selected_trial_lambda : nrns x trials x states x "time"
 
-        # Convert to : trials x nrns x time
-        lambda_ = lambda_.dimshuffle(1, 0, 2)
+            # nrns x trials x time
+            lambda_ = tt.sum(
+                selected_trial_lambda.dimshuffle(0, 2, 1, "x")
+                * weight_stack.dimshuffle("x", 0, 1, 2),
+                axis=2,
+            )
 
-        # Add observations
-        observation = pm.Poisson("obs", lambda_, observed=spike_array)
+            # Convert to : trials x nrns x time
+            lambda_ = lambda_.dimshuffle(1, 0, 2)
 
-    return model
+            # Add observations
+            observation = pm.Poisson("obs", lambda_, observed=data_array)
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data
+        test_data = gen_test_array(
+            (5, 10, 100), n_states=self.n_states, type="poisson")
+
+        # Create model with test data
+        test_model = SingleTastePoissonTrialSwitch(
+            test_data, self.switch_components, self.n_states)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "nrn_lambda" in trace.varnames
+        assert "tau" in trace.varnames
+        assert "tau_trial" in trace.varnames
+        assert "state_lambda" in trace.varnames
+
+        print("Test for SingleTastePoissonTrialSwitch passed")
+        return True
 
 
-def all_taste_poisson_trial_switch(
-        spike_array,
-        switch_components,
-        states):
+# For backward compatibility
+def single_taste_poisson_trial_switch(data_array, switch_components, n_states, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = SingleTastePoissonTrialSwitch(
+        data_array, switch_components, n_states, **kwargs)
+    return model_class.generate_model()
+
+
+class AllTastePoissonTrialSwitch(ChangepointModel):
     """
     Assuming only emissions change across trials
     Changepoint distribution remains constant
-
-    spike_array :: Tastes x trials x nrns x time_bins
-    states :: number of states to include in the model 
     """
 
-    tastes, trial_num, nrn_num, time_bins = spike_array.shape
+    def __init__(self, data_array, switch_components, n_states, **kwargs):
+        """
+        Args:
+            data_array (4D Numpy array): tastes, trials, neurons, time_bins
+            switch_components (int): Number of trial switch components
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.switch_components = switch_components
+        self.n_states = n_states
 
-    with pm.Model() as model:
+    def generate_model(self):
+        """
+        Returns:
+            pymc3 model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        switch_components = self.switch_components
+        n_states = self.n_states
 
-        # Define Emissions
-        # =================================================
+        tastes, trial_num, nrn_num, time_bins = data_array.shape
 
-        # nrns
-        nrn_lambda = pm.Exponential('nrn_lambda', 10, shape=(nrn_num))
+        with pm.Model() as model:
+            # Define Emissions
+            # =================================================
 
-        # tastes x nrns
-        taste_lambda = pm.Exponential('taste_lambda',
-                                      nrn_lambda.dimshuffle('x', 0),
-                                      shape=(tastes, nrn_num))
+            # nrns
+            nrn_lambda = pm.Exponential("nrn_lambda", 10, shape=(nrn_num))
 
-        # tastes x nrns x switch_comps
-        trial_lambda = pm.Exponential('trial_lambda',
-                                      taste_lambda.dimshuffle(0, 1, 'x'),
-                                      shape=(tastes, nrn_num, switch_components))
+            # tastes x nrns
+            taste_lambda = pm.Exponential(
+                "taste_lambda", nrn_lambda.dimshuffle("x", 0), shape=(tastes, nrn_num)
+            )
 
-        # tastes x nrns x switch_comps x states
-        state_lambda = pm.Exponential('state_lambda',
-                                      trial_lambda.dimshuffle(0, 1, 2, 'x'),
-                                      shape=(tastes, nrn_num, switch_components, states))
+            # tastes x nrns x switch_comps
+            trial_lambda = pm.Exponential(
+                "trial_lambda",
+                taste_lambda.dimshuffle(0, 1, "x"),
+                shape=(tastes, nrn_num, switch_components),
+            )
 
-        # Define Changepoints
-        # =================================================
-        # Assuming distribution of changepoints remains
-        # the same across all trials
+            # tastes x nrns x switch_comps x n_states
+            state_lambda = pm.Exponential(
+                "state_lambda",
+                trial_lambda.dimshuffle(0, 1, 2, "x"),
+                shape=(tastes, nrn_num, switch_components, n_states),
+            )
 
-        a = pm.HalfCauchy('a_tau', 3., shape=states - 1)
-        b = pm.HalfCauchy('b_tau', 3., shape=states - 1)
+            # Define Changepoints
+            # =================================================
+            # Assuming distribution of changepoints remains
+            # the same across all trials
 
-        even_switches = np.linspace(0, 1, states+1)[1:-1]
-        tau_latent = pm.Beta('tau_latent', a, b,
-                             testval=even_switches,
-                             shape=(tastes, trial_num, states-1)).sort(axis=-1)
+            a = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
 
-        # Tasets x Trials x Changepoints
-        tau = pm.Deterministic('tau', time_bins * tau_latent)
+            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
+            tau_latent = pm.Beta(
+                "tau_latent",
+                a,
+                b,
+                testval=even_switches,
+                shape=(tastes, trial_num, n_states - 1),
+            ).sort(axis=-1)
 
-        # Define trial switches
-        # Will have same structure as regular changepoints
+            # Tasets x Trials x Changepoints
+            tau = pm.Deterministic("tau", time_bins * tau_latent)
 
-        #a_trial = pm.HalfCauchy('a_trial', 3., shape = switch_components - 1)
-        #b_trial = pm.HalfCauchy('b_trial', 3., shape = switch_components - 1)
+            # Define trial switches
+            # Will have same structure as regular changepoints
 
-        even_trial_switches = np.linspace(0, 1, switch_components+1)[1:-1]
-        tau_trial_latent = pm.Beta('tau_trial_latent', 1, 1,
-                                   testval=even_trial_switches,
-                                   shape=(switch_components-1)).sort(axis=-1)
+            # a_trial = pm.HalfCauchy('a_trial', 3., shape = switch_components - 1)
+            # b_trial = pm.HalfCauchy('b_trial', 3., shape = switch_components - 1)
 
-        # Trial_changepoints
-        # =================================================
-        tau_trial = pm.Deterministic('tau_trial', trial_num * tau_trial_latent)
+            even_trial_switches = np.linspace(
+                0, 1, switch_components + 1)[1:-1]
+            tau_trial_latent = pm.Beta(
+                "tau_trial_latent",
+                1,
+                1,
+                testval=even_trial_switches,
+                shape=(switch_components - 1),
+            ).sort(axis=-1)
 
-        trial_idx = np.arange(trial_num)
-        trial_selector = tt.math.sigmoid(
-            trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, 'x'))
+            # Trial_changepoints
+            # =================================================
+            tau_trial = pm.Deterministic(
+                "tau_trial", trial_num * tau_trial_latent)
 
-        trial_selector = tt.concatenate(
-            [np.ones((1, trial_num)), trial_selector], axis=0)
-        inverse_trial_selector = 1 - trial_selector[1:, :]
-        inverse_trial_selector = tt.concatenate([inverse_trial_selector,
-                                                np.ones((1, trial_num))], axis=0)
+            trial_idx = np.arange(trial_num)
+            trial_selector = tt.math.sigmoid(
+                trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, "x")
+            )
 
-        # switch_comps x trials
-        trial_selector = np.multiply(trial_selector, inverse_trial_selector)
+            trial_selector = tt.concatenate(
+                [np.ones((1, trial_num)), trial_selector], axis=0)
+            inverse_trial_selector = 1 - trial_selector[1:, :]
+            inverse_trial_selector = tt.concatenate(
+                [inverse_trial_selector, np.ones((1, trial_num))], axis=0
+            )
 
-        # state_lambda: tastes x nrns x switch_comps x states
+            # switch_comps x trials
+            trial_selector = np.multiply(
+                trial_selector, inverse_trial_selector)
 
-        # selected_trial_lambda : tastes x nrns x states x trials
-        selected_trial_lambda = pm.Deterministic('selected_trial_lambda',
-                                                 tt.sum(
-                                                     # "tastes" x "nrns" x switch_comps x "states" x trials
-                                                     trial_selector.dimshuffle(
-                                                         'x', 'x', 0, 'x', 1) * state_lambda.dimshuffle(0, 1, 2, 3, 'x'),
-                                                     axis=2)
-                                                 )
+            # state_lambda: tastes x nrns x switch_comps x states
 
-        # First, we can "select" sets of emissions depending on trial_changepoints
-        # =================================================
-        trial_idx = np.arange(trial_num)
-        trial_selector = tt.math.sigmoid(
-            trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, 'x'))
+            # selected_trial_lambda : tastes x nrns x states x trials
+            selected_trial_lambda = pm.Deterministic(
+                "selected_trial_lambda",
+                tt.sum(
+                    # "tastes" x "nrns" x switch_comps x "states" x trials
+                    trial_selector.dimshuffle("x", "x", 0, "x", 1)
+                    * state_lambda.dimshuffle(0, 1, 2, 3, "x"),
+                    axis=2,
+                ),
+            )
 
-        trial_selector = tt.concatenate(
-            [np.ones((1, trial_num)), trial_selector], axis=0)
-        inverse_trial_selector = 1 - trial_selector[1:, :]
-        inverse_trial_selector = tt.concatenate([inverse_trial_selector,
-                                                np.ones((1, trial_num))], axis=0)
+            # First, we can "select" sets of emissions depending on trial_changepoints
+            # =================================================
+            trial_idx = np.arange(trial_num)
+            trial_selector = tt.math.sigmoid(
+                trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, "x")
+            )
 
-        # switch_comps x trials
-        trial_selector = np.multiply(trial_selector, inverse_trial_selector)
+            trial_selector = tt.concatenate(
+                [np.ones((1, trial_num)), trial_selector], axis=0)
+            inverse_trial_selector = 1 - trial_selector[1:, :]
+            inverse_trial_selector = tt.concatenate(
+                [inverse_trial_selector, np.ones((1, trial_num))], axis=0
+            )
 
-        # Then, we can select state_emissions for every trial
-        # =================================================
+            # switch_comps x trials
+            trial_selector = np.multiply(
+                trial_selector, inverse_trial_selector)
 
-        idx = np.arange(time_bins)
+            # Then, we can select state_emissions for every trial
+            # =================================================
 
-        # tau : Tastes x Trials x Changepoints
-        weight_stack = tt.math.sigmoid(
-            idx[np.newaxis, :]-tau[:, :, :, np.newaxis])
-        weight_stack = tt.concatenate(
-            [np.ones((tastes, trial_num, 1, time_bins)), weight_stack], axis=2)
-        inverse_stack = 1 - weight_stack[:, :, 1:]
-        inverse_stack = tt.concatenate(
-            [inverse_stack, np.ones((tastes, trial_num, 1, time_bins))], axis=2)
+            idx = np.arange(time_bins)
 
-        # Tastes x Trials x states x Time
-        weight_stack = np.multiply(weight_stack, inverse_stack)
+            # tau : Tastes x Trials x Changepoints
+            weight_stack = tt.math.sigmoid(
+                idx[np.newaxis, :] - tau[:, :, :, np.newaxis])
+            weight_stack = tt.concatenate(
+                [np.ones((tastes, trial_num, 1, time_bins)), weight_stack], axis=2
+            )
+            inverse_stack = 1 - weight_stack[:, :, 1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((tastes, trial_num, 1, time_bins))], axis=2
+            )
 
-        # Putting everything together
-        # =================================================
+            # Tastes x Trials x states x Time
+            weight_stack = np.multiply(weight_stack, inverse_stack)
 
-        # selected_trial_lambda :           tastes x nrns x states x trials
-        # Convert selected_trial_lambda --> tastes x trials x nrns x states x "time"
+            # Putting everything together
+            # =================================================
 
-        # weight_stack :           tastes x trials x states x time
-        # Convert weight_stack --> tastes x trials x "nrns" x states x time
+            # selected_trial_lambda :           tastes x nrns x states x trials
+            # Convert selected_trial_lambda --> tastes x trials x nrns x states x "time"
 
-        # tastes x trials x nrns x time
-        lambda_ = tt.sum(selected_trial_lambda.dimshuffle(0, 3, 1, 2, 'x') * weight_stack.dimshuffle(0, 1, 'x', 2, 3),
-                         axis=3)
+            # weight_stack :           tastes x trials x states x time
+            # Convert weight_stack --> tastes x trials x "nrns" x states x time
 
-        # Add observations
-        observation = pm.Poisson("obs", lambda_, observed=spike_array)
+            # tastes x trials x nrns x time
+            lambda_ = tt.sum(
+                selected_trial_lambda.dimshuffle(0, 3, 1, 2, "x")
+                * weight_stack.dimshuffle(0, 1, "x", 2, 3),
+                axis=3,
+            )
 
-    return model
+            # Add observations
+            observation = pm.Poisson("obs", lambda_, observed=data_array)
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data
+        test_data = gen_test_array(
+            (2, 5, 10, 100), n_states=self.n_states, type="poisson")
+
+        # Create model with test data
+        test_model = AllTastePoissonTrialSwitch(
+            test_data, self.switch_components, self.n_states)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "nrn_lambda" in trace.varnames
+        assert "tau" in trace.varnames
+        assert "tau_trial" in trace.varnames
+        assert "state_lambda" in trace.varnames
+        assert "taste_lambda" in trace.varnames
+
+        print("Test for AllTastePoissonTrialSwitch passed")
+        return True
+
+
+# For backward compatibility
+def all_taste_poisson_trial_switch(data_array, switch_components, n_states, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = AllTastePoissonTrialSwitch(
+        data_array, switch_components, n_states, **kwargs)
+    return model_class.generate_model()
+
 
 ######################################################################
 # Run Inference
 ######################################################################
+
+
+def run_all_tests():
+    """Run tests for all model classes"""
+    # Create test data
+    test_data_2d = gen_test_array((10, 100), n_states=3, type="normal")
+    test_data_3d = gen_test_array((5, 10, 100), n_states=3, type="poisson")
+    test_data_4d = gen_test_array((2, 5, 10, 100), n_states=3, type="poisson")
+
+    # Test each model class
+    models_to_test = [
+        GaussianChangepointMeanVar2D(test_data_2d, 3),
+        GaussianChangepointMeanDirichlet(test_data_2d, 5),
+        GaussianChangepointMean2D(test_data_2d, 3),
+        SingleTastePoissonDirichlet(test_data_3d, 5),
+        SingleTastePoisson(test_data_3d, 3),
+        SingleTastePoissonVarsig(test_data_3d, 3),
+        SingleTastePoissonVarsigFixed(test_data_3d, 3, 1),
+        SingleTastePoissonTrialSwitch(test_data_3d, 2, 3),
+        AllTastePoisson(test_data_4d, 3),
+        AllTastePoissonVarsigFixed(test_data_4d, 3, 1),
+        AllTastePoissonTrialSwitch(test_data_4d, 2, 3),
+    ]
+
+    failed_tests = []
+    pbar = tqdm(models_to_test, total=len(models_to_test))
+    for model in pbar:
+        try:
+            model.test()
+            pbar.set_description(f"Test passed for {model.__class__.__name__}")
+        except Exception as e:
+            failed_tests.append(model.__class__.__name__)
+            print(f"Test failed for {model.__class__.__name__}: {str(e)}")
+
+    print("All tests completed")
+    if failed_tests:
+        print("Failed tests:", failed_tests)
 
 
 def extract_inferred_values(trace):
@@ -1126,13 +1789,12 @@ def extract_inferred_values(trace):
         dict: dictionary of inferred values
     """
     # Extract relevant variables from trace
-    out_dict = dict(
-        tau_samples=trace['tau'])
-    if 'lambda' in trace.varnames:
-        out_dict['lambda_stack'] = trace['lambda'].swapaxes(0, 1)
-    if 'mu' in trace.varnames:
-        out_dict['mu_stack'] = trace['mu'].swapaxes(0, 1)
-        out_dict['sigma_stack'] = trace['sigma'].swapaxes(0, 1)
+    out_dict = dict(tau_samples=trace["tau"])
+    if "lambda" in trace.varnames:
+        out_dict["lambda_stack"] = trace["lambda"].swapaxes(0, 1)
+    if "mu" in trace.varnames:
+        out_dict["mu_stack"] = trace["mu"].swapaxes(0, 1)
+        out_dict["sigma_stack"] = trace["sigma"].swapaxes(0, 1)
     return out_dict
 
 
@@ -1152,11 +1814,11 @@ def find_best_states(data, model_generator, n_fit, n_samples, min_states=2, max_
         model_list: list of models with different number of states,
         elbo_values: list of elbo values for different number of states
     """
-    n_state_array = np.arange(min_states, max_states+1)
+    n_state_array = np.arange(min_states, max_states + 1)
     elbo_values = []
     model_list = []
     for n_states in tqdm(n_state_array):
-        print(f'Fitting model with {n_states} states')
+        print(f"Fitting model with {n_states} states")
         model = model_generator(data, n_states)
         model, approx = advi_fit(model, n_fit, n_samples)[:2]
         elbo_values.append(approx.hist[-1])
@@ -1208,19 +1870,19 @@ def advi_fit(model, fit, samples):
     """
 
     with model:
-        inference = pm.ADVI('full-rank')
+        inference = pm.ADVI("full-rank")
         approx = pm.fit(n=fit, method=inference)
         trace = approx.sample(draws=samples)
 
     # Extract relevant variables from trace
-    tau_samples = trace['tau']
-    if 'lambda' in trace.varnames:
-        lambda_stack = trace['lambda'].swapaxes(0, 1)
-        return model, approx, lambda_stack, tau_samples, model.obs.observations
-    if 'mu' in trace.varnames:
-        mu_stack = trace['mu'].swapaxes(0, 1)
-        sigma_stack = trace['sigma'].swapaxes(0, 1)
-        return model, approx, mu_stack, sigma_stack, tau_samples, model.obs.observations
+    tau_samples = trace["tau"]
+    if "lambda" in trace.varnames:
+        lambda_stack = trace["lambda"].swapaxes(0, 1)
+        return model, trace, lambda_stack, tau_samples, model.obs.observations
+    if "mu" in trace.varnames:
+        mu_stack = trace["mu"].swapaxes(0, 1)
+        sigma_stack = trace["sigma"].swapaxes(0, 1)
+        return model, trace, mu_stack, sigma_stack, tau_samples, model.obs.observations
 
 
 def mcmc_fit(model, samples):
@@ -1228,7 +1890,7 @@ def mcmc_fit(model, samples):
 
     Args:
         model (pymc3 model): model object to run inference on
-        samples (int): Number of samples to draw using MCMC 
+        samples (int): Number of samples to draw using MCMC
 
     Returns:
         model: original model on which inference was run,
@@ -1239,16 +1901,77 @@ def mcmc_fit(model, samples):
     """
 
     with model:
-        sampler_kwargs = {'cores': 1, 'chains': 4}
+        sampler_kwargs = {"cores": 1, "chains": 4}
         trace = pm.sample(draws=samples, **sampler_kwargs)
         trace = trace[::10]
 
     # Extract relevant variables from trace
-    tau_samples = trace['tau']
-    if 'lambda' in trace.varnames:
-        lambda_stack = trace['lambda'].swapaxes(0, 1)
-        return model, approx, lambda_stack, tau_samples, model.obs.observations
-    if 'mu' in trace.varnames:
-        mu_stack = trace['mu'].swapaxes(0, 1)
-        sigma_stack = trace['sigma'].swapaxes(0, 1)
-        return model, approx, mu_stack, sigma_stack, tau_samples, model.obs.observations
+    tau_samples = trace["tau"]
+    if "lambda" in trace.varnames:
+        lambda_stack = trace["lambda"].swapaxes(0, 1)
+        return model, trace, lambda_stack, tau_samples, model.obs.observations
+    if "mu" in trace.varnames:
+        mu_stack = trace["mu"].swapaxes(0, 1)
+        sigma_stack = trace["sigma"].swapaxes(0, 1)
+        return model, trace, mu_stack, sigma_stack, tau_samples, model.obs.observations
+
+
+######################################################################
+# Run Inference
+######################################################################
+
+
+def run_all_tests():
+    """Run tests for all model classes"""
+    # Create test data
+    test_data_2d = gen_test_array((10, 100), n_states=3, type="normal")
+    test_data_3d = gen_test_array((5, 10, 100), n_states=3, type="poisson")
+    test_data_4d = gen_test_array((2, 5, 10, 100), n_states=3, type="poisson")
+
+    # Test each model class
+    models_to_test = [
+        GaussianChangepointMeanVar2D(test_data_2d, 3),
+        GaussianChangepointMeanDirichlet(test_data_2d, 5),
+        GaussianChangepointMean2D(test_data_2d, 3),
+        SingleTastePoissonDirichlet(test_data_3d, 5),
+        SingleTastePoisson(test_data_3d, 3),
+        SingleTastePoissonVarsig(test_data_3d, 3),
+        SingleTastePoissonVarsigFixed(test_data_3d, 3, 1),
+        SingleTastePoissonTrialSwitch(test_data_3d, 2, 3),
+        AllTastePoisson(test_data_4d, 3),
+        AllTastePoissonVarsigFixed(test_data_4d, 3, 1),
+        AllTastePoissonTrialSwitch(test_data_4d, 2, 3),
+    ]
+
+    failed_tests = []
+    pbar = tqdm(models_to_test, total=len(models_to_test))
+    for model in pbar:
+        try:
+            model.test()
+            pbar.set_description(f"Test passed for {model.__class__.__name__}")
+        except Exception as e:
+            failed_tests.append(model.__class__.__name__)
+            print(f"Test failed for {model.__class__.__name__}: {str(e)}")
+
+    print("All tests completed")
+    if failed_tests:
+        print("Failed tests:", failed_tests)
+
+
+def extract_inferred_values(trace):
+    """Convenience function to extract inferred values from ADVI fit
+
+    Args:
+        trace (dict): trace
+
+    Returns:
+        dict: dictionary of inferred values
+    """
+    # Extract relevant variables from trace
+    out_dict = dict(tau_samples=trace["tau"])
+    if "lambda" in trace.varnames:
+        out_dict["lambda_stack"] = trace["lambda"].swapaxes(0, 1)
+    if "mu" in trace.varnames:
+        out_dict["mu_stack"] = trace["mu"].swapaxes(0, 1)
+        out_dict["sigma_stack"] = trace["sigma"].swapaxes(0, 1)
+    return out_dict

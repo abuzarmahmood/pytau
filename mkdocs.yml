@@ -2,7 +2,7 @@ site_name: PyTau
 site_description: "Simple python package to perform streamlined batch inference on changepoint models"
 
 theme:
-  name: "material"
+  name: "mkdocs"
   palette:
     primary: "blue"
     accent: "grey"
@@ -13,10 +13,6 @@ theme:
 plugins:
   - search
   - mkdocstrings
-
-markdown_extensions:
-  - pymdownx.highlight
-  - pymdownx.superfences
 
 nav:
   - "Start": index.md

@@ -1,31 +1,34 @@
 # Fit a model to data manually
 
-import pylab as plt
-from scipy import stats
-import tables
 import os
-from glob import glob
-import numpy as np
 import sys
-pytau_base_dir = '/media/bigdata/projects/pytau'
-sys.path.append(pytau_base_dir)
-from pytau.utils import plotting
-from pytau.changepoint_model import single_taste_poisson, advi_fit
+from glob import glob
+
+import numpy as np
+import pylab as plt
+import tables
+from scipy import stats
+
+from pytau.changepoint_model import advi_fit, single_taste_poisson
 from pytau.changepoint_preprocess import preprocess_single_taste
+from pytau.utils import plotting
+
+pytau_base_dir = "/media/bigdata/projects/pytau"
+sys.path.append(pytau_base_dir)
 
 # Write to MODEL_SAVE_DIR.params
-param_file_path = f'{pytau_base_dir}/pytau/config/MODEL_SAVE_DIR.params'
-save_model_path = f'{pytau_base_dir}/pytau/how_to/examples/saved_models'
-with open(param_file_path, 'w') as f:
+param_file_path = f"{pytau_base_dir}/pytau/config/MODEL_SAVE_DIR.params"
+save_model_path = f"{pytau_base_dir}/pytau/how_to/examples/saved_models"
+with open(param_file_path, "w") as f:
     f.write(save_model_path)
 
 # Find hf5 file
-h5_path = glob(os.path.join(pytau_base_dir, '**', '*.h5'), recursive=True)[0]
+h5_path = glob(os.path.join(pytau_base_dir, "**", "*.h5"), recursive=True)[0]
 
 # Load spikes
 wanted_dig_in_ind = 0
-with tables.open_file(h5_path, 'r') as hf5:
-    dig_in_list = hf5.list_nodes('/spike_trains')
+with tables.open_file(h5_path, "r") as hf5:
+    dig_in_list = hf5.list_nodes("/spike_trains")
     wanted_dig_in = dig_in_list[wanted_dig_in_ind]
     spike_train = wanted_dig_in.spike_array[:]
 
@@ -36,20 +39,22 @@ binned_spike_array = preprocess_single_taste(
     spike_array=spike_train,
     time_lims=time_lims,
     bin_width=bin_width,
-    data_transform=None)
+    data_transform=None,
+)
 
 # Create and fit model
 n_fit = 40000
 n_samples = 20000
 n_states = 4
 model = single_taste_poisson(binned_spike_array, n_states)
-model, approx, lambda_stack, tau_samples, fit_data = \
-    advi_fit(model=model, fit=n_fit, samples=n_samples)
+model, approx, lambda_stack, tau_samples, fit_data = advi_fit(
+    model=model, fit=n_fit, samples=n_samples
+)
 
 # Extract changepoint values
 int_tau = np.vectorize(np.int)(tau_samples)
 mode_tau = np.squeeze(stats.mode(int_tau, axis=0)[0])
-scaled_mode_tau = (mode_tau*bin_width)+time_lims[0]
+scaled_mode_tau = (mode_tau * bin_width) + time_lims[0]
 
 # Plot ELBO over iterations, should be flat by the end
 fig, ax = plotting.plot_elbo_history(approx)
