@@ -12,11 +12,17 @@ from glob import glob
 
 import numpy as np
 import pandas as pd
-import pymc3
-import theano
+import pymc
 
 from . import changepoint_model, changepoint_preprocess
 from .utils import EphysData
+
+# import changepoint_model
+# import changepoint_preprocess
+# from utils import EphysData
+
+# import theano
+
 
 # import changepoint_model
 # import changepoint_preprocess
