@@ -1726,11 +1726,39 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
         print("Test for AllTastePoissonTrialSwitch passed")
         return True
 
+cat_p = np.random.rand(5,100)
+cat_p = cat_p / cat_p.sum(axis=0)  # Normalize to sum to 1
+
+with pm.Model() as model:
+    category = pm.Categorical(
+        "category",
+        p = cat_p, 
+        shape = (10, 5, 100),
+        # shape = (10,100),
+        )
+
+with model:
+    trace = pm.sample_prior_predictive()
+
+trace['category'].shape
+
+plt.imshow(trace['category'][0], aspect='auto')
+plt.show()
+
 
 class CategoricalChangepoint3D(ChangepointModel):
     """Model for categorical data changepoint detection on 3D arrays."""
 
     def __init__(self, data_array, n_states, **kwargs):
+        """
+        Args:
+            data_array (2D Numpy array): trials x length
+                - Each element is a postive integer representing a category
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+
+        """
+
         super().__init__(**kwargs)
         self.data_array = data_array
         self.n_states = n_states
@@ -1738,19 +1766,146 @@ class CategoricalChangepoint3D(ChangepointModel):
     def generate_model(self):
         data_array = self.data_array
         n_states = self.n_states
-        trials, features, time = data_array.shape
+        trials, length = data_array.shape
+        features = len(np.unique(data_array))
+
+        # Make sure data array is int
+        if not np.issubdtype(data_array.dtype, np.integer):
+            raise ValueError("Data array must contain integer category values.")
+
+        # If features in data_array are not continuous integer values, map them
+        feature_set = np.unique(data_array)
+        if not np.array_equal(feature_set, np.arange(len(feature_set))):
+            # Create a mapping from original categories to continuous integers
+            category_map = {cat: i for i, cat in enumerate(feature_set)}
+            data_array = np.vectorize(category_map.get)(data_array)
+
+        idx = np.arange(length)
+
         with pm.Model() as model:
             p = pm.Dirichlet(
-                "p", a=np.ones((trials, features, n_states)), shape=(trials, features, n_states)
+                "p", 
+                a=np.ones((n_states, features)), 
+                shape=(n_states, features)
             )
-            category = pm.Categorical("category", p=p, observed=data_array)
 
             # Infer changepoint locations
             a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
             b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
-            tau_latent = pm.Beta("tau_latent", a_tau, b_tau, shape=(trials, n_states - 1)).sort(
+            # Shape: trials x changepoints
+            tau_latent = pm.Beta(
+                    "tau_latent", 
+                    a_tau, 
+                    b_tau, 
+                    shape=(trials, n_states - 1)).sort(
                 axis=-1
             )
+
+            tau = pm.Deterministic(
+                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
+
+            weight_stack = tt.nnet.sigmoid(
+                idx[np.newaxis, :] - tau[:, :, np.newaxis])
+            weight_stack = tt.concatenate(
+                [np.ones((trials, 1, length)), weight_stack], axis=1)
+            inverse_stack = 1 - weight_stack[:, 1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((trials, 1, length))], axis=1)
+            weight_stack = np.multiply(weight_stack, inverse_stack)
+
+            # shapes:
+            #   - weight_stack: trials x states x length
+            #   - p : states x features
+
+            # shape: trials x features x length
+            lambda_ = tt.tensordot(weight_stack, p, [
+                                   1, 0])# .swapaxes(1, 2)
+
+            flat_lambda = lambda_.reshape(
+                (trials * length, features))
+
+            flat_data_array = data_array.reshape((trials * length,))
+
+            # Use categorical likelihood
+            # data_array = trials x length
+            # category = pm.Categorical("category", p=lambda_, observed=data_array)
+            category = pm.Categorical("category", p=flat_lambda, observed=flat_data_array)
+
+        with model:
+            inference = pm.ADVI("full-rank")
+            approx = pm.fit(n = 100000, method=inference)
+            trace = approx.sample(draws = 10000)
+
+        # Visualize the model
+        pm.plot_trace(trace)
+        plt.show()
+
+        def custom_categotical_logp(x, p):
+            """
+            Custom logp function for categorical distribution given timeseries data
+
+            Args:
+                x (TensorVariable): Observed data (trials x length)
+                p (TensorVariable): Probability distribution (trials x features x length)
+            Returns:
+                TensorVariable: Log probability of observed data
+            """
+            # Ensure x is a 2D tensor
+            if x.ndim != 2:
+                raise ValueError("Observed data x must be a 2D tensor.")
+
+            # Ensure p is a 3D tensor with shape (trials, features, length)
+            if p.ndim != 3 or p.shape[0] != x.shape[0]:
+                raise ValueError("Probability distribution p must be a 3D tensor with shape (trials, features, length).")
+
+            # Reshape so that x is flat, and p is (trials * length, features)
+            # This way
+
+            # Use the categorical logp function from PyMC3
+            return tt.sum( 
+
+        with pm.Model() as model:
+            p = pm.Dirichlet(
+                "p", 
+                a=np.ones((features)), 
+                shape=(features)
+            )
+            category = pm.Categorical("category", p=p, observed=data_array[0])
+
+        with model:
+            # trace = pm.sample()
+            inference = pm.ADVI("full-rank")
+            approx = pm.fit(n = 100000, method=inference)
+            trace = approx.sample(draws = 10000)
+
+        # Visualize the model
+        pm.plot_trace(trace)
+        plt.show()
+
+
+        plt.imshow(weight_stack.tag.test_value[0], aspect='auto')
+        plt.show()
+
+        plt.imshow(lambda_.tag.test_value[0], aspect='auto')
+        plt.show()
+
+        with model:
+            prior_pred = pm.sample_prior_predictive(
+            )
+
+        # prior_pred['p'].shape
+        #
+        # plt.imshow(prior_pred['p'], aspect='auto')
+        # plt.show()
+
+
+        plt.imshow(data_array[0], aspect='auto')
+        plt.show()
+
+        plt.plot(data_array[0,0]);plt.show()
+        
+
+
             tau = pm.Deterministic("tau", np.arange(
                 time)[np.newaxis, :] * tau_latent)
         return model
