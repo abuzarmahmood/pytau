@@ -1726,35 +1726,8 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
         print("Test for AllTastePoissonTrialSwitch passed")
         return True
 
-cat_p = np.random.rand(5,100)
-cat_p = cat_p / cat_p.sum(axis=0)  # Normalize to sum to 1
-
-with pm.Model() as model:
-    category = pm.Categorical(
-        "category",
-        p = cat_p, 
-        shape = (10, 5, 100),
-        # shape = (10,100),
-        )
-
-with model:
-    trace = pm.sample_prior_predictive()
-
-trace['category'].shape
-
-plt.imshow(trace['category'][0], aspect='auto')
-plt.show()
-
-changes = np.random.randint(0, 100, size=(10))
-for i in range(10):
-    data_array[i, :changes[i]] = 0
-
-plt.imshow(data_array, aspect='auto')
-plt.show()
-
-
-class CategoricalChangepoint3D(ChangepointModel):
-    """Model for categorical data changepoint detection on 3D arrays."""
+class CategoricalChangepoint2D(ChangepointModel):
+    """Model for categorical data changepoint detection on 2D arrays."""
 
     def __init__(self, data_array, n_states, **kwargs):
         """
@@ -1767,6 +1740,12 @@ class CategoricalChangepoint3D(ChangepointModel):
         """
 
         super().__init__(**kwargs)
+        # Make sure data array is int
+        if not np.issubdtype(data_array.dtype, np.integer):
+            raise ValueError("Data array must contain integer category values.")
+        # Check that data_array is 2D
+        if data_array.ndim != 2:
+            raise ValueError("Data array must be 2D (trials x length).")
         self.data_array = data_array
         self.n_states = n_states
 
@@ -1775,10 +1754,6 @@ class CategoricalChangepoint3D(ChangepointModel):
         n_states = self.n_states
         trials, length = data_array.shape
         features = len(np.unique(data_array))
-
-        # Make sure data array is int
-        if not np.issubdtype(data_array.dtype, np.integer):
-            raise ValueError("Data array must contain integer category values.")
 
         # If features in data_array are not continuous integer values, map them
         feature_set = np.unique(data_array)
@@ -1825,108 +1800,16 @@ class CategoricalChangepoint3D(ChangepointModel):
             #   - weight_stack: trials x states x length
             #   - p : states x features
 
-            # shape: trials x features x length
+            # shape: trials x length x features 
             lambda_ = tt.tensordot(weight_stack, p, [
-                                   1, 0])# .swapaxes(1, 2)
+                                   1, 0])
 
             flat_lambda = lambda_.reshape(
                 (trials * length, features))
 
             # Use categorical likelihood
             # data_array = trials x length
-            # category = pm.Categorical("category", p=lambda_, observed=data_array)
             category = pm.Categorical("category", p=flat_lambda, observed=flat_data_array)
-
-        with model:
-            inference = pm.ADVI("full-rank")
-            approx = pm.fit(n = 100000, method=inference)
-            trace = approx.sample(draws = 10000)
-
-        with model:
-            posterior_pred = pm.sample_posterior_predictive(trace, samples = 100,
-                                                            var_names = ['category','p'])
-
-        mean_post_p = posterior_pred['p'].mean(axis=0)
-
-        this_sample = posterior_pred['category'][0]
-        reshaped_sample = this_sample.reshape((trials, length))
-        plt.imshow(reshaped_sample, aspect='auto')
-        plt.show()
-
-        # Visualize the model
-        pm.plot_trace(trace)
-        # pm.forestplot(trace)
-        plt.show()
-
-        def custom_categotical_logp(x, p):
-            """
-            Custom logp function for categorical distribution given timeseries data
-
-            Args:
-                x (TensorVariable): Observed data (trials x length)
-                p (TensorVariable): Probability distribution (trials x features x length)
-            Returns:
-                TensorVariable: Log probability of observed data
-            """
-            # Ensure x is a 2D tensor
-            if x.ndim != 2:
-                raise ValueError("Observed data x must be a 2D tensor.")
-
-            # Ensure p is a 3D tensor with shape (trials, features, length)
-            if p.ndim != 3 or p.shape[0] != x.shape[0]:
-                raise ValueError("Probability distribution p must be a 3D tensor with shape (trials, features, length).")
-
-            # Reshape so that x is flat, and p is (trials * length, features)
-            # This way
-
-            # Use the categorical logp function from PyMC3
-            return tt.sum( 
-
-        with pm.Model() as model:
-            p = pm.Dirichlet(
-                "p", 
-                a=np.ones((features)), 
-                shape=(features)
-            )
-            category = pm.Categorical("category", p=p, observed=data_array[0])
-
-        with model:
-            # trace = pm.sample()
-            inference = pm.ADVI("full-rank")
-            approx = pm.fit(n = 100000, method=inference)
-            trace = approx.sample(draws = 10000)
-
-        # Visualize the model
-        pm.plot_trace(trace)
-        plt.show()
-
-
-        plt.imshow(weight_stack.tag.test_value[0], aspect='auto')
-        plt.show()
-
-        plt.imshow(lambda_.tag.test_value[0], aspect='auto')
-        plt.show()
-
-        with model:
-            prior_pred = pm.sample_prior_predictive(
-            )
-
-        # prior_pred['p'].shape
-        #
-        # plt.imshow(prior_pred['p'], aspect='auto')
-        # plt.show()
-
-
-        plt.imshow(data_array[0], aspect='auto')
-        plt.show()
-
-        plt.plot(data_array[0,0]);plt.show()
-        
-
-
-            tau = pm.Deterministic("tau", np.arange(
-                time)[np.newaxis, :] * tau_latent)
-        return model
 
     def test(self):
         test_data = np.random.randint(0, self.n_states, size=(5, 10, 100))
