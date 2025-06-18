@@ -1745,6 +1745,13 @@ trace['category'].shape
 plt.imshow(trace['category'][0], aspect='auto')
 plt.show()
 
+changes = np.random.randint(0, 100, size=(10))
+for i in range(10):
+    data_array[i, :changes[i]] = 0
+
+plt.imshow(data_array, aspect='auto')
+plt.show()
+
 
 class CategoricalChangepoint3D(ChangepointModel):
     """Model for categorical data changepoint detection on 3D arrays."""
@@ -1781,6 +1788,7 @@ class CategoricalChangepoint3D(ChangepointModel):
             data_array = np.vectorize(category_map.get)(data_array)
 
         idx = np.arange(length)
+        flat_data_array = data_array.reshape((trials * length,))
 
         with pm.Model() as model:
             p = pm.Dirichlet(
@@ -1824,8 +1832,6 @@ class CategoricalChangepoint3D(ChangepointModel):
             flat_lambda = lambda_.reshape(
                 (trials * length, features))
 
-            flat_data_array = data_array.reshape((trials * length,))
-
             # Use categorical likelihood
             # data_array = trials x length
             # category = pm.Categorical("category", p=lambda_, observed=data_array)
@@ -1836,8 +1842,20 @@ class CategoricalChangepoint3D(ChangepointModel):
             approx = pm.fit(n = 100000, method=inference)
             trace = approx.sample(draws = 10000)
 
+        with model:
+            posterior_pred = pm.sample_posterior_predictive(trace, samples = 100,
+                                                            var_names = ['category','p'])
+
+        mean_post_p = posterior_pred['p'].mean(axis=0)
+
+        this_sample = posterior_pred['category'][0]
+        reshaped_sample = this_sample.reshape((trials, length))
+        plt.imshow(reshaped_sample, aspect='auto')
+        plt.show()
+
         # Visualize the model
         pm.plot_trace(trace)
+        # pm.forestplot(trace)
         plt.show()
 
         def custom_categotical_logp(x, p):
