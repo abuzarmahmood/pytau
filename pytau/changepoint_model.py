@@ -1726,14 +1726,15 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
         print("Test for AllTastePoissonTrialSwitch passed")
         return True
 
-cat_p = np.random.rand(5,100)
+
+cat_p = np.random.rand(5, 100)
 cat_p = cat_p / cat_p.sum(axis=0)  # Normalize to sum to 1
 
 with pm.Model() as model:
     category = pm.Categorical(
         "category",
-        p = cat_p, 
-        shape = (10, 5, 100),
+        p=cat_p,
+        shape=(10, 5, 100),
         # shape = (10,100),
         )
 
@@ -1771,7 +1772,8 @@ class CategoricalChangepoint3D(ChangepointModel):
 
         # Make sure data array is int
         if not np.issubdtype(data_array.dtype, np.integer):
-            raise ValueError("Data array must contain integer category values.")
+            raise ValueError(
+                "Data array must contain integer category values.")
 
         # If features in data_array are not continuous integer values, map them
         feature_set = np.unique(data_array)
@@ -1784,8 +1786,8 @@ class CategoricalChangepoint3D(ChangepointModel):
 
         with pm.Model() as model:
             p = pm.Dirichlet(
-                "p", 
-                a=np.ones((n_states, features)), 
+                "p",
+                a=np.ones((n_states, features)),
                 shape=(n_states, features)
             )
 
@@ -1794,9 +1796,9 @@ class CategoricalChangepoint3D(ChangepointModel):
             b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
             # Shape: trials x changepoints
             tau_latent = pm.Beta(
-                    "tau_latent", 
-                    a_tau, 
-                    b_tau, 
+                    "tau_latent",
+                    a_tau,
+                    b_tau,
                     shape=(trials, n_states - 1)).sort(
                 axis=-1
             )
@@ -1819,7 +1821,7 @@ class CategoricalChangepoint3D(ChangepointModel):
 
             # shape: trials x features x length
             lambda_ = tt.tensordot(weight_stack, p, [
-                                   1, 0])# .swapaxes(1, 2)
+                                   1, 0])  # .swapaxes(1, 2)
 
             flat_lambda = lambda_.reshape(
                 (trials * length, features))
@@ -1829,12 +1831,13 @@ class CategoricalChangepoint3D(ChangepointModel):
             # Use categorical likelihood
             # data_array = trials x length
             # category = pm.Categorical("category", p=lambda_, observed=data_array)
-            category = pm.Categorical("category", p=flat_lambda, observed=flat_data_array)
+            category = pm.Categorical(
+                "category", p=flat_lambda, observed=flat_data_array)
 
         with model:
             inference = pm.ADVI("full-rank")
-            approx = pm.fit(n = 100000, method=inference)
-            trace = approx.sample(draws = 10000)
+            approx = pm.fit(n=100000, method=inference)
+            trace = approx.sample(draws=10000)
 
         # Visualize the model
         pm.plot_trace(trace)
@@ -1856,27 +1859,28 @@ class CategoricalChangepoint3D(ChangepointModel):
 
             # Ensure p is a 3D tensor with shape (trials, features, length)
             if p.ndim != 3 or p.shape[0] != x.shape[0]:
-                raise ValueError("Probability distribution p must be a 3D tensor with shape (trials, features, length).")
+                raise ValueError(
+                    "Probability distribution p must be a 3D tensor with shape (trials, features, length).")
 
             # Reshape so that x is flat, and p is (trials * length, features)
             # This way
 
             # Use the categorical logp function from PyMC3
-            return tt.sum( 
+            return tt.sum(
 
         with pm.Model() as model:
-            p = pm.Dirichlet(
-                "p", 
-                a=np.ones((features)), 
+            p=pm.Dirichlet(
+                "p",
+                a=np.ones((features)),
                 shape=(features)
             )
-            category = pm.Categorical("category", p=p, observed=data_array[0])
+            category=pm.Categorical("category", p=p, observed=data_array[0])
 
         with model:
             # trace = pm.sample()
-            inference = pm.ADVI("full-rank")
-            approx = pm.fit(n = 100000, method=inference)
-            trace = approx.sample(draws = 10000)
+            inference=pm.ADVI("full-rank")
+            approx=pm.fit(n=100000, method=inference)
+            trace=approx.sample(draws=10000)
 
         # Visualize the model
         pm.plot_trace(trace)
@@ -1890,7 +1894,7 @@ class CategoricalChangepoint3D(ChangepointModel):
         plt.show()
 
         with model:
-            prior_pred = pm.sample_prior_predictive(
+            prior_pred=pm.sample_prior_predictive(
             )
 
         # prior_pred['p'].shape
@@ -1902,22 +1906,22 @@ class CategoricalChangepoint3D(ChangepointModel):
         plt.imshow(data_array[0], aspect='auto')
         plt.show()
 
-        plt.plot(data_array[0,0]);plt.show()
-        
+        plt.plot(data_array[0, 0]); plt.show()
 
 
-            tau = pm.Deterministic("tau", np.arange(
+
+            tau=pm.Deterministic("tau", np.arange(
                 time)[np.newaxis, :] * tau_latent)
         return model
 
     def test(self):
-        test_data = np.random.randint(0, self.n_states, size=(5, 10, 100))
-        test_model = CategoricalChangepoint3D(test_data, self.n_states)
-        model = test_model.generate_model()
+        test_data=np.random.randint(0, self.n_states, size=(5, 10, 100))
+        test_model=CategoricalChangepoint3D(test_data, self.n_states)
+        model=test_model.generate_model()
         with model:
-            inference = pm.ADVI()
-            approx = pm.fit(n=10, method=inference)
-            trace = approx.sample(draws=10)
+            inference=pm.ADVI()
+            approx=pm.fit(n=10, method=inference)
+            trace=approx.sample(draws=10)
         assert "p" in trace.varnames
         assert "tau" in trace.varnames
         print("Test for CategoricalChangepoint3D passed")
@@ -1927,7 +1931,7 @@ class CategoricalChangepoint3D(ChangepointModel):
 # For backward compatibility
 def all_taste_poisson_trial_switch(data_array, switch_components, n_states, **kwargs):
     """Wrapper function for backward compatibility"""
-    model_class = AllTastePoissonTrialSwitch(
+    model_class=AllTastePoissonTrialSwitch(
         data_array, switch_components, n_states, **kwargs)
     return model_class.generate_model()
 
@@ -1940,12 +1944,12 @@ def all_taste_poisson_trial_switch(data_array, switch_components, n_states, **kw
 def run_all_tests():
     """Run tests for all model classes"""
     # Create test data
-    test_data_2d = gen_test_array((10, 100), n_states=3, type="normal")
-    test_data_3d = gen_test_array((5, 10, 100), n_states=3, type="poisson")
-    test_data_4d = gen_test_array((2, 5, 10, 100), n_states=3, type="poisson")
+    test_data_2d=gen_test_array((10, 100), n_states=3, type="normal")
+    test_data_3d=gen_test_array((5, 10, 100), n_states=3, type="poisson")
+    test_data_4d=gen_test_array((2, 5, 10, 100), n_states=3, type="poisson")
 
     # Test each model class
-    models_to_test = [
+    models_to_test=[
         GaussianChangepointMeanVar2D(test_data_2d, 3),
         GaussianChangepointMeanDirichlet(test_data_2d, 5),
         GaussianChangepointMean2D(test_data_2d, 3),
@@ -1959,8 +1963,8 @@ def run_all_tests():
         AllTastePoissonTrialSwitch(test_data_4d, 2, 3),
     ]
 
-    failed_tests = []
-    pbar = tqdm(models_to_test, total=len(models_to_test))
+    failed_tests=[]
+    pbar=tqdm(models_to_test, total=len(models_to_test))
     for model in pbar:
         try:
             model.test()
@@ -1984,12 +1988,12 @@ def extract_inferred_values(trace):
         dict: dictionary of inferred values
     """
     # Extract relevant variables from trace
-    out_dict = dict(tau_samples=trace["tau"])
+    out_dict=dict(tau_samples=trace["tau"])
     if "lambda" in trace.varnames:
-        out_dict["lambda_stack"] = trace["lambda"].swapaxes(0, 1)
+        out_dict["lambda_stack"]=trace["lambda"].swapaxes(0, 1)
     if "mu" in trace.varnames:
-        out_dict["mu_stack"] = trace["mu"].swapaxes(0, 1)
-        out_dict["sigma_stack"] = trace["sigma"].swapaxes(0, 1)
+        out_dict["mu_stack"]=trace["mu"].swapaxes(0, 1)
+        out_dict["sigma_stack"]=trace["sigma"].swapaxes(0, 1)
     return out_dict
 
 
@@ -2009,23 +2013,23 @@ def find_best_states(data, model_generator, n_fit, n_samples, min_states=2, max_
         model_list: list of models with different number of states,
         elbo_values: list of elbo values for different number of states
     """
-    n_state_array = np.arange(min_states, max_states + 1)
-    elbo_values = []
-    model_list = []
+    n_state_array=np.arange(min_states, max_states + 1)
+    elbo_values=[]
+    model_list=[]
     for n_states in tqdm(n_state_array):
         print(f"Fitting model with {n_states} states")
-        model = model_generator(data, n_states)
-        model, approx = advi_fit(model, n_fit, n_samples)[:2]
+        model=model_generator(data, n_states)
+        model, approx=advi_fit(model, n_fit, n_samples)[:2]
         elbo_values.append(approx.hist[-1])
         model_list.append(model)
-    best_model = model_list[np.argmin(elbo_values)]
+    best_model=model_list[np.argmin(elbo_values)]
     return best_model, model_list, elbo_values
 
 
 def dpp_fit(model, n_chains=24, n_cores=1, tune=500, draws=500):
     """Convenience function to fit DPP model"""
     with model:
-        dpp_trace = pm.sample(
+        dpp_trace=pm.sample(
             tune=tune,
             draws=draws,
             target_accept=0.95,
@@ -2053,18 +2057,18 @@ def advi_fit(model, fit, samples):
     """
 
     with model:
-        inference = pm.ADVI("full-rank")
-        approx = pm.fit(n=fit, method=inference)
-        trace = approx.sample(draws=samples)
+        inference=pm.ADVI("full-rank")
+        approx=pm.fit(n=fit, method=inference)
+        trace=approx.sample(draws=samples)
 
     # Extract relevant variables from trace
-    tau_samples = trace["tau"]
+    tau_samples=trace["tau"]
     if "lambda" in trace.varnames:
-        lambda_stack = trace["lambda"].swapaxes(0, 1)
+        lambda_stack=trace["lambda"].swapaxes(0, 1)
         return model, trace, lambda_stack, tau_samples, model.obs.observations
     if "mu" in trace.varnames:
-        mu_stack = trace["mu"].swapaxes(0, 1)
-        sigma_stack = trace["sigma"].swapaxes(0, 1)
+        mu_stack=trace["mu"].swapaxes(0, 1)
+        sigma_stack=trace["sigma"].swapaxes(0, 1)
         return model, trace, mu_stack, sigma_stack, tau_samples, model.obs.observations
 
 
@@ -2084,18 +2088,18 @@ def mcmc_fit(model, samples):
     """
 
     with model:
-        sampler_kwargs = {"cores": 1, "chains": 4}
-        trace = pm.sample(draws=samples, **sampler_kwargs)
-        trace = trace[::10]
+        sampler_kwargs={"cores": 1, "chains": 4}
+        trace=pm.sample(draws=samples, **sampler_kwargs)
+        trace=trace[::10]
 
     # Extract relevant variables from trace
-    tau_samples = trace["tau"]
+    tau_samples=trace["tau"]
     if "lambda" in trace.varnames:
-        lambda_stack = trace["lambda"].swapaxes(0, 1)
+        lambda_stack=trace["lambda"].swapaxes(0, 1)
         return model, trace, lambda_stack, tau_samples, model.obs.observations
     if "mu" in trace.varnames:
-        mu_stack = trace["mu"].swapaxes(0, 1)
-        sigma_stack = trace["sigma"].swapaxes(0, 1)
+        mu_stack=trace["mu"].swapaxes(0, 1)
+        sigma_stack=trace["sigma"].swapaxes(0, 1)
         return model, trace, mu_stack, sigma_stack, tau_samples, model.obs.observations
 
 
@@ -2107,12 +2111,12 @@ def mcmc_fit(model, samples):
 def run_all_tests():
     """Run tests for all model classes"""
     # Create test data
-    test_data_2d = gen_test_array((10, 100), n_states=3, type="normal")
-    test_data_3d = gen_test_array((5, 10, 100), n_states=3, type="poisson")
-    test_data_4d = gen_test_array((2, 5, 10, 100), n_states=3, type="poisson")
+    test_data_2d=gen_test_array((10, 100), n_states=3, type="normal")
+    test_data_3d=gen_test_array((5, 10, 100), n_states=3, type="poisson")
+    test_data_4d=gen_test_array((2, 5, 10, 100), n_states=3, type="poisson")
 
     # Test each model class
-    models_to_test = [
+    models_to_test=[
         GaussianChangepointMeanVar2D(test_data_2d, 3),
         GaussianChangepointMeanDirichlet(test_data_2d, 5),
         GaussianChangepointMean2D(test_data_2d, 3),
@@ -2126,8 +2130,8 @@ def run_all_tests():
         AllTastePoissonTrialSwitch(test_data_4d, 2, 3),
     ]
 
-    failed_tests = []
-    pbar = tqdm(models_to_test, total=len(models_to_test))
+    failed_tests=[]
+    pbar=tqdm(models_to_test, total=len(models_to_test))
     for model in pbar:
         try:
             model.test()
@@ -2151,10 +2155,10 @@ def extract_inferred_values(trace):
         dict: dictionary of inferred values
     """
     # Extract relevant variables from trace
-    out_dict = dict(tau_samples=trace["tau"])
+    out_dict=dict(tau_samples=trace["tau"])
     if "lambda" in trace.varnames:
-        out_dict["lambda_stack"] = trace["lambda"].swapaxes(0, 1)
+        out_dict["lambda_stack"]=trace["lambda"].swapaxes(0, 1)
     if "mu" in trace.varnames:
-        out_dict["mu_stack"] = trace["mu"].swapaxes(0, 1)
-        out_dict["sigma_stack"] = trace["sigma"].swapaxes(0, 1)
+        out_dict["mu_stack"]=trace["mu"].swapaxes(0, 1)
+        out_dict["sigma_stack"]=trace["sigma"].swapaxes(0, 1)
     return out_dict
