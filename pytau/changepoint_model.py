@@ -1811,6 +1811,8 @@ class CategoricalChangepoint2D(ChangepointModel):
             # data_array = trials x length
             category = pm.Categorical("category", p=flat_lambda, observed=flat_data_array)
 
+        return model
+
     def test(self):
         test_data=np.random.randint(0, self.n_states, size=(5, 10, 100))
         test_model=CategoricalChangepoint3D(test_data, self.n_states)
