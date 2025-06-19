@@ -1727,6 +1727,100 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
         return True
 
 
+class CategoricalChangepoint2D(ChangepointModel):
+    """Model for categorical data changepoint detection on 2D arrays."""
+
+    def __init__(self, data_array, n_states, **kwargs):
+        """
+        Args:
+            data_array (2D Numpy array): trials x length
+                - Each element is a postive integer representing a category
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+
+        """
+
+        super().__init__(**kwargs)
+        # Make sure data array is int
+        if not np.issubdtype(data_array.dtype, np.integer):
+            raise ValueError(
+                "Data array must contain integer category values.")
+        # Check that data_array is 2D
+        if data_array.ndim != 2:
+            raise ValueError("Data array must be 2D (trials x length).")
+        self.data_array = data_array
+        self.n_states = n_states
+
+    def generate_model(self):
+        data_array = self.data_array
+        n_states = self.n_states
+        trials, length = data_array.shape
+        features = len(np.unique(data_array))
+
+        # If features in data_array are not continuous integer values, map them
+        feature_set = np.unique(data_array)
+        if not np.array_equal(feature_set, np.arange(len(feature_set))):
+            # Create a mapping from original categories to continuous integers
+            category_map = {cat: i for i, cat in enumerate(feature_set)}
+            data_array = np.vectorize(category_map.get)(data_array)
+
+        idx = np.arange(length)
+        flat_data_array = data_array.reshape((trials * length,))
+
+        with pm.Model() as model:
+            p = pm.Dirichlet("p", a=np.ones(
+                (n_states, features)), shape=(n_states, features))
+
+            # Infer changepoint locations
+            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
+            # Shape: trials x changepoints
+            tau_latent = pm.Beta("tau_latent", a_tau, b_tau, shape=(trials, n_states - 1)).sort(
+                axis=-1
+            )
+
+            tau = pm.Deterministic(
+                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
+
+            weight_stack = tt.nnet.sigmoid(
+                idx[np.newaxis, :] - tau[:, :, np.newaxis])
+            weight_stack = tt.concatenate(
+                [np.ones((trials, 1, length)), weight_stack], axis=1)
+            inverse_stack = 1 - weight_stack[:, 1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((trials, 1, length))], axis=1)
+            weight_stack = np.multiply(weight_stack, inverse_stack)
+
+            # shapes:
+            #   - weight_stack: trials x states x length
+            #   - p : states x features
+
+            # shape: trials x length x features
+            lambda_ = tt.tensordot(weight_stack, p, [1, 0])
+
+            flat_lambda = lambda_.reshape((trials * length, features))
+
+            # Use categorical likelihood
+            # data_array = trials x length
+            category = pm.Categorical(
+                "category", p=flat_lambda, observed=flat_data_array)
+
+        return model
+
+    def test(self):
+        test_data = np.random.randint(0, self.n_states, size=(5, 10, 100))
+        test_model = CategoricalChangepoint3D(test_data, self.n_states)
+        model = test_model.generate_model()
+        with model:
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+        assert "p" in trace.varnames
+        assert "tau" in trace.varnames
+        print("Test for CategoricalChangepoint3D passed")
+        return True
+
+
 # For backward compatibility
 def all_taste_poisson_trial_switch(data_array, switch_components, n_states, **kwargs):
     """Wrapper function for backward compatibility"""
