@@ -11,9 +11,8 @@ import numpy as np
 ########################################
 # Import
 ########################################
-import pymc3 as pm
-import theano
-import theano.tensor as tt
+import pymc as pm
+import pytensor.tensor as tt
 from tqdm import tqdm
 
 ############################################################
@@ -169,7 +168,7 @@ class GaussianChangepointMeanVar2D(ChangepointModel):
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((1, length)), weight_stack], axis=0)
@@ -290,7 +289,7 @@ class GaussianChangepointMeanDirichlet(ChangepointModel):
             tau = pm.Deterministic("tau", tt.cumsum(w_latent * length)[:-1])
 
             # Weight stack to assign lambda's to point in time
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((1, length)), weight_stack], axis=0)
@@ -398,7 +397,7 @@ class GaussianChangepointMean2D(ChangepointModel):
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((1, length)), weight_stack], axis=0)
@@ -530,7 +529,7 @@ class SingleTastePoissonDirichlet(ChangepointModel):
             # =====================
 
             # Weight stack to assign lambda's to point in time
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((trials, 1, length)), weight_stack], axis=1)
@@ -642,7 +641,7 @@ class SingleTastePoisson(ChangepointModel):
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((trials, 1, length)), weight_stack], axis=1)
@@ -1104,7 +1103,7 @@ class AllTastePoisson(ChangepointModel):
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((tastes * trials, 1, length)), weight_stack], axis=1
@@ -1415,7 +1414,7 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
                 "tau_trial", trial_num * tau_trial_latent)
 
             trial_idx = np.arange(trial_num)
-            trial_selector = tt.nnet.sigmoid(
+            trial_selector = tt.math.sigmoid(
                 trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, "x")
             )
 
@@ -1448,7 +1447,7 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
             idx = np.arange(time_bins)
 
             # tau : Trials x Changepoints
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((trial_num, 1, time_bins)), weight_stack], axis=1
@@ -1612,7 +1611,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
                 "tau_trial", trial_num * tau_trial_latent)
 
             trial_idx = np.arange(trial_num)
-            trial_selector = tt.nnet.sigmoid(
+            trial_selector = tt.math.sigmoid(
                 trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, "x")
             )
 
@@ -1643,7 +1642,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
             # First, we can "select" sets of emissions depending on trial_changepoints
             # =================================================
             trial_idx = np.arange(trial_num)
-            trial_selector = tt.nnet.sigmoid(
+            trial_selector = tt.math.sigmoid(
                 trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, "x")
             )
 
@@ -1664,7 +1663,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
             idx = np.arange(time_bins)
 
             # tau : Tastes x Trials x Changepoints
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, :, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((tastes, trial_num, 1, time_bins)), weight_stack], axis=2
@@ -1919,17 +1918,29 @@ def find_best_states(data, model_generator, n_fit, n_samples, min_states=2, max_
     return best_model, model_list, elbo_values
 
 
-def dpp_fit(model, n_chains=24, n_cores=1, tune=500, draws=500):
+def dpp_fit(model, n_chains=24, n_cores=1, tune=500, draws=500, use_numpyro=False):
     """Convenience function to fit DPP model"""
-    with model:
-        dpp_trace = pm.sample(
-            tune=tune,
-            draws=draws,
-            target_accept=0.95,
-            chains=n_chains,
-            cores=n_cores,
-            return_inferencedata=False,
-        )
+    if not use_numpyro:
+        with model:
+            dpp_trace = pm.sample(
+                tune=tune,
+                draws=draws,
+                target_accept=0.95,
+                chains=n_chains,
+                cores=n_cores,
+                return_inferencedata=False,
+            )
+    else:
+        with model:
+            dpp_trace = pm.sample(
+                nuts_sampler="numpyro",
+                tune=tune,
+                draws=draws,
+                target_accept=0.95,
+                chains=n_chains,
+                cores=n_cores,
+                return_inferencedata=False,
+            )
     return dpp_trace
 
 
