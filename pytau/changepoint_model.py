@@ -266,7 +266,9 @@ def stick_breaking(beta):
     return beta * portion_remaining
 
 
-class GaussianChangepointMeanDirichlet(ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood):
+class GaussianChangepointMeanDirichlet(
+    ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood
+):
     """Model for gaussian data on 2D array detecting changes only in
     the mean. Number of states determined using dirichlet process prior.
     """
@@ -898,7 +900,9 @@ def inds_to_b(x_span):
     return 5.8889 / x_span
 
 
-class SingleTastePoissonVarsigFixed(ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood):
+class SingleTastePoissonVarsigFixed(
+    ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood
+):
     """Model for changepoint on single taste
     **Uses sigmoid with given slope
 
@@ -1374,7 +1378,9 @@ def all_taste_poisson_varsig_fixed(data_array, n_states, inds_span=1, **kwargs):
 #     pass
 
 
-class SingleTastePoissonTrialSwitch(ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood):
+class SingleTastePoissonTrialSwitch(
+    ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood
+):
     """
     Assuming only emissions change across trials
     Changepoint distribution remains constant
