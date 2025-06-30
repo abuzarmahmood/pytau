@@ -1841,7 +1841,7 @@ class CategoricalChangepoint2D(ChangepointModel):
 
     def test(self):
         test_data = np.random.randint(0, self.n_states, size=(5, 10, 100))
-        test_model = CategoricalChangepoint3D(test_data, self.n_states)
+        test_model = CategoricalChangepoint2D(test_data, self.n_states)
         model = test_model.generate_model()
         with model:
             inference = pm.ADVI()
