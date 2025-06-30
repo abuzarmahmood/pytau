@@ -69,7 +69,6 @@ def test_gen_test_array():
 # Test model initialization and basic functionality
 @pytest.mark.slow
 @pytest.mark.parametrize(
-)
     "model_class,data_shape,n_states,extra_args",
     [
         (GaussianChangepointMeanVar2D, (10, 100), 3, {}),
