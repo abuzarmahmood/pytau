@@ -20,31 +20,41 @@ from tqdm import tqdm
 # Base Classes
 ############################################################
 
+
 class BaseChangepoint:
     """Base class for changepoint logic."""
+
     def __init__(self, n_states, **kwargs):
         self.n_states = n_states
         self.kwargs = kwargs
 
     def generate_changepoint(self):
-        raise NotImplementedError("Subclasses must implement generate_changepoint()")
+        raise NotImplementedError(
+            "Subclasses must implement generate_changepoint()")
+
 
 class BaseEmission:
     """Base class for emission logic."""
+
     def __init__(self, data_array, **kwargs):
         self.data_array = data_array
         self.kwargs = kwargs
 
     def generate_emission(self):
-        raise NotImplementedError("Subclasses must implement generate_emission()")
+        raise NotImplementedError(
+            "Subclasses must implement generate_emission()")
+
 
 class BaseLikelihood:
     """Base class for likelihood logic."""
+
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
     def generate_likelihood(self):
-        raise NotImplementedError("Subclasses must implement generate_likelihood()")
+        raise NotImplementedError(
+            "Subclasses must implement generate_likelihood()")
+
 
 ############################################################
 # Base Model Class
