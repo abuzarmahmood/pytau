@@ -266,7 +266,7 @@ def stick_breaking(beta):
     return beta * portion_remaining
 
 
-class GaussianChangepointMeanDirichlet(ChangepointModel):
+class GaussianChangepointMeanDirichlet(ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood):
     """Model for gaussian data on 2D array detecting changes only in
     the mean. Number of states determined using dirichlet process prior.
     """
@@ -390,7 +390,7 @@ def gaussian_changepoint_mean_dirichlet(data_array, max_states=15, **kwargs):
 # TODO: Convenience function for taking out non-significant states
 
 
-class GaussianChangepointMean2D(ChangepointModel):
+class GaussianChangepointMean2D(ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood):
     """Model for gaussian data on 2D array detecting changes only in
     the mean.
     """
@@ -500,7 +500,7 @@ def stick_breaking_trial(this_beta, trial_count):
     return this_beta * portion_remaining
 
 
-class SingleTastePoissonDirichlet(ChangepointModel):
+class SingleTastePoissonDirichlet(ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood):
     """
     Model for changepoint on single taste using dirichlet process prior
     """
@@ -627,7 +627,7 @@ def single_taste_poisson_dirichlet(data_array, max_states=10, **kwargs):
     return model_class.generate_model()
 
 
-class SingleTastePoisson(ChangepointModel):
+class SingleTastePoisson(ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood):
     """Model for changepoint on single taste
 
     ** Largely taken from "non_hardcoded_changepoint_test_3d.ipynb"
@@ -747,7 +747,7 @@ def var_sig_tt(x, b):
     return 1 / (1 + tt.exp(-b * x))
 
 
-class SingleTastePoissonVarsig(ChangepointModel):
+class SingleTastePoissonVarsig(ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood):
     """Model for changepoint on single taste
     **Uses variables sigmoid slope inferred from data
 
@@ -898,7 +898,7 @@ def inds_to_b(x_span):
     return 5.8889 / x_span
 
 
-class SingleTastePoissonVarsigFixed(ChangepointModel):
+class SingleTastePoissonVarsigFixed(ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood):
     """Model for changepoint on single taste
     **Uses sigmoid with given slope
 
@@ -1053,7 +1053,7 @@ def single_taste_poisson_varsig_fixed(data_array, n_states, inds_span=1, **kwarg
     return model_class.generate_model()
 
 
-class AllTastePoisson(ChangepointModel):
+class AllTastePoisson(ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood):
     """
     ** Model to fit changepoint to all tastes **
     ** Largely taken from "_v1/poisson_all_tastes_changepoint_model.py"
@@ -1204,7 +1204,7 @@ def all_taste_poisson(data_array, n_states, **kwargs):
     return model_class.generate_model()
 
 
-class AllTastePoissonVarsigFixed(ChangepointModel):
+class AllTastePoissonVarsigFixed(ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood):
     """
     ** Model to fit changepoint to all tastes with fixed sigmoid **
     ** Largely taken from "_v1/poisson_all_tastes_changepoint_model.py"
@@ -1374,7 +1374,7 @@ def all_taste_poisson_varsig_fixed(data_array, n_states, inds_span=1, **kwargs):
 #     pass
 
 
-class SingleTastePoissonTrialSwitch(ChangepointModel):
+class SingleTastePoissonTrialSwitch(ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood):
     """
     Assuming only emissions change across trials
     Changepoint distribution remains constant
@@ -1556,7 +1556,7 @@ def single_taste_poisson_trial_switch(data_array, switch_components, n_states, *
     return model_class.generate_model()
 
 
-class AllTastePoissonTrialSwitch(ChangepointModel):
+class AllTastePoissonTrialSwitch(ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood):
     """
     Assuming only emissions change across trials
     Changepoint distribution remains constant
@@ -1769,7 +1769,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
         return True
 
 
-class CategoricalChangepoint2D(ChangepointModel):
+class CategoricalChangepoint2D(ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood):
     """Model for categorical data changepoint detection on 2D arrays."""
 
     def __init__(self, data_array, n_states, **kwargs):
