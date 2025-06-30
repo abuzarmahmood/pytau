@@ -25,7 +25,15 @@ from pytau.changepoint_model import (
 )
 
 
-# Test the base model class
+# Test the base classes
+def test_base_classes():
+    """Test that base classes raise NotImplementedError."""
+    with pytest.raises(NotImplementedError):
+        BaseChangepoint(3).generate_changepoint()
+    with pytest.raises(NotImplementedError):
+        BaseEmission(np.array([])).generate_emission()
+    with pytest.raises(NotImplementedError):
+        BaseLikelihood().generate_likelihood()
 @pytest.mark.slow
 def test_base_model_class():
     """Test that the base model class raises NotImplementedError."""

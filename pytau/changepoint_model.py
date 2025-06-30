@@ -17,6 +17,36 @@ import theano.tensor as tt
 from tqdm import tqdm
 
 ############################################################
+# Base Classes
+############################################################
+
+class BaseChangepoint:
+    """Base class for changepoint logic."""
+    def __init__(self, n_states, **kwargs):
+        self.n_states = n_states
+        self.kwargs = kwargs
+
+    def generate_changepoint(self):
+        raise NotImplementedError("Subclasses must implement generate_changepoint()")
+
+class BaseEmission:
+    """Base class for emission logic."""
+    def __init__(self, data_array, **kwargs):
+        self.data_array = data_array
+        self.kwargs = kwargs
+
+    def generate_emission(self):
+        raise NotImplementedError("Subclasses must implement generate_emission()")
+
+class BaseLikelihood:
+    """Base class for likelihood logic."""
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
+    def generate_likelihood(self):
+        raise NotImplementedError("Subclasses must implement generate_likelihood()")
+
+############################################################
 # Base Model Class
 ############################################################
 
@@ -120,7 +150,7 @@ def gen_test_array(array_size, n_states, type="poisson"):
 ############################################################
 
 
-class GaussianChangepointMeanVar2D(ChangepointModel):
+class GaussianChangepointMeanVar2D(ChangepointModel, BaseChangepoint, BaseEmission, BaseLikelihood):
     """Model for gaussian data on 2D array detecting changes in both
     mean and variance.
     """
@@ -133,8 +163,10 @@ class GaussianChangepointMeanVar2D(ChangepointModel):
             **kwargs: Additional arguments
         """
         super().__init__(**kwargs)
-        self.data_array = data_array
-        self.n_states = n_states
+        ChangepointModel.__init__(self, **kwargs)
+        BaseChangepoint.__init__(self, n_states, **kwargs)
+        BaseEmission.__init__(self, data_array, **kwargs)
+        BaseLikelihood.__init__(self, **kwargs)
 
     def generate_model(self):
         """
