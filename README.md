@@ -2,7 +2,7 @@
   <img src="docs/pytau_logo.png" alt="PyTau Logo" width="200"/>
   <h1>PyTau</h1>
   <p><strong>Powerful Changepoint Detection for Neural Data</strong></p>
-  
+
   [![status](https://joss.theoj.org/papers/e3e3d9ce5b59166cef17ee7e9bb9f53c/status.svg)](https://joss.theoj.org/papers/e3e3d9ce5b59166cef17ee7e9bb9f53c)
   [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/abuzarmahmood/pytau/master.svg)](https://results.pre-commit.ci/latest/github/abuzarmahmood/pytau/master)
   [![Pytest](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml/badge.svg)](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml)
