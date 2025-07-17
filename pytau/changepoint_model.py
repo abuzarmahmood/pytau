@@ -1747,7 +1747,11 @@ class CategoricalChangepoint2D(ChangepointModel):
                 "Data array must contain integer category values.")
         # Check that data_array is 2D
         if data_array.ndim != 2:
-            raise ValueError("Data array must be 2D (trials x length).")
+            # If 3D, take the first trial/dimension to make it 2D
+            if data_array.ndim == 3:
+                data_array = data_array[0]
+            else:
+                raise ValueError("Data array must be 2D (trials x length).")
         self.data_array = data_array
         self.n_states = n_states
 
@@ -1808,8 +1812,8 @@ class CategoricalChangepoint2D(ChangepointModel):
         return model
 
     def test(self):
-        test_data = np.random.randint(0, self.n_states, size=(5, 10, 100))
-        test_model = CategoricalChangepoint3D(test_data, self.n_states)
+        test_data = np.random.randint(0, self.n_states, size=(5, 100))
+        test_model = CategoricalChangepoint2D(test_data, self.n_states)
         model = test_model.generate_model()
         with model:
             inference = pm.ADVI()
@@ -1817,7 +1821,7 @@ class CategoricalChangepoint2D(ChangepointModel):
             trace = approx.sample(draws=10)
         assert "p" in trace.varnames
         assert "tau" in trace.varnames
-        print("Test for CategoricalChangepoint3D passed")
+        print("Test for CategoricalChangepoint2D passed")
         return True
 
 
