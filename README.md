@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/abuzarmahmood/pytau/master/docs/logo.png" alt="PyTau Logo" width="200"/>
+  <img src="docs/pytau_logo.png" alt="PyTau Logo" width="200"/>
   <h1>PyTau</h1>
   <p><strong>Powerful Changepoint Detection for Neural Data</strong></p>
   
