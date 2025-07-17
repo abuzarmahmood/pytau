@@ -14,7 +14,6 @@ PyTau is a specialized Python package for detecting state changes in neural data
 
 - **Streamlined batch inference** on PyMC3-based changepoint models
 - **Robust detection** of state transitions in neural firing patterns
-- **Inter-region correlation analysis** for taste-evoked neural responses
 - **Comprehensive visualization tools** for model results
 
 ## 📚 Documentation
@@ -70,12 +69,6 @@ PyTau uses a centralized database approach for model management:
   - Region and taste details
   - Model parameters and preprocessing steps
   - Fit statistics and results
-
-- **Model Comparison**: Easily compare different model types:
-  - Unconstrained sequential models
-  - Models with biased transition priors
-  - Hard-padded transition models
-  - Joint region models
 
 ## 🔄 Pipeline Architecture
 
