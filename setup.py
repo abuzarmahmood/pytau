@@ -37,7 +37,7 @@ INSTALL_REQUIRES = [
     "tqdm>=4.62.3",
     "numpy<=1.19.5",
     "pandas>=1.1.5",
-    "matplotlib>=3.3.4"
+    "matplotlib>=3.3.4",
 ]
 
 TESTS_REQUIRE = ["pytest", "pytest-cov"]
