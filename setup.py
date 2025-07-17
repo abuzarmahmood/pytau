@@ -21,14 +21,24 @@ DESCRIPTION = (
 LICENSE = "MIT"
 README = "Streamlined batch inference on changepoint models"
 
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 ISRELEASED = False
 
 PYTHON_MIN_VERSION = "3.6.10"
-PYTHON_MAX_VERSION = "3.6.10"
+PYTHON_MAX_VERSION = "3.9"
 PYTHON_REQUIRES = f">={PYTHON_MIN_VERSION}, <={PYTHON_MAX_VERSION}"
 
-INSTALL_REQUIRES = ["pymc3", "numpy", "theano", "tqdm"]
+INSTALL_REQUIRES = [
+    "arviz==0.11.1",
+    "pymc3==3.9.3",
+    "theano==1.0.5",
+    "easygui==0.98.1",
+    "tables==3.6.1",
+    "tqdm>=4.62.3",
+    "numpy<=1.19.5",
+    "pandas>=1.1.5",
+    "matplotlib>=3.3.4",
+]
 
 TESTS_REQUIRE = ["pytest", "pytest-cov"]
 
