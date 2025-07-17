@@ -4,6 +4,6 @@ theano==1.0.5
 easygui==0.98.1
 tables==3.6.1
 tqdm>=4.62.3
-numpy>=1.19.5
+numpy<=1.19.5
 pandas>=1.1.5
 matplotlib>=3.3.4
