@@ -115,7 +115,7 @@ def test_categorical_changepoint_3d():
     model = model_instance.generate_model()
     assert model is not None
     # Skip the actual fitting to save time in tests
-    assert hasattr(model, 'observed_RVs')
+    assert hasattr(model, "observed_RVs")
 
 
 @pytest.mark.slow
