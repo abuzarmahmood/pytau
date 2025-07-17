@@ -1,138 +1,117 @@
-[![status](https://joss.theoj.org/papers/e3e3d9ce5b59166cef17ee7e9bb9f53c/status.svg)](https://joss.theoj.org/papers/e3e3d9ce5b59166cef17ee7e9bb9f53c)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/abuzarmahmood/pytau/master.svg)](https://results.pre-commit.ci/latest/github/abuzarmahmood/pytau/master)
-[![Pytest](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml/badge.svg)](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml)
+<div align="center">
+  <img src="docs/pytau_logo.png" alt="PyTau Logo" width="200"/>
+  <h1>PyTau</h1>
+  <p><strong>Powerful Changepoint Detection for Neural Data</strong></p>
+  
+  [![status](https://joss.theoj.org/papers/e3e3d9ce5b59166cef17ee7e9bb9f53c/status.svg)](https://joss.theoj.org/papers/e3e3d9ce5b59166cef17ee7e9bb9f53c)
+  [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/abuzarmahmood/pytau/master.svg)](https://results.pre-commit.ci/latest/github/abuzarmahmood/pytau/master)
+  [![Pytest](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml/badge.svg)](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml)
+</div>
 
-# PyTau
+## 🚀 What is PyTau?
 
-## API Documentation
-https://abuzarmahmood.github.io/pytau/
+PyTau is a specialized Python package for detecting state changes in neural data using Bayesian changepoint models. It provides:
 
-## Outline
+- **Streamlined batch inference** on PyMC3-based changepoint models
+- **Robust detection** of state transitions in neural firing patterns
+- **Comprehensive visualization tools** for model results
 
-- Perform inter-region transition correlations on models fit to each taste
-    individually
+## 📚 Documentation
 
-## Installation
-```
+[**Full API Documentation**](https://abuzarmahmood.github.io/pytau/)
 
+## ⚡ Quick Start
+
+```bash
 # Create and activate conda environment
 conda create -n "pytau_env" python=3.6.13 ipython notebook -y
 conda activate pytau_env
 
 # Clone repository
-cd ~/Desktop
 git clone https://github.com/abuzarmahmood/pytau.git
 
-# Install requirements from specified file
+# Install requirements
 cd pytau
 pip install -r requirements.txt
 
-# Test everything is working by running notebook
+# Download test data and run example notebook
 cd pytau/how_to
 bash scripts/download_test_data.sh
 cd notebooks
 jupyter notebook
-# Run a notebook
 ```
 
-## Data Organization
+## 🧠 Key Features
 
-- Models stored in CENTRAL LOCATION and accessed by indexing an info file,
-    which also contains model parameters and metadata
-- Metadata also stored in model file to be able to recreate info file in case
-    something happens
+- **Multiple Model Types**:
+  - Single-taste Poisson models
+  - All-taste hierarchical models
+  - Dirichlet process models for automatic state detection
+  - Variable sigmoid models for flexible transition shapes
 
-Database for models fit:
+- **Flexible Data Handling**:
+  - Support for shuffled, simulated, and actual neural data
+  - Comprehensive preprocessing pipeline
+  - Automated model selection
 
-- Columns:
-  - Model save path
-  - Animal Name
-  - Session date
-  - Taste Name
-  - Region Name
-  - Experiment name (user-given name to separate batches of fits)
-  - Fit Date
+- **Powerful Analysis Tools**:
+  - State transition detection
+  - Cross-region correlation analysis
+  - Statistical significance testing
 
-  - Model parameters:
-    - Model Type (See below)
-    - Data Type (Shuffled, simulated, actual)
-    - States Num
-    - Fit steps
-    - Time lims
-    - Bin Width
+## 📊 Data Organization
 
-Data stored in models:
-    - Model
-    - Approx
-    - Lambda
-    - Tau
-    - Data used to fit model
-    - Raw data (before preprocessing to feed to model)
-    - Model and data details/parameters (as above)
+PyTau uses a centralized database approach for model management:
 
-- Considering we might want to compare different model types:
-  - Unconstrained sequantial
-  - Baised transition priors, sequential
-  - Hard padding between transitions, sequential
-  - Joint region model
-    We need to have a standardized pipeline for fitting and retrieving these models
+- **Centralized Storage**: Models stored in a central location with metadata
+- **Comprehensive Tracking**: Each model includes:
+  - Animal and session information
+  - Region and taste details
+  - Model parameters and preprocessing steps
+  - Fit statistics and results
 
-## Pipeline
+## 🔄 Pipeline Architecture
 
-### Filelist
+PyTau's modular pipeline ensures reproducible analysis:
 
-1) Model file
-    - Invoked to generate model and perform inference
-    - Currently <<poisson_all_tastes_changepoint_model.py>>
-    - Should be agnostic to, and ignorant of what type of data is being fed.
-        Should only fit model and return output
-    - These should be functions
+### 1️⃣ Model Generation
+- **Purpose**: Creates and fits Bayesian changepoint models
+- **Components**: Various model types for different neural data structures
+- **Input**: Processed spike trains and model parameters
+- **Output**: Fitted model with posterior samples
 
-    - Input:
-        1) Processed spike trains
-        2) Model parameters (model type, states, fit steps)
-    - Output:
-        1) Model
-        2) Approx
-        3) Lambda
-        4) Tau
-        5) Data used to fit model
+### 2️⃣ Data Preprocessing
+- **Purpose**: Prepares raw neural data for modeling
+- **Features**: Handles various data transformations (shuffling, simulation)
+- **Input**: Raw spike trains with parameters for processing
+- **Output**: Binned, processed spike count data
 
-2) Data pre-processing code:
-    - Currently <<changepoint_fit.py>>
-    - Should handle different data "types" (shuffle, simulated, actual)
-    - These should be functions
+### 3️⃣ I/O Management
+- **Purpose**: Handles data loading, model storage, and database management
+- **Features**: Automatic model retrieval or fitting based on parameters
+- **Operations**: HDF5 data loading, metadata tracking, database integration
 
-    - Input:
-        1) Raw spike trains
-        2) Spike train parameters (time lims, binning)
-        3) Desired data type
-    - Output:
-        1) Processed spike trains
+### 4️⃣ Batch Processing
+- **Purpose**: Enables large-scale model fitting across datasets
+- **Features**: Parameter iteration and parallel processing
 
-3) I/O helper code
-    - Takes data path and model parameters
-        - If model has not been fit, runs fit, else pulls model from memory
-    - This should be a "data_handler" class that can load, process, and
-        return the data, write data to file, and write an entry in the database
-    - The model creation and model fit functions can be imported as methods to
-        streamline fitting
-    Operations:
-        - Loads data from HDF5, preprocesses, and feeds to modeling code
-        - Collects outputs from modeling code, and combines with appropriate metadata
-        - Writes model file to appropriate directory
-        - Row with fit data appended to central dataframe
+## 💻 Advanced Usage
 
-4) Run script
-    - Script to iterate over data
-    - Input:
-        1) List of data to iterate over
+### Parallelization
+PyTau supports parallel processing using GNU Parallel with isolated Theano compilation directories to prevent clashes. See [single_process.sh](https://github.com/abuzarmahmood/pytau/blob/master/pytau/utils/batch_utils/single_process.sh) and [this implementation](https://github.com/abuzarmahmood/pytau/pull/19/commits/231dd33b846cf278549b1b5815fdae5e76fa14a2).
 
-## Notes
-
-- Parallelization
-    - Parallelization is currently performed using GNU Parallel by setting separate a theano compiledir for each job. This prevents compilation clashes. Refer to [this file](https://github.com/abuzarmahmood/pytau/blob/master/pytau/utils/batch_utils/single_process.sh) and [this commit](https://github.com/abuzarmahmood/pytau/pull/19/commits/231dd33b846cf278549b1b5815fdae5e76fa14a2)
-
-## Contributing
+## 🤝 Contributing
 
 We welcome contributions to PyTau! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute to the project.
+
+## 📜 Citation
+
+If you use PyTau in your research, please cite:
+```
+@article{pytau2023,
+  title={PyTau: Bayesian Changepoint Detection for Neural Data},
+  author={Mahmood, Abuzar},
+  journal={Journal of Open Source Software},
+  year={2023}
+}
+```
