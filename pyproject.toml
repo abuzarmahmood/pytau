@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pytau"
+version = "0.1.2"
+description = "Simple package to perform streamlined, batched inference on pymc3-based changepoint models."
+readme = "README.md"
+authors = [
+    {name = "Abuzar Mahmood", email = "abuzarmahmood@gmail.com"},
+]
+license = {text = "MIT"}
+classifiers = [
+    "License :: OSI Approved",
+    "Programming Language :: Python :: 3.6",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Operating System :: OS Independent",
+    "Framework :: tox",
+    "Framework :: Pytest",
+]
+requires-python = ">=3.6.10, <=3.9"
+dependencies = [
+    "arviz==0.11.1",
+    "pymc3==3.9.3",
+    "theano==1.0.5",
+    "easygui==0.98.1",
+    "tables==3.6.1",
+    "tqdm>=4.62.3",
+    "numpy<=1.19.5",
+    "pandas>=1.1.5",
+    "matplotlib>=3.3.4",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-cov",
+]
+dev = [
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+]
+
+[tool.setuptools]
+packages = ["pytau"]

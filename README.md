@@ -30,9 +30,12 @@ conda activate pytau_env
 # Clone repository
 git clone https://github.com/abuzarmahmood/pytau.git
 
-# Install requirements
+# Install package
 cd pytau
-pip install -r requirements.txt
+pip install -e .  # Install in development mode
+
+# Alternative: Install from requirements file
+# pip install -r requirements.txt
 
 # Download test data and run example notebook
 cd pytau/how_to
