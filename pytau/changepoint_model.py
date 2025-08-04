@@ -1793,7 +1793,7 @@ class CategoricalChangepoint2D(ChangepointModel):
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((trials, 1, length)), weight_stack], axis=1)
