@@ -590,8 +590,8 @@ class DatabaseHandler:
 
         module_details = dict(
             zip(
-                ["pymc3_version", "theano_version"],
-                [pymc3.__version__, theano.__version__],
+                ["pymc_version", "theano_version"],
+                [pymc.__version__, theano.__version__],
             )
         )
 

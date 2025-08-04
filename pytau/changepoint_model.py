@@ -1,5 +1,5 @@
 """
-PyMC3 Blackbox Variational Inference implementation
+pymc Blackbox Variational Inference implementation
 of Poisson Likelihood Changepoint for spike trains.
 """
 
@@ -28,7 +28,7 @@ class ChangepointModel:
         self.kwargs = kwargs
 
     def generate_model(self):
-        """Generate PyMC3 model - to be implemented by subclasses"""
+        """Generate pymc model - to be implemented by subclasses"""
         raise NotImplementedError("Subclasses must implement generate_model()")
 
     def test(self):
@@ -138,7 +138,7 @@ class GaussianChangepointMeanVar2D(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         n_states = self.n_states
@@ -242,7 +242,7 @@ class GaussianChangepointMeanDirichlet(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         max_states = self.max_states
@@ -366,7 +366,7 @@ class GaussianChangepointMean2D(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         n_states = self.n_states
@@ -476,7 +476,7 @@ class SingleTastePoissonDirichlet(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         max_states = self.max_states
@@ -605,7 +605,7 @@ class SingleTastePoisson(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         n_states = self.n_states
@@ -726,7 +726,7 @@ class SingleTastePoissonVarsig(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         n_states = self.n_states
@@ -881,7 +881,7 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         n_states = self.n_states
@@ -1034,7 +1034,7 @@ class AllTastePoisson(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         n_states = self.n_states
@@ -1187,7 +1187,7 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         n_states = self.n_states
@@ -1357,7 +1357,7 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         switch_components = self.switch_components
@@ -1541,7 +1541,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         switch_components = self.switch_components
@@ -1958,7 +1958,7 @@ def advi_fit(model, fit, samples):
     """Convenience function to perform ADVI fit on model
 
     Args:
-        model (pymc3 model): model object to run inference on
+        model (pymc model): model object to run inference on
         fit (int): Number of iterationst to fit the model for
         samples (int): Number of samples to draw from fitted model
 
@@ -1990,7 +1990,7 @@ def mcmc_fit(model, samples):
     """Convenience function to perform ADVI fit on model
 
     Args:
-        model (pymc3 model): model object to run inference on
+        model (pymc model): model object to run inference on
         samples (int): Number of samples to draw using MCMC
 
     Returns:
