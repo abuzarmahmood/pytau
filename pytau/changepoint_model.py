@@ -13,9 +13,6 @@ import numpy as np
 ########################################
 import pymc as pm
 import pytensor.tensor as tt
-import numpy as np
-import os
-import time
 from tqdm import tqdm
 
 ############################################################
@@ -1931,29 +1928,29 @@ def find_best_states(data, model_generator, n_fit, n_samples, min_states=2, max_
     return best_model, model_list, elbo_values
 
 
-def dpp_fit(model, n_chains = 24, n_cores = 1, tune = 500, draws = 500,
-            use_numpyro = False):
-    """Convenience function to fit DPP model
-    """
+def dpp_fit(model, n_chains=24, n_cores=1, tune=500, draws=500, use_numpyro=False):
+    """Convenience function to fit DPP model"""
     if not use_numpyro:
         with model:
             dpp_trace = pm.sample(
-                                tune = tune,
-                                draws = draws, 
-                                  target_accept = 0.95,
-                                 chains = n_chains,
-                                 cores = n_cores,
-                                return_inferencedata=False)
+                tune=tune,
+                draws=draws,
+                target_accept=0.95,
+                chains=n_chains,
+                cores=n_cores,
+                return_inferencedata=False,
+            )
     else:
         with model:
             dpp_trace = pm.sample(
-                                nuts_sampler = 'numpyro',
-                                tune = tune,
-                                draws = draws, 
-                                  target_accept = 0.95,
-                                 chains = n_chains,
-                                 cores = n_cores,
-                                return_inferencedata=False)
+                nuts_sampler="numpyro",
+                tune=tune,
+                draws=draws,
+                target_accept=0.95,
+                chains=n_chains,
+                cores=n_cores,
+                return_inferencedata=False,
+            )
     return dpp_trace
 
 
