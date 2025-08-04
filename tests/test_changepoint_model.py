@@ -413,9 +413,9 @@ def test_module_import():
 
 def test_sampler_functions_exist():
     """Test that all sampler functions are available."""
-    from pytau.changepoint_model import advi_fit, mcmc_fit, dpp_fit, find_best_states
-    
+    from pytau.changepoint_model import advi_fit, dpp_fit, find_best_states, mcmc_fit
+
     assert callable(advi_fit)
-    assert callable(mcmc_fit) 
+    assert callable(mcmc_fit)
     assert callable(dpp_fit)
     assert callable(find_best_states)
