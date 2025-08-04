@@ -154,7 +154,8 @@ class GaussianChangepointMeanVar2D(ChangepointModel):
         length = idx.max() + 1
 
         with pm.Model() as model:
-            mu = pm.Normal("mu", mu=mean_vals, sigma=1, shape=(y_dim, n_states))
+            mu = pm.Normal("mu", mu=mean_vals, sigma=1,
+                           shape=(y_dim, n_states))
             sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim, n_states))
 
             a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
@@ -382,7 +383,8 @@ class GaussianChangepointMean2D(ChangepointModel):
         length = idx.max() + 1
 
         with pm.Model() as model:
-            mu = pm.Normal("mu", mu=mean_vals, sigma=1, shape=(y_dim, n_states))
+            mu = pm.Normal("mu", mu=mean_vals, sigma=1,
+                           shape=(y_dim, n_states))
             # One variance for each dimension
             sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim))
 
@@ -776,8 +778,8 @@ class SingleTastePoissonVarsig(ChangepointModel):
             b = pm.HalfCauchy("b_tau", 10, shape=n_states - 1)
 
             tau_latent = pm.Beta(
-                "tau_latent", a, b, 
-                # initval=even_switches, 
+                "tau_latent", a, b,
+                # initval=even_switches,
                 shape=(trials, n_states - 1)
             ).sort(axis=-1)
             tau = pm.Deterministic(
@@ -937,8 +939,8 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
             b = pm.HalfCauchy("b_tau", 10, shape=n_states - 1)
 
             tau_latent = pm.Beta(
-                "tau_latent", a, b, 
-                # initval=even_switches, 
+                "tau_latent", a, b,
+                # initval=even_switches,
                 shape=(trials, n_states - 1)
             ).sort(axis=-1)
             tau = pm.Deterministic(
@@ -1394,8 +1396,8 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
 
             even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
             tau_latent = pm.Beta(
-                "tau_latent", a, b, 
-                # initval=even_switches, 
+                "tau_latent", a, b,
+                # initval=even_switches,
                 shape=(trial_num, n_states - 1)
             ).sort(axis=-1)
 
