@@ -13,7 +13,7 @@ authors = [
 license = {text = "MIT"}
 classifiers = [
     "License :: OSI Approved",
-    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.12",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Mathematics",
@@ -21,24 +21,15 @@ classifiers = [
     "Framework :: tox",
     "Framework :: Pytest",
 ]
-requires-python = ">=3.6.10, <=3.9"
+requires-python = ">=3.10.13"
 dependencies = [
-    "arviz==0.11.1",
-    "pymc3==3.9.3",
-    "theano==1.0.5",
-    "easygui==0.98.1",
-    "tables==3.6.1",
-    "tqdm>=4.62.3",
-    "numpy<=1.19.5",
-    "pandas>=1.1.5",
-    "matplotlib>=3.3.4",
+    "pymc==5.16.2",
+    "numpyro==0.15.1",
+    "arviz==0.18.0",
+    "graphviz==0.20.3",
 ]
 
 [project.optional-dependencies]
-test = [
-    "pytest",
-    "pytest-cov",
-]
 dev = [
     "pre-commit",
     "pytest",

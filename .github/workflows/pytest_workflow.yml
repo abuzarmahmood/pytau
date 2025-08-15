@@ -8,11 +8,12 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ['3.8.15']
-
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.10.13', '3.11', '3.13']
+      fail-fast: false
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
