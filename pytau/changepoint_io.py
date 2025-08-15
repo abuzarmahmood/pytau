@@ -12,16 +12,10 @@ from glob import glob
 
 import numpy as np
 import pandas as pd
-import pymc3
-import theano
+import pymc
 
 from . import changepoint_model, changepoint_preprocess
 from .utils import EphysData
-
-# import changepoint_model
-# import changepoint_preprocess
-# from utils import EphysData
-
 
 MODULE_DIR = os.path.dirname(__file__)
 # Use a local directory for model saving instead of reading from a parameter file
@@ -584,8 +578,8 @@ class DatabaseHandler:
 
         module_details = dict(
             zip(
-                ["pymc3_version", "theano_version"],
-                [pymc3.__version__, theano.__version__],
+                ["pymc_version", "theano_version"],
+                [pymc.__version__, theano.__version__],
             )
         )
 
