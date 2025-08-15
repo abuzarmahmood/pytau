@@ -1,7 +1,10 @@
-import unittest
 import os
+import unittest
+
 import pandas as pd
-from pytau.changepoint_io import FitHandler, DatabaseHandler
+
+from pytau.changepoint_io import DatabaseHandler, FitHandler
+
 
 class TestFitHandler(unittest.TestCase):
     def setUp(self):
@@ -14,10 +17,12 @@ class TestFitHandler(unittest.TestCase):
 
     def test_initialization(self):
         with self.assertRaises(Exception):
-            FitHandler(data_dir='path/to/data', taste_num=1, region_name='region')
+            FitHandler(data_dir='path/to/data',
+                       taste_num=1, region_name='region')
 
     def test_set_preprocess_params(self):
-        self.handler.set_preprocess_params(time_lims=(0, 100), bin_width=10, data_transform='log')
+        self.handler.set_preprocess_params(time_lims=(
+            0, 100), bin_width=10, data_transform='log')
         self.assertEqual(self.handler.preprocess_params['bin_width'], 10)
 
     def test_load_spike_trains(self):
@@ -39,7 +44,9 @@ class TestFitHandler(unittest.TestCase):
     def test_save_fit_output(self):
         self.handler.save_fit_output()
         # Check if the output files are created
-        self.assertTrue(os.path.exists(self.handler.database_handler.model_save_path + ".pkl"))
+        self.assertTrue(os.path.exists(
+            self.handler.database_handler.model_save_path + ".pkl"))
+
 
 class TestDatabaseHandler(unittest.TestCase):
     def setUp(self):
@@ -65,6 +72,7 @@ class TestDatabaseHandler(unittest.TestCase):
         self.handler.ingest_fit_data({'dummy_key': 'dummy_value'})
         self.handler.write_to_database()
         self.assertTrue(os.path.isfile(self.handler.model_database_path))
+
 
 if __name__ == '__main__':
     unittest.main()
