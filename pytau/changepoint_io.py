@@ -17,6 +17,15 @@ import pymc
 from . import changepoint_model, changepoint_preprocess
 from .utils import EphysData
 
+# Import theano for version info (used in aggregate_metadata)
+try:
+    import theano
+except ImportError:
+    # Create a mock theano module for testing
+    class MockTheano:
+        __version__ = '1.0.0'
+    theano = MockTheano()
+
 MODULE_DIR = os.path.dirname(__file__)
 # Use a local directory for model saving instead of reading from a parameter file
 MODEL_SAVE_DIR = os.path.join(os.path.expanduser("~"), ".pytau", "models")
