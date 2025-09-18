@@ -14,6 +14,7 @@ import numpy as np
 import pymc as pm
 import pytensor.tensor as tt
 from tqdm import tqdm
+from pymc.variational.callbacks import CheckParametersConvergence
 
 ############################################################
 # Base Model Class
@@ -40,28 +41,6 @@ class ChangepointModel:
 # Functions
 ############################################################
 
-
-def theano_lock_present():
-    """
-    Check if theano compilation lock is present
-    """
-    return os.path.exists(os.path.join(theano.config.compiledir, "lock_dir"))
-
-
-def compile_wait():
-    """
-    Function to allow waiting while a model is already fitting
-    Wait twice because lock blips out between steps
-    10 secs of waiting shouldn't be a problem for long fits (~mins)
-    And wait a random time in the beginning to stagger fits
-    """
-    time.sleep(np.random.random() * 10)
-    while theano_lock_present():
-        print("Lock present...waiting")
-        time.sleep(10)
-    while theano_lock_present():
-        print("Lock present...waiting")
-        time.sleep(10)
 
 
 def gen_test_array(array_size, n_states, type="poisson"):
@@ -1901,7 +1880,14 @@ def extract_inferred_values(trace):
     return out_dict
 
 
-def find_best_states(data, model_generator, n_fit, n_samples, min_states=2, max_states=10):
+def find_best_states(
+        data, 
+        model_generator, 
+        n_fit, n_samples, 
+        min_states=2, 
+        max_states=10,
+        convergence_tol = None,
+        ):
     """Convenience function to find best number of states for model
 
     Args:
@@ -1911,6 +1897,7 @@ def find_best_states(data, model_generator, n_fit, n_samples, min_states=2, max_
         n_samples (int): Number of samples to draw from fitted model
         min_states (int): Minimum number of states to test
         max_states (int): Maximum number of states to test
+        convergence_tol (float): Tolerance for convergence. If None, will not check for convergence.
 
     Returns:
         best_model: model with best number of states,
@@ -1922,8 +1909,8 @@ def find_best_states(data, model_generator, n_fit, n_samples, min_states=2, max_
     model_list = []
     for n_states in tqdm(n_state_array):
         print(f"Fitting model with {n_states} states")
-        model = model_generator(data, n_states)
-        model, approx = advi_fit(model, n_fit, n_samples)[:2]
+        model = model_generator(data, int(n_states)) # Have to use int instead of np.int64
+        model, approx = advi_fit(model, n_fit, n_samples, convergence_tol)[:2]
         elbo_values.append(approx.hist[-1])
         model_list.append(model)
     best_model = model_list[np.argmin(elbo_values)]
@@ -1956,7 +1943,7 @@ def dpp_fit(model, n_chains=24, n_cores=1, tune=500, draws=500, use_numpyro=Fals
     return dpp_trace
 
 
-def advi_fit(model, fit, samples):
+def advi_fit(model, fit, samples, convergence_tol=None):
     """Convenience function to perform ADVI fit on model
 
     Args:
@@ -1972,21 +1959,32 @@ def advi_fit(model, fit, samples):
         model.obs.observations: processed array on which fit was run
     """
 
+    if convergence_tol is not None:
+        callbacks = [pm.callbacks.CheckParametersConvergence(tolerance=convergence_tol)]
+        print("Using convergence callback with tolerance:", convergence_tol)
+    else:
+        callbacks = None
     with model:
         inference = pm.ADVI("full-rank")
-        approx = pm.fit(n=fit, method=inference)
-        trace = approx.sample(draws=samples)
+        approx = pm.fit(n=fit, method=inference, callbacks=callbacks)
+        # trace = approx.sample(draws=samples)
 
-    # Extract relevant variables from trace
-    tau_samples = trace["tau"]
-    if "lambda" in trace.varnames:
-        lambda_stack = trace["lambda"].swapaxes(0, 1)
-        return model, trace, lambda_stack, tau_samples, model.obs.observations
-    if "mu" in trace.varnames:
-        mu_stack = trace["mu"].swapaxes(0, 1)
-        sigma_stack = trace["sigma"].swapaxes(0, 1)
-        return model, trace, mu_stack, sigma_stack, tau_samples, model.obs.observations
+    return model, approx# , trace
 
+    # # Check if tau exists in trace
+    # if "tau" not in trace.varnames:
+    #     raise KeyError(f"'tau' not found in trace. Available variables: {list(trace.varnames)}")
+    # 
+    # # Extract relevant variables from trace
+    # tau_samples = trace["tau"]
+    # if "lambda" in trace.varnames:
+    #     lambda_stack = trace["lambda"].swapaxes(0, 1)
+    #     return model, trace, lambda_stack, tau_samples, model.obs.observations
+    # if "mu" in trace.varnames:
+    #     mu_stack = trace["mu"].swapaxes(0, 1)
+    #     sigma_stack = trace["sigma"].swapaxes(0, 1)
+    #     return model, trace, mu_stack, sigma_stack, tau_samples, model.obs.observations
+    #
 
 def mcmc_fit(model, samples):
     """Convenience function to perform ADVI fit on model
