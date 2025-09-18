@@ -1,5 +1,5 @@
 """
-PyMC3 Blackbox Variational Inference implementation
+pymc Blackbox Variational Inference implementation
 of Poisson Likelihood Changepoint for spike trains.
 """
 
@@ -11,9 +11,9 @@ import numpy as np
 ########################################
 # Import
 ########################################
-import pymc3 as pm
-import theano
-import theano.tensor as tt
+import pymc as pm
+import pytensor.tensor as tt
+from pymc.variational.callbacks import CheckParametersConvergence
 from tqdm import tqdm
 
 ############################################################
@@ -29,7 +29,7 @@ class ChangepointModel:
         self.kwargs = kwargs
 
     def generate_model(self):
-        """Generate PyMC3 model - to be implemented by subclasses"""
+        """Generate pymc model - to be implemented by subclasses"""
         raise NotImplementedError("Subclasses must implement generate_model()")
 
     def test(self):
@@ -40,29 +40,6 @@ class ChangepointModel:
 ############################################################
 # Functions
 ############################################################
-
-
-def theano_lock_present():
-    """
-    Check if theano compilation lock is present
-    """
-    return os.path.exists(os.path.join(theano.config.compiledir, "lock_dir"))
-
-
-def compile_wait():
-    """
-    Function to allow waiting while a model is already fitting
-    Wait twice because lock blips out between steps
-    10 secs of waiting shouldn't be a problem for long fits (~mins)
-    And wait a random time in the beginning to stagger fits
-    """
-    time.sleep(np.random.random() * 10)
-    while theano_lock_present():
-        print("Lock present...waiting")
-        time.sleep(10)
-    while theano_lock_present():
-        print("Lock present...waiting")
-        time.sleep(10)
 
 
 def gen_test_array(array_size, n_states, type="poisson"):
@@ -139,7 +116,7 @@ class GaussianChangepointMeanVar2D(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         n_states = self.n_states
@@ -155,7 +132,8 @@ class GaussianChangepointMeanVar2D(ChangepointModel):
         length = idx.max() + 1
 
         with pm.Model() as model:
-            mu = pm.Normal("mu", mu=mean_vals, sd=1, shape=(y_dim, n_states))
+            mu = pm.Normal("mu", mu=mean_vals, sigma=1,
+                           shape=(y_dim, n_states))
             sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim, n_states))
 
             a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
@@ -163,13 +141,13 @@ class GaussianChangepointMeanVar2D(ChangepointModel):
 
             even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
             tau_latent = pm.Beta(
-                "tau_latent", a_tau, b_tau, testval=even_switches, shape=(n_states - 1)
+                "tau_latent", a_tau, b_tau, initval=even_switches, shape=(n_states - 1)
             ).sort(axis=-1)
 
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((1, length)), weight_stack], axis=0)
@@ -181,7 +159,7 @@ class GaussianChangepointMeanVar2D(ChangepointModel):
             mu_latent = mu.dot(weight_stack)
             sigma_latent = sigma.dot(weight_stack)
             observation = pm.Normal(
-                "obs", mu=mu_latent, sd=sigma_latent, observed=data_array)
+                "obs", mu=mu_latent, sigma=sigma_latent, observed=data_array)
 
         return model
 
@@ -243,7 +221,7 @@ class GaussianChangepointMeanDirichlet(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         max_states = self.max_states
@@ -290,7 +268,7 @@ class GaussianChangepointMeanDirichlet(ChangepointModel):
             tau = pm.Deterministic("tau", tt.cumsum(w_latent * length)[:-1])
 
             # Weight stack to assign lambda's to point in time
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((1, length)), weight_stack], axis=0)
@@ -367,7 +345,7 @@ class GaussianChangepointMean2D(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         n_states = self.n_states
@@ -383,7 +361,8 @@ class GaussianChangepointMean2D(ChangepointModel):
         length = idx.max() + 1
 
         with pm.Model() as model:
-            mu = pm.Normal("mu", mu=mean_vals, sd=1, shape=(y_dim, n_states))
+            mu = pm.Normal("mu", mu=mean_vals, sigma=1,
+                           shape=(y_dim, n_states))
             # One variance for each dimension
             sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim))
 
@@ -392,13 +371,13 @@ class GaussianChangepointMean2D(ChangepointModel):
 
             even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
             tau_latent = pm.Beta(
-                "tau_latent", a_tau, b_tau, testval=even_switches, shape=(n_states - 1)
+                "tau_latent", a_tau, b_tau, initval=even_switches, shape=(n_states - 1)
             ).sort(axis=-1)
 
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((1, length)), weight_stack], axis=0)
@@ -410,7 +389,7 @@ class GaussianChangepointMean2D(ChangepointModel):
             mu_latent = mu.dot(weight_stack)
             sigma_latent = sigma.dimshuffle(0, "x")
             observation = pm.Normal(
-                "obs", mu=mu_latent, sd=sigma_latent, observed=data_array)
+                "obs", mu=mu_latent, sigma=sigma_latent, observed=data_array)
 
         return model
 
@@ -477,7 +456,7 @@ class SingleTastePoissonDirichlet(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         max_states = self.max_states
@@ -530,7 +509,7 @@ class SingleTastePoissonDirichlet(ChangepointModel):
             # =====================
 
             # Weight stack to assign lambda's to point in time
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((trials, 1, length)), weight_stack], axis=1)
@@ -606,7 +585,7 @@ class SingleTastePoisson(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         n_states = self.n_states
@@ -635,14 +614,14 @@ class SingleTastePoisson(ChangepointModel):
                 "tau_latent",
                 a_tau,
                 b_tau,
-                testval=even_switches,
+                # initval=even_switches,
                 shape=(trials, n_states - 1),
             ).sort(axis=-1)
 
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((trials, 1, length)), weight_stack], axis=1)
@@ -727,7 +706,7 @@ class SingleTastePoissonVarsig(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         n_states = self.n_states
@@ -753,7 +732,7 @@ class SingleTastePoissonVarsig(ChangepointModel):
 
             # Initial value
             s0 = pm.Exponential(
-                "state0", 1 / (np.mean(mean_vals)), shape=nrns, testval=mean_vals[:, 0]
+                "state0", 1 / (np.mean(mean_vals)), shape=nrns, initval=mean_vals[:, 0]
             )
 
             # Changes to lambda
@@ -762,7 +741,7 @@ class SingleTastePoissonVarsig(ChangepointModel):
                 mu=0,
                 sigma=10,
                 shape=(nrns, n_states - 1),
-                testval=lambda_test_vals,
+                initval=lambda_test_vals,
             )
 
             # This is only here to be extracted at the end of sampling
@@ -777,7 +756,9 @@ class SingleTastePoissonVarsig(ChangepointModel):
             b = pm.HalfCauchy("b_tau", 10, shape=n_states - 1)
 
             tau_latent = pm.Beta(
-                "tau_latent", a, b, testval=even_switches, shape=(trials, n_states - 1)
+                "tau_latent", a, b,
+                # initval=even_switches,
+                shape=(trials, n_states - 1)
             ).sort(axis=-1)
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
@@ -880,7 +861,7 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         n_states = self.n_states
@@ -912,7 +893,7 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
         with pm.Model() as model:
             # Initial value
             s0 = pm.Exponential(
-                "state0", 1 / (np.mean(mean_vals)), shape=nrns, testval=mean_vals[:, 0]
+                "state0", 1 / (np.mean(mean_vals)), shape=nrns, initval=mean_vals[:, 0]
             )
 
             # Changes to lambda
@@ -921,7 +902,7 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
                 mu=0,
                 sigma=10,
                 shape=(nrns, n_states - 1),
-                testval=lambda_test_vals,
+                initval=lambda_test_vals,
             )
 
             # This is only here to be extracted at the end of sampling
@@ -936,7 +917,9 @@ class SingleTastePoissonVarsigFixed(ChangepointModel):
             b = pm.HalfCauchy("b_tau", 10, shape=n_states - 1)
 
             tau_latent = pm.Beta(
-                "tau_latent", a, b, testval=even_switches, shape=(trials, n_states - 1)
+                "tau_latent", a, b,
+                # initval=even_switches,
+                shape=(trials, n_states - 1)
             ).sort(axis=-1)
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
@@ -1031,7 +1014,7 @@ class AllTastePoisson(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         n_states = self.n_states
@@ -1079,7 +1062,7 @@ class AllTastePoisson(ChangepointModel):
             lambda_latent = pm.Exponential(
                 "lambda",
                 lambda_state[np.newaxis, :, :],
-                testval=mean_vals,
+                initval=mean_vals,
                 shape=(mean_vals.shape),
             )
 
@@ -1097,14 +1080,14 @@ class AllTastePoisson(ChangepointModel):
                 a,
                 b,
                 shape=(trial_num, n_states - 1),
-                testval=tt.tile(even_switches_normal[1:(
+                initval=tt.tile(even_switches_normal[1:(
                     n_states)], (array_idx.shape[0], 1)),
             ).sort(axis=-1)
 
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((tastes * trials, 1, length)), weight_stack], axis=1
@@ -1184,7 +1167,7 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         n_states = self.n_states
@@ -1241,7 +1224,7 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
             lambda_latent = pm.Exponential(
                 "lambda",
                 lambda_state[np.newaxis, :, :],
-                testval=mean_vals,
+                initval=mean_vals,
                 shape=(mean_vals.shape),
             )
 
@@ -1259,7 +1242,7 @@ class AllTastePoissonVarsigFixed(ChangepointModel):
                 a,
                 b,
                 shape=(trial_num, n_states - 1),
-                testval=tt.tile(even_switches_normal[1:(
+                initval=tt.tile(even_switches_normal[1:(
                     n_states)], (array_idx.shape[0], 1)),
             ).sort(axis=-1)
 
@@ -1354,7 +1337,7 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         switch_components = self.switch_components
@@ -1391,7 +1374,9 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
 
             even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
             tau_latent = pm.Beta(
-                "tau_latent", a, b, testval=even_switches, shape=(trial_num, n_states - 1)
+                "tau_latent", a, b,
+                # initval=even_switches,
+                shape=(trial_num, n_states - 1)
             ).sort(axis=-1)
 
             # Trials x Changepoints
@@ -1406,7 +1391,7 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
                 "tau_trial_latent",
                 1,
                 1,
-                testval=even_trial_switches,
+                initval=even_trial_switches,
                 shape=(switch_components - 1),
             ).sort(axis=-1)
 
@@ -1415,7 +1400,7 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
                 "tau_trial", trial_num * tau_trial_latent)
 
             trial_idx = np.arange(trial_num)
-            trial_selector = tt.nnet.sigmoid(
+            trial_selector = tt.math.sigmoid(
                 trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, "x")
             )
 
@@ -1448,7 +1433,7 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
             idx = np.arange(time_bins)
 
             # tau : Trials x Changepoints
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((trial_num, 1, time_bins)), weight_stack], axis=1
@@ -1536,7 +1521,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
     def generate_model(self):
         """
         Returns:
-            pymc3 model: Model class containing graph to run inference on
+            pymc model: Model class containing graph to run inference on
         """
         data_array = self.data_array
         switch_components = self.switch_components
@@ -1583,7 +1568,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
                 "tau_latent",
                 a,
                 b,
-                testval=even_switches,
+                # initval=even_switches,
                 shape=(tastes, trial_num, n_states - 1),
             ).sort(axis=-1)
 
@@ -1602,7 +1587,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
                 "tau_trial_latent",
                 1,
                 1,
-                testval=even_trial_switches,
+                initval=even_trial_switches,
                 shape=(switch_components - 1),
             ).sort(axis=-1)
 
@@ -1612,7 +1597,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
                 "tau_trial", trial_num * tau_trial_latent)
 
             trial_idx = np.arange(trial_num)
-            trial_selector = tt.nnet.sigmoid(
+            trial_selector = tt.math.sigmoid(
                 trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, "x")
             )
 
@@ -1643,7 +1628,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
             # First, we can "select" sets of emissions depending on trial_changepoints
             # =================================================
             trial_idx = np.arange(trial_num)
-            trial_selector = tt.nnet.sigmoid(
+            trial_selector = tt.math.sigmoid(
                 trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, "x")
             )
 
@@ -1664,7 +1649,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
             idx = np.arange(time_bins)
 
             # tau : Tastes x Trials x Changepoints
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, :, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((tastes, trial_num, 1, time_bins)), weight_stack], axis=2
@@ -1786,7 +1771,7 @@ class CategoricalChangepoint2D(ChangepointModel):
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-            weight_stack = tt.nnet.sigmoid(
+            weight_stack = tt.math.sigmoid(
                 idx[np.newaxis, :] - tau[:, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((trials, 1, length)), weight_stack], axis=1)
@@ -1894,7 +1879,14 @@ def extract_inferred_values(trace):
     return out_dict
 
 
-def find_best_states(data, model_generator, n_fit, n_samples, min_states=2, max_states=10):
+def find_best_states(
+        data,
+        model_generator,
+        n_fit, n_samples,
+        min_states=2,
+        max_states=10,
+        convergence_tol=None,
+):
     """Convenience function to find best number of states for model
 
     Args:
@@ -1904,6 +1896,7 @@ def find_best_states(data, model_generator, n_fit, n_samples, min_states=2, max_
         n_samples (int): Number of samples to draw from fitted model
         min_states (int): Minimum number of states to test
         max_states (int): Maximum number of states to test
+        convergence_tol (float): Tolerance for convergence. If None, will not check for convergence.
 
     Returns:
         best_model: model with best number of states,
@@ -1915,33 +1908,46 @@ def find_best_states(data, model_generator, n_fit, n_samples, min_states=2, max_
     model_list = []
     for n_states in tqdm(n_state_array):
         print(f"Fitting model with {n_states} states")
-        model = model_generator(data, n_states)
-        model, approx = advi_fit(model, n_fit, n_samples)[:2]
+        # Have to use int instead of np.int64
+        model = model_generator(data, int(n_states))
+        model, approx = advi_fit(model, n_fit, n_samples, convergence_tol)[:2]
         elbo_values.append(approx.hist[-1])
         model_list.append(model)
     best_model = model_list[np.argmin(elbo_values)]
     return best_model, model_list, elbo_values
 
 
-def dpp_fit(model, n_chains=24, n_cores=1, tune=500, draws=500):
+def dpp_fit(model, n_chains=24, n_cores=1, tune=500, draws=500, use_numpyro=False):
     """Convenience function to fit DPP model"""
-    with model:
-        dpp_trace = pm.sample(
-            tune=tune,
-            draws=draws,
-            target_accept=0.95,
-            chains=n_chains,
-            cores=n_cores,
-            return_inferencedata=False,
-        )
+    if not use_numpyro:
+        with model:
+            dpp_trace = pm.sample(
+                tune=tune,
+                draws=draws,
+                target_accept=0.95,
+                chains=n_chains,
+                cores=n_cores,
+                return_inferencedata=False,
+            )
+    else:
+        with model:
+            dpp_trace = pm.sample(
+                nuts_sampler="numpyro",
+                tune=tune,
+                draws=draws,
+                target_accept=0.95,
+                chains=n_chains,
+                cores=n_cores,
+                return_inferencedata=False,
+            )
     return dpp_trace
 
 
-def advi_fit(model, fit, samples):
+def advi_fit(model, fit, samples, convergence_tol=None):
     """Convenience function to perform ADVI fit on model
 
     Args:
-        model (pymc3 model): model object to run inference on
+        model (pymc model): model object to run inference on
         fit (int): Number of iterationst to fit the model for
         samples (int): Number of samples to draw from fitted model
 
@@ -1953,27 +1959,40 @@ def advi_fit(model, fit, samples):
         model.obs.observations: processed array on which fit was run
     """
 
+    if convergence_tol is not None:
+        callbacks = [pm.callbacks.CheckParametersConvergence(
+            tolerance=convergence_tol)]
+        print("Using convergence callback with tolerance:", convergence_tol)
+    else:
+        callbacks = None
     with model:
         inference = pm.ADVI("full-rank")
-        approx = pm.fit(n=fit, method=inference)
-        trace = approx.sample(draws=samples)
+        approx = pm.fit(n=fit, method=inference, callbacks=callbacks)
+        # trace = approx.sample(draws=samples)
 
-    # Extract relevant variables from trace
-    tau_samples = trace["tau"]
-    if "lambda" in trace.varnames:
-        lambda_stack = trace["lambda"].swapaxes(0, 1)
-        return model, trace, lambda_stack, tau_samples, model.obs.observations
-    if "mu" in trace.varnames:
-        mu_stack = trace["mu"].swapaxes(0, 1)
-        sigma_stack = trace["sigma"].swapaxes(0, 1)
-        return model, trace, mu_stack, sigma_stack, tau_samples, model.obs.observations
+    return model, approx  # , trace
+
+    # # Check if tau exists in trace
+    # if "tau" not in trace.varnames:
+    #     raise KeyError(f"'tau' not found in trace. Available variables: {list(trace.varnames)}")
+    #
+    # # Extract relevant variables from trace
+    # tau_samples = trace["tau"]
+    # if "lambda" in trace.varnames:
+    #     lambda_stack = trace["lambda"].swapaxes(0, 1)
+    #     return model, trace, lambda_stack, tau_samples, model.obs.observations
+    # if "mu" in trace.varnames:
+    #     mu_stack = trace["mu"].swapaxes(0, 1)
+    #     sigma_stack = trace["sigma"].swapaxes(0, 1)
+    #     return model, trace, mu_stack, sigma_stack, tau_samples, model.obs.observations
+    #
 
 
 def mcmc_fit(model, samples):
     """Convenience function to perform ADVI fit on model
 
     Args:
-        model (pymc3 model): model object to run inference on
+        model (pymc model): model object to run inference on
         samples (int): Number of samples to draw using MCMC
 
     Returns:
