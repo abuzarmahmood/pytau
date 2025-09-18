@@ -2,6 +2,7 @@
 Tests for the changepoint_io module.
 """
 
+from pytau.changepoint_io import DatabaseHandler, FitHandler
 import os
 import sys
 import tempfile
@@ -19,8 +20,6 @@ mock_theano.__version__ = '1.0.0'
 mock_theano.config = Mock()
 mock_theano.config.compiledir = '/tmp/theano'
 sys.modules['theano'] = mock_theano
-
-from pytau.changepoint_io import DatabaseHandler, FitHandler
 
 
 class TestFitHandler(unittest.TestCase):
@@ -143,7 +142,7 @@ class TestFitHandler(unittest.TestCase):
     def test_create_model(self, mock_ephys_data):
         """Test model creation."""
         mock_ephys_data.return_value = Mock()
-        
+
         handler = FitHandler(
             data_dir='path/to/data',
             taste_num=1,
@@ -171,7 +170,7 @@ class TestFitHandler(unittest.TestCase):
     def test_run_inference(self, mock_ephys_data):
         """Test running inference."""
         mock_ephys_data.return_value = Mock()
-        
+
         handler = FitHandler(
             data_dir='path/to/data',
             taste_num=1,
