@@ -30,7 +30,7 @@ dependencies = [
     "arviz==0.18.0",
     "graphviz==0.20.3",
     "easygui",
-    "pytables",
+    "tables",
 ]
 
 [project.optional-dependencies]
