@@ -9,6 +9,7 @@ repos:
     -   id: check-ast
     -   id: check-json
         exclude_types: [jupyter]
+        exclude: \.ipynb$
     -   id: check-merge-conflict
     -   id: detect-private-key
     -   id: check-toml
