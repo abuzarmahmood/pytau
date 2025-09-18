@@ -68,7 +68,7 @@ def get_state_firing(spike_array, tau_array):
         ]
     )
     state_lims = np.array([state_inds[:, x: x + 2] for x in range(states)])
-    state_lims = np.vectorize(np.int)(state_lims)
+    state_lims = np.vectorize(int)(state_lims)
     state_lims = np.swapaxes(state_lims, 0, 1)
 
     state_firing = np.array(
@@ -184,11 +184,11 @@ class _tau:
         time_lims = metadata["preprocess"]["time_lims"]
         bin_width = metadata["preprocess"]["bin_width"]
 
-        self.raw_int_tau = np.vectorize(np.int)(self.raw_tau)
+        self.raw_int_tau = np.vectorize(int)(self.raw_tau)
         self.raw_mode_tau = mode(self.raw_int_tau)[0][0]
 
         self.scaled_tau = (self.raw_tau * bin_width) + time_lims[0]
-        self.scaled_int_tau = np.vectorize(np.int)(self.scaled_tau)
+        self.scaled_int_tau = np.vectorize(int)(self.scaled_tau)
         self.scaled_mode_tau = np.squeeze(mode(self.scaled_int_tau)[0])
 
 
