@@ -2,7 +2,6 @@
 Tests for the changepoint_io module.
 """
 
-from pytau.changepoint_io import DatabaseHandler, FitHandler
 import os
 import sys
 import tempfile
@@ -12,6 +11,8 @@ from unittest.mock import MagicMock, Mock, patch
 import numpy as np
 import pandas as pd
 import pytest
+
+from pytau.changepoint_io import DatabaseHandler, FitHandler
 
 # Mock easygui and theano before importing pytau modules
 sys.modules['easygui'] = Mock()
