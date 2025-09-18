@@ -305,7 +305,6 @@ class FitHandler:
         # In future iterations, before fitting model,
         # check that a similar entry doesn't exist
 
-        changepoint_model.compile_wait()
         print(
             f"Generating Model, model func: <{self.model_template.__name__}>")
         self.model = self.model_template(
@@ -326,7 +325,6 @@ class FitHandler:
         if "inference_func" not in dir(self):
             self.inference_func_selector()
 
-        changepoint_model.compile_wait()
         print(
             "Running inference, inference func: " f"<{self.inference_func.__name__}>")
         temp_outs = self.inference_func(
