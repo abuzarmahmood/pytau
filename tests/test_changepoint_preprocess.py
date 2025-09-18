@@ -1,6 +1,8 @@
-import pytest
 import numpy as np
-from pytau.changepoint_preprocess import preprocess_single_taste, preprocess_all_taste
+import pytest
+
+from pytau.changepoint_preprocess import preprocess_all_taste, preprocess_single_taste
+
 
 class TestPreprocessSingleTaste:
     def setup_method(self):
@@ -13,8 +15,11 @@ class TestPreprocessSingleTaste:
         "trial_shuffled", "spike_shuffled", "simulated", None, "None"
     ])
     def test_preprocess_single_taste(self, data_transform):
-        result = preprocess_single_taste(self.spike_array, self.time_lims, self.bin_width, data_transform)
-        assert result.shape == (10, 5, 12)  # Check if the shape is as expected after binning
+        result = preprocess_single_taste(
+            self.spike_array, self.time_lims, self.bin_width, data_transform)
+        # Check if the shape is as expected after binning
+        assert result.shape == (10, 5, 12)
+
 
 class TestPreprocessAllTaste:
     def setup_method(self):
@@ -27,5 +32,7 @@ class TestPreprocessAllTaste:
         "trial_shuffled", "spike_shuffled", "simulated", None, "None"
     ])
     def test_preprocess_all_taste(self, data_transform):
-        result = preprocess_all_taste(self.spike_array, self.time_lims, self.bin_width, data_transform)
-        assert result.shape == (4, 10, 5, 12)  # Check if the shape is as expected after binning
+        result = preprocess_all_taste(
+            self.spike_array, self.time_lims, self.bin_width, data_transform)
+        # Check if the shape is as expected after binning
+        assert result.shape == (4, 10, 5, 12)
