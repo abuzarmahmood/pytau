@@ -95,7 +95,7 @@ def preprocess_single_taste(spike_array, time_lims, bin_width, data_transform):
         ),
         axis=-1,
     )
-    spike_binned = np.vectorize(np.int)(spike_binned)
+    spike_binned = spike_binned.astype(int)
 
     return spike_binned
 
@@ -173,6 +173,6 @@ def preprocess_all_taste(spike_array, time_lims, bin_width, data_transform):
         ),
         axis=-1,
     )
-    spike_binned = np.vectorize(np.int)(spike_binned)
+    spike_binned = spike_binned.astype(int)
 
     return spike_binned
