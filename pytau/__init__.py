@@ -19,36 +19,34 @@ Examples
 --------
 >>> import numpy as np
 >>> from pytau import ChangepointDetector, set_verbose
->>> 
+>>>
 >>> # Enable verbose output to see detailed progress
 >>> set_verbose(True)
->>> 
+>>>
 >>> # Generate synthetic spike data (trials x neurons x time)
 >>> spike_data = np.random.poisson(2, size=(20, 5, 100))
->>> 
+>>>
 >>> # Fit changepoint model
 >>> detector = ChangepointDetector(n_states=3)
 >>> detector.fit(spike_data)
->>> 
+>>>
 >>> # Get predictions
 >>> predictions = detector.predict()
 >>> changepoints = predictions['changepoints']
 """
 
+# Import model classes for advanced usage
+from . import changepoint_analysis, changepoint_model, changepoint_preprocess
+
 # Import new scikit-learn style API (recommended)
 from .changepoint_api import ChangepointDetector, fit_changepoint_model
 
-# Import configuration functions
-from .config import set_verbose, get_verbose, verbose_context, reset_config
-
 # Import legacy API for backward compatibility
 from .changepoint_io import FitHandler
-from .utils import EphysData
 
-# Import model classes for advanced usage
-from . import changepoint_model
-from . import changepoint_preprocess
-from . import changepoint_analysis
+# Import configuration functions
+from .config import get_verbose, reset_config, set_verbose, verbose_context
+from .utils import EphysData
 
 # Version info
 __version__ = "0.2.0"
@@ -58,19 +56,19 @@ __all__ = [
     # New API (recommended)
     'ChangepointDetector',
     'fit_changepoint_model',
-    
+
     # Configuration
     'set_verbose',
-    'get_verbose', 
+    'get_verbose',
     'verbose_context',
     'reset_config',
-    
+
     # Legacy API
-    'FitHandler', 
+    'FitHandler',
     'EphysData',
-    
+
     # Modules for advanced usage
     'changepoint_model',
-    'changepoint_preprocess', 
+    'changepoint_preprocess',
     'changepoint_analysis',
 ]
