@@ -18,7 +18,10 @@ EphysData : Data loading utilities for HDF5 files
 Examples
 --------
 >>> import numpy as np
->>> from pytau import ChangepointDetector
+>>> from pytau import ChangepointDetector, set_verbose
+>>> 
+>>> # Enable verbose output to see detailed progress
+>>> set_verbose(True)
 >>> 
 >>> # Generate synthetic spike data (trials x neurons x time)
 >>> spike_data = np.random.poisson(2, size=(20, 5, 100))
@@ -34,6 +37,9 @@ Examples
 
 # Import new scikit-learn style API (recommended)
 from .changepoint_api import ChangepointDetector, fit_changepoint_model
+
+# Import configuration functions
+from .config import set_verbose, get_verbose, verbose_context, reset_config
 
 # Import legacy API for backward compatibility
 from .changepoint_io import FitHandler
@@ -52,6 +58,12 @@ __all__ = [
     # New API (recommended)
     'ChangepointDetector',
     'fit_changepoint_model',
+    
+    # Configuration
+    'set_verbose',
+    'get_verbose', 
+    'verbose_context',
+    'reset_config',
     
     # Legacy API
     'FitHandler', 

@@ -44,6 +44,27 @@ cd notebooks
 jupyter notebook
 ```
 
+### New Scikit-Learn Style API
+
+```python
+import numpy as np
+from pytau import ChangepointDetector, set_verbose
+
+# Enable verbose output to see detailed progress
+set_verbose(True)
+
+# Generate or load your spike data (trials × neurons × time)
+spike_data = np.random.poisson(2, size=(20, 5, 100))
+
+# Fit changepoint model - no HDF5 files required!
+detector = ChangepointDetector(n_states=3)
+detector.fit(spike_data)
+
+# Get predictions
+predictions = detector.predict()
+changepoints = predictions['changepoints']
+```
+
 ## 🧠 Key Features
 
 - **Multiple Model Types**:
@@ -61,6 +82,12 @@ jupyter notebook
   - State transition detection
   - Cross-region correlation analysis
   - Statistical significance testing
+
+- **Modern API Design**:
+  - Scikit-learn style interface (`fit`, `predict`, `score`)
+  - Direct numpy array input (no HDF5 dependency)
+  - Global and instance-level verbose control
+  - Context managers for temporary settings
 
 ## 📊 Data Organization
 

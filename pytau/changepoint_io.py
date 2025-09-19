@@ -16,6 +16,7 @@ import pymc
 
 from . import changepoint_model, changepoint_preprocess
 from .utils import EphysData
+from .config import verbose_print
 
 # Import theano for version info (used in aggregate_metadata)
 try:
@@ -31,9 +32,9 @@ MODULE_DIR = os.path.dirname(__file__)
 MODEL_SAVE_DIR = os.path.join(os.path.expanduser("~"), ".pytau", "models")
 if not os.path.exists(MODEL_SAVE_DIR):
     os.makedirs(MODEL_SAVE_DIR)
-    print("Created directory: {}".format(MODEL_SAVE_DIR))
+    verbose_print("Created directory: {}".format(MODEL_SAVE_DIR))
 else:
-    print("Using directory: {}".format(MODEL_SAVE_DIR))
+    verbose_print("Using directory: {}".format(MODEL_SAVE_DIR))
 MODEL_DATABASE_PATH = os.path.join(MODEL_SAVE_DIR, "model_database.csv")
 
 
