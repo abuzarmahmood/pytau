@@ -6,6 +6,10 @@
   [![status](https://joss.theoj.org/papers/e3e3d9ce5b59166cef17ee7e9bb9f53c/status.svg)](https://joss.theoj.org/papers/e3e3d9ce5b59166cef17ee7e9bb9f53c)
   [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/abuzarmahmood/pytau/master.svg)](https://results.pre-commit.ci/latest/github/abuzarmahmood/pytau/master)
   [![Pytest](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml/badge.svg)](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml)
+  
+  [![Ubuntu Tests](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml/badge.svg?event=push&job=test&matrix.os=ubuntu-latest)](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml)
+  [![macOS Tests](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml/badge.svg?event=push&job=test&matrix.os=macos-latest)](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml)
+  [![Windows Tests](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml/badge.svg?event=push&job=test&matrix.os=windows-latest)](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml)
 </div>
 
 ## 🚀 What is PyTau?
