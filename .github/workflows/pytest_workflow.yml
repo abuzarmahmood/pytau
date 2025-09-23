@@ -27,3 +27,6 @@ jobs:
     - name: Run tests
       run: |
         pytest --cov=pytau -v
+    - name: Run notebook tests
+      run: |
+        pytest --nbmake pytau/how_to/model_notebooks/ -v
