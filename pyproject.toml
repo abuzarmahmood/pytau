@@ -41,6 +41,7 @@ dev = [
     "nbmake",
     "matplotlib",
     "jupyter",
+    "nbconvert",
 ]
 
 [tool.setuptools]
