@@ -38,6 +38,10 @@ dev = [
     "pre-commit",
     "pytest",
     "pytest-cov",
+    "nbmake",
+    "matplotlib",
+    "jupyter",
+    "nbconvert",
 ]
 
 [tool.setuptools]
