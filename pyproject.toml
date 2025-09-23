@@ -38,6 +38,7 @@ dev = [
     "pre-commit",
     "pytest",
     "pytest-cov",
+    "nbmake",
 ]
 
 [tool.setuptools]

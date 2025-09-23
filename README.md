@@ -134,6 +134,33 @@ PyTau's modular pipeline ensures reproducible analysis:
 ### Parallelization
 PyTau supports parallel processing using GNU Parallel with isolated Theano compilation directories to prevent clashes. See [single_process.sh](https://github.com/abuzarmahmood/pytau/blob/master/pytau/utils/batch_utils/single_process.sh) and [this implementation](https://github.com/abuzarmahmood/pytau/pull/19/commits/231dd33b846cf278549b1b5815fdae5e76fa14a2).
 
+## 🧪 Testing
+
+PyTau includes comprehensive testing for both code and Jupyter notebooks:
+
+### Running Tests
+
+```bash
+# Run unit tests
+pytest tests/
+
+# Run notebook tests (requires additional setup time)
+tox -e notebooks
+
+# Run all tests
+tox
+```
+
+### Notebook Testing
+
+PyTau uses [nbmake](https://github.com/treebeardtech/nbmake) to automatically test Jupyter notebooks:
+
+- ✅ **Model demos**: All model demonstration notebooks are tested
+- ✅ **Examples**: Core example notebooks are verified
+- ⚠️ **Known issues**: Some notebooks with API compatibility issues are temporarily skipped
+
+See [docs/notebook_testing.md](docs/notebook_testing.md) for detailed information about notebook testing setup and troubleshooting.
+
 ## 🤝 Contributing
 
 We welcome contributions to PyTau! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute to the project.

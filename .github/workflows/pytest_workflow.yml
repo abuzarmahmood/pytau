@@ -27,3 +27,9 @@ jobs:
     - name: Run tests
       run: |
         pytest --cov=pytau -v
+    - name: Test notebooks
+      run: |
+        # Test working notebooks (skip problematic ones with known API issues)
+        pytest --nbmake pytau/how_to/examples/Bayesian_Changepoint_Model.ipynb -v
+        pytest --nbmake pytau/how_to/model_demos/GaussianChangepointMean2D_demo.ipynb -v
+        pytest --nbmake pytau/how_to/model_demos/SingleTastePoisson_demo.ipynb -v
