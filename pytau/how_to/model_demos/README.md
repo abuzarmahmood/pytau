@@ -26,7 +26,7 @@ This directory contains comprehensive demonstration notebooks for each model typ
 
 1. **Choose a model** based on your data type:
    - **Continuous data**: Use Gaussian models
-   - **Count data (spikes)**: Use Poisson models  
+   - **Count data (spikes)**: Use Poisson models
    - **Categorical data**: Use Categorical models
 
 2. **Open the corresponding notebook** in Jupyter
