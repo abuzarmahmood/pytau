@@ -15,8 +15,8 @@ import pandas as pd
 import pymc
 
 from . import changepoint_model, changepoint_preprocess
-from .utils import EphysData
 from .config import verbose_print
+from .utils import EphysData
 
 # Import theano for version info (used in aggregate_metadata)
 try:
