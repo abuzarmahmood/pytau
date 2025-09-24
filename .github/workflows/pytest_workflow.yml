@@ -31,23 +31,23 @@ jobs:
       run: |
         # Test notebook structure without execution
         pytest tests/test_how_to_notebooks.py -v
-        
+
         # Try to run notebooks with nbmake (may fail if dependencies missing or path issues)
         echo "Testing model notebooks..."
         if ! pytest --nbmake pytau/how_to/model_notebooks/ -v --tb=short; then
           echo "Model notebooks failed - likely missing dependencies or path issues"
         fi
-        
+
         echo "Testing how-to notebooks..."
         if ! pytest --nbmake pytau/how_to/notebooks/ -v --tb=short; then
           echo "How-to notebooks failed - likely missing dependencies or path issues"
         fi
-        
+
         echo "Testing example notebooks..."
         if ! pytest --nbmake pytau/how_to/examples/ -v --tb=short; then
           echo "Example notebooks failed - likely missing dependencies or path issues"
         fi
-        
+
         echo "Notebook testing completed"
       shell: bash
 
