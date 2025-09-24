@@ -176,16 +176,16 @@ def test_poisson_changepoint_1d():
     """Test the PoissonChangepoint1D model."""
     # Generate 1D test data
     test_data = gen_test_array(100, n_states=3, type="poisson")
-    
+
     # Test model creation
     model_class = PoissonChangepoint1D(test_data, 3)
     assert model_class.data_array.ndim == 1
     assert model_class.n_states == 3
-    
+
     # Test model generation
     model = model_class.generate_model()
     assert model is not None
-    
+
     # Test that it raises error for non-1D data
     with pytest.raises(ValueError):
         PoissonChangepoint1D(np.random.poisson(2, (10, 100)), 3)

@@ -60,34 +60,34 @@ def gen_test_array(array_size, n_states, type="poisson"):
         assert array_size > n_states, "Array too small for states"
         assert type in [
             "normal", "poisson"], "Invalid type, please use normal or poisson"
-        
+
         # Generate transition times for 1D case
         transition_times = np.random.random(n_states)
         transition_times = np.cumsum(transition_times)
         transition_times = transition_times / transition_times.max()
         transition_times *= array_size
         transition_times = transition_times.astype(int)
-        
+
         # Generate state bounds
         state_bounds = np.zeros(n_states + 1, dtype=int)
         state_bounds[1:] = transition_times
         state_bounds[-1] = array_size
-        
+
         # Generate state rates
         lambda_vals = np.random.exponential(2.0, n_states) + 0.5
-        
+
         # Generate 1D array
         rate_array = np.zeros(array_size)
         for i in range(n_states):
             start_idx = state_bounds[i]
             end_idx = state_bounds[i + 1]
             rate_array[start_idx:end_idx] = lambda_vals[i]
-        
+
         if type == "poisson":
             return np.random.poisson(rate_array)
         else:
             return np.random.normal(loc=rate_array, scale=0.1)
-    
+
     # Handle multi-dimensional case (existing code)
     assert array_size[-1] > n_states, "Array too small for states"
     assert type in [
@@ -1903,7 +1903,7 @@ def run_all_tests():
 
 class PoissonChangepoint1D(ChangepointModel):
     """Model for changepoint detection in 1D Poisson time series
-    
+
     This model detects changepoints in 1D time series data using a Poisson likelihood.
     It assumes the data follows a Poisson distribution with different rates in different
     segments separated by changepoints.
@@ -1929,13 +1929,13 @@ class PoissonChangepoint1D(ChangepointModel):
         """
         data_array = self.data_array
         n_states = self.n_states
-        
+
         # Calculate initial lambda values by splitting data into segments
         mean_vals = np.array([
             np.mean(x) for x in np.array_split(data_array, n_states)
         ])
         mean_vals += 0.01  # To avoid zero starting prob
-        
+
         idx = np.arange(len(data_array))
         length = len(data_array)
 
@@ -1952,10 +1952,10 @@ class PoissonChangepoint1D(ChangepointModel):
             # Initialize changepoints evenly across the time series
             even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
             tau_latent = pm.Beta(
-                "tau_latent", 
-                a_tau, 
-                b_tau, 
-                initval=even_switches, 
+                "tau_latent",
+                a_tau,
+                b_tau,
+                initval=even_switches,
                 shape=(n_states - 1)
             ).sort(axis=-1)
 
@@ -1979,7 +1979,7 @@ class PoissonChangepoint1D(ChangepointModel):
 
             # Calculate time-varying lambda
             lambda_t = lambda_latent.dot(weight_stack)
-            
+
             # Observation model
             observation = pm.Poisson("obs", lambda_t, observed=data_array)
 
@@ -1989,7 +1989,7 @@ class PoissonChangepoint1D(ChangepointModel):
         """Test the model with synthetic data"""
         # Generate test data - 1D array with 100 time points
         test_data = gen_test_array(100, n_states=self.n_states, type="poisson")
-        
+
         # Create model with test data
         test_model = PoissonChangepoint1D(test_data, self.n_states)
         model = test_model.generate_model()
@@ -2226,7 +2226,7 @@ def run_all_tests():
 
 class PoissonChangepoint1D(ChangepointModel):
     """Model for changepoint detection in 1D Poisson time series
-    
+
     This model detects changepoints in 1D time series data using a Poisson likelihood.
     It assumes the data follows a Poisson distribution with different rates in different
     segments separated by changepoints.
@@ -2252,13 +2252,13 @@ class PoissonChangepoint1D(ChangepointModel):
         """
         data_array = self.data_array
         n_states = self.n_states
-        
+
         # Calculate initial lambda values by splitting data into segments
         mean_vals = np.array([
             np.mean(x) for x in np.array_split(data_array, n_states)
         ])
         mean_vals += 0.01  # To avoid zero starting prob
-        
+
         idx = np.arange(len(data_array))
         length = len(data_array)
 
@@ -2275,10 +2275,10 @@ class PoissonChangepoint1D(ChangepointModel):
             # Initialize changepoints evenly across the time series
             even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
             tau_latent = pm.Beta(
-                "tau_latent", 
-                a_tau, 
-                b_tau, 
-                initval=even_switches, 
+                "tau_latent",
+                a_tau,
+                b_tau,
+                initval=even_switches,
                 shape=(n_states - 1)
             ).sort(axis=-1)
 
@@ -2302,7 +2302,7 @@ class PoissonChangepoint1D(ChangepointModel):
 
             # Calculate time-varying lambda
             lambda_t = lambda_latent.dot(weight_stack)
-            
+
             # Observation model
             observation = pm.Poisson("obs", lambda_t, observed=data_array)
 
@@ -2312,7 +2312,7 @@ class PoissonChangepoint1D(ChangepointModel):
         """Test the model with synthetic data"""
         # Generate test data - 1D array with 100 time points
         test_data = gen_test_array(100, n_states=self.n_states, type="poisson")
-        
+
         # Create model with test data
         test_model = PoissonChangepoint1D(test_data, self.n_states)
         model = test_model.generate_model()
