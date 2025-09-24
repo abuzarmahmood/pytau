@@ -2173,4 +2173,3 @@ def mcmc_fit(model, samples):
         mu_stack = trace["mu"].swapaxes(0, 1)
         sigma_stack = trace["sigma"].swapaxes(0, 1)
         return model, trace, mu_stack, sigma_stack, tau_samples, model.obs.observations
-
