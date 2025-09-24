@@ -124,7 +124,7 @@ from pytau.changepoint_model import find_best_states
 
 # Find optimal number of states
 best_model, model_list, elbo_values = find_best_states(
-    data, model_generator, n_fit=5000, n_samples=1000, 
+    data, model_generator, n_fit=5000, n_samples=1000,
     min_states=2, max_states=8
 )
 ```
