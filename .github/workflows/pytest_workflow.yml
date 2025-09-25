@@ -32,15 +32,15 @@ jobs:
         # Test notebook structure without execution
         pytest tests/test_how_to_notebooks.py -v
 
-        # Try to run notebooks with nbmake (may fail if dependencies missing or path issues)
+        # Try to run notebooks with nbmake (should now work with dummy matplotlib)
         echo "Testing model notebooks..."
-        pytest --nbmake pytau/how_to/model_notebooks/ -v
+        pytest --nbmake pytau/how_to/model_notebooks/ -v --tb=short
 
         echo "Testing how-to notebooks..."
-        pytest --nbmake pytau/how_to/notebooks/ -v
+        pytest --nbmake pytau/how_to/notebooks/ -v --tb=short
 
         echo "Testing example notebooks..."
-        pytest --nbmake pytau/how_to/examples/ -v
+        pytest --nbmake pytau/how_to/examples/ -v --tb=short
 
         echo "Notebook testing completed"
       shell: bash
