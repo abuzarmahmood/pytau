@@ -18,6 +18,12 @@ from . import changepoint_model, changepoint_preprocess
 from .utils import EphysData
 
 # Import theano for version info (used in aggregate_metadata)
+
+
+class SimpleApprox:
+    """Simple approximation object that only stores the hist attribute for ELBO plotting"""
+    def __init__(self, hist):
+        self.hist = hist
 try:
     import theano
 except ImportError:
@@ -400,11 +406,7 @@ class FitHandler:
                 if approx_obj and hasattr(approx_obj, 'hist'):
                     try:
                         # Create a simple object with just the hist attribute
-                        class SimpleApprox:
-                            def __init__(self, hist):
-                                self.hist = hist
-                        model_data_fallback["approx"] = SimpleApprox(
-                            approx_obj.hist)
+                        model_data_fallback["approx"] = SimpleApprox(approx_obj.hist)
                     except Exception:
                         # If even hist fails to pickle, skip it
                         pass
