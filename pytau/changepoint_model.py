@@ -2134,16 +2134,25 @@ def advi_fit(model, fit, samples, convergence_tol=None):
 
     # Extract relevant variables from InferenceData posterior
     tau_samples = idata.posterior["tau"].values
+    
+    # Get observed data from model (PyMC5 compatible)
+    try:
+        # Try to get observed data from the model's observed random variables
+        observed_data = model.observed_RVs[0].data.eval() if model.observed_RVs else None
+    except (AttributeError, IndexError):
+        # Fallback: return None if we can't access observed data
+        observed_data = None
+    
     if "lambda" in idata.posterior.data_vars:
         lambda_stack = idata.posterior["lambda"].values.swapaxes(0, 1)
-        return model, approx, lambda_stack, tau_samples, model.obs.observations
+        return model, approx, lambda_stack, tau_samples, observed_data
     if "mu" in idata.posterior.data_vars:
         mu_stack = idata.posterior["mu"].values.swapaxes(0, 1)
         sigma_stack = idata.posterior["sigma"].values.swapaxes(0, 1)
-        return model, approx, mu_stack, sigma_stack, tau_samples, model.obs.observations
+        return model, approx, mu_stack, sigma_stack, tau_samples, observed_data
 
     # Fallback - return what we can
-    return model, approx, None, tau_samples, model.obs.observations
+    return model, approx, None, tau_samples, observed_data
 
 
 def mcmc_fit(model, samples):
@@ -2169,10 +2178,19 @@ def mcmc_fit(model, samples):
 
     # Extract relevant variables from InferenceData posterior
     tau_samples = idata_thinned.posterior["tau"].values
+    
+    # Get observed data from model (PyMC5 compatible)
+    try:
+        # Try to get observed data from the model's observed random variables
+        observed_data = model.observed_RVs[0].data.eval() if model.observed_RVs else None
+    except (AttributeError, IndexError):
+        # Fallback: return None if we can't access observed data
+        observed_data = None
+    
     if "lambda" in idata_thinned.posterior.data_vars:
         lambda_stack = idata_thinned.posterior["lambda"].values.swapaxes(0, 1)
-        return model, idata_thinned, lambda_stack, tau_samples, model.obs.observations
+        return model, idata_thinned, lambda_stack, tau_samples, observed_data
     if "mu" in idata_thinned.posterior.data_vars:
         mu_stack = idata_thinned.posterior["mu"].values.swapaxes(0, 1)
         sigma_stack = idata_thinned.posterior["sigma"].values.swapaxes(0, 1)
-        return model, idata_thinned, mu_stack, sigma_stack, tau_samples, model.obs.observations
+        return model, idata_thinned, mu_stack, sigma_stack, tau_samples, observed_data
