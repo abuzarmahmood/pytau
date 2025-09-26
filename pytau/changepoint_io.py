@@ -387,7 +387,8 @@ class FitHandler:
             try:
                 pickle.dump(picklable_dict, buff)
             except (TypeError, AttributeError) as e:
-                print(f"Warning: Full pickling failed ({e}). Saving metadata-only version.")
+                print(
+                    f"Warning: Full pickling failed ({e}). Saving metadata-only version.")
                 # If pickling fails, save only metadata and basic info
                 metadata_only_dict = {
                     "metadata": picklable_dict.get("metadata", {}),
