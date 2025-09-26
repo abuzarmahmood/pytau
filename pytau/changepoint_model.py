@@ -2128,7 +2128,8 @@ def advi_fit(model, fit, samples, convergence_tol=None):
 
     # Check if tau exists in trace
     if "tau" not in trace.varnames:
-        raise KeyError(f"'tau' not found in trace. Available variables: {list(trace.varnames)}")
+        raise KeyError(
+            f"'tau' not found in trace. Available variables: {list(trace.varnames)}")
 
     # Extract relevant variables from trace
     tau_samples = trace["tau"]
@@ -2139,7 +2140,7 @@ def advi_fit(model, fit, samples, convergence_tol=None):
         mu_stack = trace["mu"].swapaxes(0, 1)
         sigma_stack = trace["sigma"].swapaxes(0, 1)
         return model, approx, mu_stack, sigma_stack, tau_samples, model.obs.observations
-    
+
     # Fallback - return what we can
     return model, approx, None, tau_samples, model.obs.observations
 
