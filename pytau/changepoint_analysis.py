@@ -172,7 +172,7 @@ class _firing:
 class _tau:
     """Tau class to keep track of metadata and perform useful transformations"""
 
-    def __init__(self, tau_array, metadata):
+    def __init__(self, tau_array, metadata, n_trials=None):
         """Initialize tau class
 
         Args:
@@ -189,7 +189,17 @@ class _tau:
 
         self.scaled_tau = (self.raw_tau * bin_width) + time_lims[0]
         self.scaled_int_tau = np.vectorize(int)(self.scaled_tau)
-        self.scaled_mode_tau = np.squeeze(mode(self.scaled_int_tau)[0])
+        mode_result = np.squeeze(mode(self.scaled_int_tau)[0])
+        # Ensure mode_result is 1D array of changepoints
+        if mode_result.ndim == 0:
+            mode_result = np.array([mode_result])
+        
+        # If n_trials is provided, replicate changepoints for each trial
+        # This is needed for plotting functions that expect (n_trials, n_changepoints)
+        if n_trials is not None:
+            self.scaled_mode_tau = np.tile(mode_result, (n_trials, 1))
+        else:
+            self.scaled_mode_tau = mode_result
 
 
 class PklHandler:
@@ -225,5 +235,7 @@ class PklHandler:
         self.metadata = self.data["metadata"]
         self.pretty_metadata = pd.json_normalize(self.data["metadata"]).T
 
-        self.tau = _tau(self.tau_array, self.metadata)
+        # Get number of trials from processed_spikes for proper tau formatting
+        n_trials = self.processed_spikes.shape[0] if hasattr(self.processed_spikes, 'shape') else None
+        self.tau = _tau(self.tau_array, self.metadata, n_trials)
         self.firing = _firing(self.tau, self.processed_spikes, self.metadata)
