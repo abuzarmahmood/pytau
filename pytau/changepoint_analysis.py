@@ -193,7 +193,7 @@ class _tau:
         # Ensure mode_result is 1D array of changepoints
         if mode_result.ndim == 0:
             mode_result = np.array([mode_result])
-        
+
         # If n_trials is provided, replicate changepoints for each trial
         # This is needed for plotting functions that expect (n_trials, n_changepoints)
         if n_trials is not None:
@@ -236,6 +236,7 @@ class PklHandler:
         self.pretty_metadata = pd.json_normalize(self.data["metadata"]).T
 
         # Get number of trials from processed_spikes for proper tau formatting
-        n_trials = self.processed_spikes.shape[0] if hasattr(self.processed_spikes, 'shape') else None
+        n_trials = self.processed_spikes.shape[0] if hasattr(
+            self.processed_spikes, 'shape') else None
         self.tau = _tau(self.tau_array, self.metadata, n_trials)
         self.firing = _firing(self.tau, self.processed_spikes, self.metadata)
