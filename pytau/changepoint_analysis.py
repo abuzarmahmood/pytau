@@ -230,7 +230,11 @@ class PklHandler:
         data_map = dict(zip(model_keys, key_savenames))
 
         for key, var_name in data_map.items():
-            setattr(self, var_name, self.data["model_data"][key])
+            if key in self.data["model_data"]:
+                setattr(self, var_name, self.data["model_data"][key])
+            else:
+                # Set to None if key is missing (e.g., due to pickling fallback)
+                setattr(self, var_name, None)
 
         self.metadata = self.data["metadata"]
         self.pretty_metadata = pd.json_normalize(self.data["metadata"]).T
