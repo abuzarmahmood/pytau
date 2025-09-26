@@ -2129,7 +2129,8 @@ def advi_fit(model, fit, samples, convergence_tol=None):
     # Check if tau exists in posterior samples (PyMC5 uses InferenceData)
     if "tau" not in idata.posterior.data_vars:
         available_vars = list(idata.posterior.data_vars.keys())
-        raise KeyError(f"'tau' not found in posterior samples. Available variables: {available_vars}")
+        raise KeyError(
+            f"'tau' not found in posterior samples. Available variables: {available_vars}")
 
     # Extract relevant variables from InferenceData posterior
     tau_samples = idata.posterior["tau"].values
