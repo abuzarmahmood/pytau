@@ -374,7 +374,7 @@ class FitHandler:
         if "inference_outs" not in dir(self):
             self.run_inference()
         out_dict = self._return_fit_output()
-        
+
         # Create a copy without the model to avoid pickling issues with PyMC5
         picklable_dict = out_dict.copy()
         if "model_data" in picklable_dict and "model" in picklable_dict["model_data"]:
@@ -382,7 +382,7 @@ class FitHandler:
             # Remove the model object as it contains unpicklable local functions in PyMC5
             picklable_model_data.pop("model", None)
             picklable_dict["model_data"] = picklable_model_data
-        
+
         with open(self.database_handler.model_save_path + ".pkl", "wb") as buff:
             pickle.dump(picklable_dict, buff)
 
