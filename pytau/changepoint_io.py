@@ -22,8 +22,11 @@ from .utils import EphysData
 
 class SimpleApprox:
     """Simple approximation object that only stores the hist attribute for ELBO plotting"""
+
     def __init__(self, hist):
         self.hist = hist
+
+
 try:
     import theano
 except ImportError:
@@ -406,7 +409,8 @@ class FitHandler:
                 if approx_obj and hasattr(approx_obj, 'hist'):
                     try:
                         # Create a simple object with just the hist attribute
-                        model_data_fallback["approx"] = SimpleApprox(approx_obj.hist)
+                        model_data_fallback["approx"] = SimpleApprox(
+                            approx_obj.hist)
                     except Exception:
                         # If even hist fails to pickle, skip it
                         pass
