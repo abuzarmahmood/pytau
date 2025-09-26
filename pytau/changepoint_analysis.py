@@ -181,6 +181,15 @@ class _tau:
         """
         self.raw_tau = tau_array
 
+        # Handle case where tau_array is None (e.g., from fallback pickling)
+        if tau_array is None:
+            self.raw_int_tau = None
+            self.raw_mode_tau = None
+            self.scaled_tau = None
+            self.scaled_int_tau = None
+            self.scaled_mode_tau = None
+            return
+
         time_lims = metadata["preprocess"]["time_lims"]
         bin_width = metadata["preprocess"]["bin_width"]
 
