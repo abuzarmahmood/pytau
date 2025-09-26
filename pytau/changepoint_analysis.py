@@ -155,18 +155,28 @@ class _firing:
             self.raw_spikes = temp_spikes[taste_num]
         else:
             self.raw_spikes = temp_spikes
-        self.state_firing = get_state_firing(
-            self.processed_spikes, self.tau.raw_mode_tau)
-        self.transition_snips = get_transition_snips(
-            self.raw_spikes, self.tau.scaled_mode_tau)
-        (
-            self.anova_p_val_array,
-            self.anova_significant_neurons,
-        ) = calc_significant_neurons_firing(self.state_firing)
-        (
-            self.pairwise_p_val_array,
-            self.pairwise_significant_neurons,
-        ) = calc_significant_neurons_snippets(self.transition_snips)
+        # Handle case where tau attributes are None (e.g., from fallback pickling)
+        if self.tau.raw_mode_tau is not None and self.tau.scaled_mode_tau is not None:
+            self.state_firing = get_state_firing(
+                self.processed_spikes, self.tau.raw_mode_tau)
+            self.transition_snips = get_transition_snips(
+                self.raw_spikes, self.tau.scaled_mode_tau)
+            (
+                self.anova_p_val_array,
+                self.anova_significant_neurons,
+            ) = calc_significant_neurons_firing(self.state_firing)
+            (
+                self.pairwise_p_val_array,
+                self.pairwise_significant_neurons,
+            ) = calc_significant_neurons_snippets(self.transition_snips)
+        else:
+            # Set to None if tau data is not available
+            self.state_firing = None
+            self.transition_snips = None
+            self.anova_p_val_array = None
+            self.anova_significant_neurons = None
+            self.pairwise_p_val_array = None
+            self.pairwise_significant_neurons = None
 
 
 class _tau:
