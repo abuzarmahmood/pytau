@@ -2151,13 +2151,14 @@ def advi_fit(model, fit, samples, convergence_tol=None):
             lambda_stack = idata.posterior["lambda"].values
             # Handle potential dimension issues
             if lambda_stack.ndim > 3:
-                lambda_stack = lambda_stack.reshape(-1, *lambda_stack.shape[-2:])
+                lambda_stack = lambda_stack.reshape(-1,
+                                                    *lambda_stack.shape[-2:])
             lambda_stack = lambda_stack.swapaxes(0, 1)
             return model, approx, lambda_stack, tau_samples, observed_data
         except Exception as e:
             print(f"Error extracting lambda samples: {e}")
             return model, approx, None, tau_samples, observed_data
-            
+
     if "mu" in idata.posterior.data_vars:
         try:
             mu_stack = idata.posterior["mu"].values
@@ -2218,13 +2219,14 @@ def mcmc_fit(model, samples):
             lambda_stack = idata_thinned.posterior["lambda"].values
             # Handle potential dimension issues
             if lambda_stack.ndim > 3:
-                lambda_stack = lambda_stack.reshape(-1, *lambda_stack.shape[-2:])
+                lambda_stack = lambda_stack.reshape(-1,
+                                                    *lambda_stack.shape[-2:])
             lambda_stack = lambda_stack.swapaxes(0, 1)
             return model, idata_thinned, lambda_stack, tau_samples, observed_data
         except Exception as e:
             print(f"Error extracting lambda samples: {e}")
             return model, idata_thinned, None, tau_samples, observed_data
-            
+
     if "mu" in idata_thinned.posterior.data_vars:
         try:
             mu_stack = idata_thinned.posterior["mu"].values
