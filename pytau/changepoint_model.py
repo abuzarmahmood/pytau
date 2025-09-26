@@ -2124,21 +2124,21 @@ def advi_fit(model, fit, samples, convergence_tol=None):
     with model:
         inference = pm.ADVI("full-rank")
         approx = pm.fit(n=fit, method=inference, callbacks=callbacks)
-        trace = approx.sample(draws=samples)
+        idata = approx.sample(draws=samples)
 
-    # Check if tau exists in trace
-    if "tau" not in trace.varnames:
-        raise KeyError(
-            f"'tau' not found in trace. Available variables: {list(trace.varnames)}")
+    # Check if tau exists in posterior samples (PyMC5 uses InferenceData)
+    if "tau" not in idata.posterior.data_vars:
+        available_vars = list(idata.posterior.data_vars.keys())
+        raise KeyError(f"'tau' not found in posterior samples. Available variables: {available_vars}")
 
-    # Extract relevant variables from trace
-    tau_samples = trace["tau"]
-    if "lambda" in trace.varnames:
-        lambda_stack = trace["lambda"].swapaxes(0, 1)
+    # Extract relevant variables from InferenceData posterior
+    tau_samples = idata.posterior["tau"].values
+    if "lambda" in idata.posterior.data_vars:
+        lambda_stack = idata.posterior["lambda"].values.swapaxes(0, 1)
         return model, approx, lambda_stack, tau_samples, model.obs.observations
-    if "mu" in trace.varnames:
-        mu_stack = trace["mu"].swapaxes(0, 1)
-        sigma_stack = trace["sigma"].swapaxes(0, 1)
+    if "mu" in idata.posterior.data_vars:
+        mu_stack = idata.posterior["mu"].values.swapaxes(0, 1)
+        sigma_stack = idata.posterior["sigma"].values.swapaxes(0, 1)
         return model, approx, mu_stack, sigma_stack, tau_samples, model.obs.observations
 
     # Fallback - return what we can
@@ -2162,15 +2162,16 @@ def mcmc_fit(model, samples):
 
     with model:
         sampler_kwargs = {"cores": 1, "chains": 4}
-        trace = pm.sample(draws=samples, **sampler_kwargs)
-        trace = trace[::10]
+        idata = pm.sample(draws=samples, **sampler_kwargs)
+        # Thin the samples (every 10th sample)
+        idata_thinned = idata.sel(draw=slice(None, None, 10))
 
-    # Extract relevant variables from trace
-    tau_samples = trace["tau"]
-    if "lambda" in trace.varnames:
-        lambda_stack = trace["lambda"].swapaxes(0, 1)
-        return model, trace, lambda_stack, tau_samples, model.obs.observations
-    if "mu" in trace.varnames:
-        mu_stack = trace["mu"].swapaxes(0, 1)
-        sigma_stack = trace["sigma"].swapaxes(0, 1)
-        return model, trace, mu_stack, sigma_stack, tau_samples, model.obs.observations
+    # Extract relevant variables from InferenceData posterior
+    tau_samples = idata_thinned.posterior["tau"].values
+    if "lambda" in idata_thinned.posterior.data_vars:
+        lambda_stack = idata_thinned.posterior["lambda"].values.swapaxes(0, 1)
+        return model, idata_thinned, lambda_stack, tau_samples, model.obs.observations
+    if "mu" in idata_thinned.posterior.data_vars:
+        mu_stack = idata_thinned.posterior["mu"].values.swapaxes(0, 1)
+        sigma_stack = idata_thinned.posterior["sigma"].values.swapaxes(0, 1)
+        return model, idata_thinned, mu_stack, sigma_stack, tau_samples, model.obs.observations
