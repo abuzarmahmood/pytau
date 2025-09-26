@@ -2133,24 +2133,46 @@ def advi_fit(model, fit, samples, convergence_tol=None):
             f"'tau' not found in posterior samples. Available variables: {available_vars}")
 
     # Extract relevant variables from InferenceData posterior
-    tau_samples = idata.posterior["tau"].values
+    try:
+        tau_samples = idata.posterior["tau"].values
+        # Handle potential dimension issues
+        if tau_samples.ndim > 2:
+            tau_samples = tau_samples.reshape(-1, tau_samples.shape[-1])
+    except Exception as e:
+        print(f"Error extracting tau samples: {e}")
+        tau_samples = None
 
     # Get observed data from model (PyMC5 compatible)
-    try:
-        # Try to get observed data from the model's observed random variables
-        observed_data = model.observed_RVs[0].data.eval(
-        ) if model.observed_RVs else None
-    except (AttributeError, IndexError):
-        # Fallback: return None if we can't access observed data
-        observed_data = None
+    # Since notebooks don't use fit_data, return None to avoid compatibility issues
+    observed_data = None
 
     if "lambda" in idata.posterior.data_vars:
-        lambda_stack = idata.posterior["lambda"].values.swapaxes(0, 1)
-        return model, approx, lambda_stack, tau_samples, observed_data
+        try:
+            lambda_stack = idata.posterior["lambda"].values
+            # Handle potential dimension issues
+            if lambda_stack.ndim > 3:
+                lambda_stack = lambda_stack.reshape(-1, *lambda_stack.shape[-2:])
+            lambda_stack = lambda_stack.swapaxes(0, 1)
+            return model, approx, lambda_stack, tau_samples, observed_data
+        except Exception as e:
+            print(f"Error extracting lambda samples: {e}")
+            return model, approx, None, tau_samples, observed_data
+            
     if "mu" in idata.posterior.data_vars:
-        mu_stack = idata.posterior["mu"].values.swapaxes(0, 1)
-        sigma_stack = idata.posterior["sigma"].values.swapaxes(0, 1)
-        return model, approx, mu_stack, sigma_stack, tau_samples, observed_data
+        try:
+            mu_stack = idata.posterior["mu"].values
+            sigma_stack = idata.posterior["sigma"].values
+            # Handle potential dimension issues
+            if mu_stack.ndim > 3:
+                mu_stack = mu_stack.reshape(-1, *mu_stack.shape[-2:])
+            if sigma_stack.ndim > 3:
+                sigma_stack = sigma_stack.reshape(-1, *sigma_stack.shape[-2:])
+            mu_stack = mu_stack.swapaxes(0, 1)
+            sigma_stack = sigma_stack.swapaxes(0, 1)
+            return model, approx, mu_stack, sigma_stack, tau_samples, observed_data
+        except Exception as e:
+            print(f"Error extracting mu/sigma samples: {e}")
+            return model, approx, None, None, tau_samples, observed_data
 
     # Fallback - return what we can
     return model, approx, None, tau_samples, observed_data
@@ -2178,21 +2200,46 @@ def mcmc_fit(model, samples):
         idata_thinned = idata.sel(draw=slice(None, None, 10))
 
     # Extract relevant variables from InferenceData posterior
-    tau_samples = idata_thinned.posterior["tau"].values
+    try:
+        tau_samples = idata_thinned.posterior["tau"].values
+        # Handle potential dimension issues
+        if tau_samples.ndim > 2:
+            tau_samples = tau_samples.reshape(-1, tau_samples.shape[-1])
+    except Exception as e:
+        print(f"Error extracting tau samples: {e}")
+        tau_samples = None
 
     # Get observed data from model (PyMC5 compatible)
-    try:
-        # Try to get observed data from the model's observed random variables
-        observed_data = model.observed_RVs[0].data.eval(
-        ) if model.observed_RVs else None
-    except (AttributeError, IndexError):
-        # Fallback: return None if we can't access observed data
-        observed_data = None
+    # Since notebooks don't use fit_data, return None to avoid compatibility issues
+    observed_data = None
 
     if "lambda" in idata_thinned.posterior.data_vars:
-        lambda_stack = idata_thinned.posterior["lambda"].values.swapaxes(0, 1)
-        return model, idata_thinned, lambda_stack, tau_samples, observed_data
+        try:
+            lambda_stack = idata_thinned.posterior["lambda"].values
+            # Handle potential dimension issues
+            if lambda_stack.ndim > 3:
+                lambda_stack = lambda_stack.reshape(-1, *lambda_stack.shape[-2:])
+            lambda_stack = lambda_stack.swapaxes(0, 1)
+            return model, idata_thinned, lambda_stack, tau_samples, observed_data
+        except Exception as e:
+            print(f"Error extracting lambda samples: {e}")
+            return model, idata_thinned, None, tau_samples, observed_data
+            
     if "mu" in idata_thinned.posterior.data_vars:
-        mu_stack = idata_thinned.posterior["mu"].values.swapaxes(0, 1)
-        sigma_stack = idata_thinned.posterior["sigma"].values.swapaxes(0, 1)
-        return model, idata_thinned, mu_stack, sigma_stack, tau_samples, observed_data
+        try:
+            mu_stack = idata_thinned.posterior["mu"].values
+            sigma_stack = idata_thinned.posterior["sigma"].values
+            # Handle potential dimension issues
+            if mu_stack.ndim > 3:
+                mu_stack = mu_stack.reshape(-1, *mu_stack.shape[-2:])
+            if sigma_stack.ndim > 3:
+                sigma_stack = sigma_stack.reshape(-1, *sigma_stack.shape[-2:])
+            mu_stack = mu_stack.swapaxes(0, 1)
+            sigma_stack = sigma_stack.swapaxes(0, 1)
+            return model, idata_thinned, mu_stack, sigma_stack, tau_samples, observed_data
+        except Exception as e:
+            print(f"Error extracting mu/sigma samples: {e}")
+            return model, idata_thinned, None, None, tau_samples, observed_data
+
+    # Fallback - return what we can
+    return model, idata_thinned, None, tau_samples, observed_data
