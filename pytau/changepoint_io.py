@@ -384,7 +384,20 @@ class FitHandler:
             picklable_dict["model_data"] = picklable_model_data
 
         with open(self.database_handler.model_save_path + ".pkl", "wb") as buff:
-            pickle.dump(picklable_dict, buff)
+            try:
+                pickle.dump(picklable_dict, buff)
+            except (TypeError, AttributeError) as e:
+                print(f"Warning: Full pickling failed ({e}). Saving metadata-only version.")
+                # If pickling fails, save only metadata and basic info
+                metadata_only_dict = {
+                    "metadata": picklable_dict.get("metadata", {}),
+                    "model_data": {
+                        "tau_array": picklable_dict.get("model_data", {}).get("tau_array"),
+                        "processed_spikes": picklable_dict.get("model_data", {}).get("processed_spikes"),
+                        # Skip objects that might contain unpicklable functions
+                    }
+                }
+                pickle.dump(metadata_only_dict, buff)
 
         json_file_name = os.path.join(
             self.database_handler.model_save_path + ".info")
