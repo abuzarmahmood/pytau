@@ -390,13 +390,27 @@ class FitHandler:
                 print(
                     f"Warning: Full pickling failed ({e}). Saving metadata-only version.")
                 # If pickling fails, save only metadata and basic info
+                model_data_fallback = {
+                    "tau_array": picklable_dict.get("model_data", {}).get("tau_array"),
+                    "processed_spikes": picklable_dict.get("model_data", {}).get("processed_spikes"),
+                }
+                
+                # Try to save approx.hist for ELBO plotting if available
+                approx_obj = picklable_dict.get("model_data", {}).get("approx")
+                if approx_obj and hasattr(approx_obj, 'hist'):
+                    try:
+                        # Create a simple object with just the hist attribute
+                        class SimpleApprox:
+                            def __init__(self, hist):
+                                self.hist = hist
+                        model_data_fallback["approx"] = SimpleApprox(approx_obj.hist)
+                    except Exception:
+                        # If even hist fails to pickle, skip it
+                        pass
+                
                 metadata_only_dict = {
                     "metadata": picklable_dict.get("metadata", {}),
-                    "model_data": {
-                        "tau_array": picklable_dict.get("model_data", {}).get("tau_array"),
-                        "processed_spikes": picklable_dict.get("model_data", {}).get("processed_spikes"),
-                        # Skip objects that might contain unpicklable functions
-                    }
+                    "model_data": model_data_fallback
                 }
                 pickle.dump(metadata_only_dict, buff)
 
