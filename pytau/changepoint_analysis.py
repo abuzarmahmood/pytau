@@ -3,7 +3,7 @@ Helper classes and functions to perform analysis on fitted models
 """
 
 import os
-import pickle as pkl
+import cloudpickle as pkl
 
 import numpy as np
 import pandas as pd
