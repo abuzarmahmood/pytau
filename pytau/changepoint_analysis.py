@@ -3,13 +3,13 @@ Helper classes and functions to perform analysis on fitted models
 """
 
 import os
-import pickle as pkl
 
+import cloudpickle as pkl
 import numpy as np
 import pandas as pd
 from scipy.stats import f_oneway, mode, ttest_rel
 
-from .utils import EphysData
+from pytau.utils import EphysData
 
 
 def get_transition_snips(spike_array, tau_array, window_radius=300):
@@ -144,6 +144,18 @@ class _firing:
             processed_spikes (Numpy array): Numpy array containing processed spiking data
             metadata (Dict): Dict containing metadata on fit
         """
+        # Check that inputs are valid, if not, raise error
+        boilerplate_msg = "Error in _firing initialization:\n"
+        assert isinstance(tau_instance, _tau), \
+            boilerplate_msg + \
+            f"tau_instance must be of type _tau, currently {type(tau_instance)}"
+        assert isinstance(processed_spikes, np.ndarray), \
+            boilerplate_msg + \
+            f"processed_spikes must be a numpy array, currently {type(processed_spikes)}"
+        assert isinstance(metadata, dict), \
+            boilerplate_msg + \
+            f"metadata must be a dict, currently {type(metadata)}"
+
         self.tau = tau_instance
         self.processed_spikes = processed_spikes
         self.metadata = metadata
@@ -155,31 +167,64 @@ class _firing:
             self.raw_spikes = temp_spikes[taste_num]
         else:
             self.raw_spikes = temp_spikes
-        self.state_firing = get_state_firing(
-            self.processed_spikes, self.tau.raw_mode_tau)
-        self.transition_snips = get_transition_snips(
-            self.raw_spikes, self.tau.scaled_mode_tau)
-        (
-            self.anova_p_val_array,
-            self.anova_significant_neurons,
-        ) = calc_significant_neurons_firing(self.state_firing)
-        (
-            self.pairwise_p_val_array,
-            self.pairwise_significant_neurons,
-        ) = calc_significant_neurons_snippets(self.transition_snips)
+        # Handle case where tau attributes are None (e.g., from fallback pickling)
+        if self.tau.raw_mode_tau is not None and self.tau.scaled_mode_tau is not None:
+            self.state_firing = get_state_firing(
+                self.processed_spikes, self.tau.raw_mode_tau)
+            self.transition_snips = get_transition_snips(
+                self.raw_spikes, self.tau.scaled_mode_tau)
+            (
+                self.anova_p_val_array,
+                self.anova_significant_neurons,
+            ) = calc_significant_neurons_firing(self.state_firing)
+            (
+                self.pairwise_p_val_array,
+                self.pairwise_significant_neurons,
+            ) = calc_significant_neurons_snippets(self.transition_snips)
+        else:
+            # Set to None if tau data is not available
+            self.state_firing = None
+            self.transition_snips = None
+            self.anova_p_val_array = None
+            self.anova_significant_neurons = None
+            self.pairwise_p_val_array = None
+            self.pairwise_significant_neurons = None
 
 
 class _tau:
     """Tau class to keep track of metadata and perform useful transformations"""
 
-    def __init__(self, tau_array, metadata):
+    def __init__(self, tau_array, metadata, n_trials=None):
         """Initialize tau class
 
         Args:
             tau_array ([type]): Array of samples from fitted model
             metadata (Dict): Dict containing metadata on fit
         """
+
+        # Check that inputs are valid, if not, raise error
+        boilerplate_msg = "Error in _tau initialization:\n"
+        assert isinstance(metadata, dict), \
+            boilerplate_msg + \
+            f"metadata must be a dict, currently {type(metadata)}"
+        assert isinstance(tau_array, np.ndarray), \
+            boilerplate_msg + \
+            f"tau_array must be a numpy array, currently {type(tau_array)}"
+        if n_trials is not None:
+            assert isinstance(n_trials, int), \
+                boilerplate_msg + \
+                f"n_trials must be an int, currently {type(n_trials)}"
+
         self.raw_tau = tau_array
+
+        # Handle case where tau_array is None (e.g., from fallback pickling)
+        if tau_array is None:
+            self.raw_int_tau = None
+            self.raw_mode_tau = None
+            self.scaled_tau = None
+            self.scaled_int_tau = None
+            self.scaled_mode_tau = None
+            return
 
         time_lims = metadata["preprocess"]["time_lims"]
         bin_width = metadata["preprocess"]["bin_width"]
@@ -189,7 +234,17 @@ class _tau:
 
         self.scaled_tau = (self.raw_tau * bin_width) + time_lims[0]
         self.scaled_int_tau = np.vectorize(int)(self.scaled_tau)
-        self.scaled_mode_tau = np.squeeze(mode(self.scaled_int_tau)[0])
+        mode_result = np.squeeze(mode(self.scaled_int_tau)[0])
+        # Ensure mode_result is 1D array of changepoints
+        if mode_result.ndim == 0:
+            mode_result = np.array([mode_result])
+
+        # If n_trials is provided, replicate changepoints for each trial
+        # This is needed for plotting functions that expect (n_trials, n_changepoints)
+        if n_trials is not None:
+            self.scaled_mode_tau = np.tile(mode_result, (n_trials, 1))
+        else:
+            self.scaled_mode_tau = mode_result
 
 
 class PklHandler:
@@ -220,10 +275,17 @@ class PklHandler:
         data_map = dict(zip(model_keys, key_savenames))
 
         for key, var_name in data_map.items():
-            setattr(self, var_name, self.data["model_data"][key])
+            if key in self.data["model_data"]:
+                setattr(self, var_name, self.data["model_data"][key])
+            else:
+                # Set to None if key is missing (e.g., due to pickling fallback)
+                setattr(self, var_name, None)
 
         self.metadata = self.data["metadata"]
         self.pretty_metadata = pd.json_normalize(self.data["metadata"]).T
 
-        self.tau = _tau(self.tau_array, self.metadata)
+        # Get number of trials from processed_spikes for proper tau formatting
+        n_trials = self.processed_spikes.shape[0] if hasattr(
+            self.processed_spikes, 'shape') else None
+        self.tau = _tau(self.tau_array, self.metadata, n_trials)
         self.firing = _firing(self.tau, self.processed_spikes, self.metadata)

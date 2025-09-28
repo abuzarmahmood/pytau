@@ -29,7 +29,21 @@ jobs:
         pytest --cov=pytau -v --tb=short --junitxml=test-results-${{ matrix.os }}-${{ matrix.python-version }}.xml
     - name: Run notebook tests
       run: |
+        # Try to run notebooks with nbmake (should now work with dummy matplotlib)
+        echo "Testing model notebooks..."
         pytest --nbmake pytau/how_to/model_notebooks/ -v --tb=short --junitxml=notebook-test-results-${{ matrix.os }}-${{ matrix.python-version }}.xml
+
+        # Test notebook structure without execution
+        pytest tests/test_how_to_notebooks.py -v
+
+        echo "Testing how-to notebooks..."
+        pytest --nbmake pytau/how_to/notebooks/ -v --tb=short
+
+        echo "Testing example notebooks..."
+        pytest --nbmake pytau/how_to/examples/ -v --tb=short
+
+        echo "Notebook testing completed"
+      shell: bash
     - name: Upload test results
       uses: actions/upload-artifact@v4
       if: always()
@@ -42,7 +56,7 @@ jobs:
   test-summary:
     needs: test
     runs-on: ubuntu-latest
-    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: always()
     steps:
     - uses: actions/checkout@v4
     - name: Download test results
@@ -62,9 +76,6 @@ jobs:
     - name: Generate test summary
       run: |
         python .github/scripts/generate_test_summary.py
-    - name: Update README with test results
-      run: |
-        python .github/scripts/update_readme_tests.py
     - name: Upload test summary
       uses: actions/upload-artifact@v4
       with:
@@ -72,6 +83,25 @@ jobs:
         path: |
           test_summary.md
           test_results_table.md
+
+  update-readme:
+    needs: test-summary
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+    - uses: actions/checkout@v4
+    - name: Download test summary
+      uses: actions/download-artifact@v4
+      with:
+        name: test-summary
+        path: .
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Update README with test results
+      run: |
+        python .github/scripts/update_readme_tests.py
     - name: Commit updated README
       run: |
         git config --local user.email "action@github.com"
@@ -91,7 +121,7 @@ jobs:
         fi
 
   execute-notebooks:
-    needs: test-summary
+    needs: update-readme
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
