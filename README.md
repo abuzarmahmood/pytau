@@ -8,6 +8,19 @@
   [![Pytest](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml/badge.svg)](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml)
 </div>
 
+## 🧪 Test Results
+
+| Platform | Python | Unit Tests | Notebook Tests | Overall Status |
+|----------|--------|------------|----------------|----------------|
+| 🐧 Ubuntu | 3.10 | ✅ Passing | ✅ Passing | ✅ Pass |
+| 🐧 Ubuntu | 3.11 | ✅ Passing | ✅ Passing | ✅ Pass |
+| 🍎 macOS | 3.10 | ✅ Passing | ✅ Passing | ✅ Pass |
+| 🍎 macOS | 3.11 | ✅ Passing | ✅ Passing | ✅ Pass |
+| 🪟 Windows | 3.10 | ✅ Passing | ✅ Passing | ✅ Pass |
+| 🪟 Windows | 3.11 | ✅ Passing | ✅ Passing | ✅ Pass |
+
+*Test results are automatically updated by CI/CD pipeline*
+
 ## 🚀 What is PyTau?
 
 PyTau is a specialized Python package for detecting state changes in neural data using Bayesian changepoint models. It provides:
