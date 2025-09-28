@@ -13,8 +13,11 @@ from pytau.changepoint_model import advi_fit, single_taste_poisson
 from pytau.changepoint_preprocess import preprocess_single_taste
 from pytau.utils import plotting
 
-pytau_base_dir = "/media/bigdata/projects/pytau"
-sys.path.append(pytau_base_dir)
+try:
+    pytau_base_dir = os.path.dirname(os.path.abspath(__file__))
+except:
+    pytau_base_dir = os.path.dirname(os.getcwd())
+print(f"Using PyTAU base dir: {pytau_base_dir}")
 
 # Write to MODEL_SAVE_DIR.params
 param_file_path = f"{pytau_base_dir}/pytau/config/MODEL_SAVE_DIR.params"
