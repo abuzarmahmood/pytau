@@ -1,8 +1,9 @@
 # Import modules
-import sys
 import os
-import pylab as plt
+import sys
 from glob import glob
+
+import pylab as plt
 
 from pytau.changepoint_analysis import PklHandler
 from pytau.changepoint_io import DatabaseHandler, FitHandler

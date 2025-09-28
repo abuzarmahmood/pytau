@@ -4,12 +4,12 @@ Pipeline to handle model fitting from data extraction to saving results
 
 import json
 import os
-import cloudpickle as pickle
 import shutil
 import uuid
 from datetime import date, datetime
 from glob import glob
 
+import cloudpickle as pickle
 import numpy as np
 import pandas as pd
 import pymc
@@ -387,7 +387,8 @@ class FitHandler:
         # Save output to pkl file
         with open(self.database_handler.model_save_path + ".pkl", "wb") as buff:
             pickle.dump(out_dict, buff)
-        print(f"Saved full output to {self.database_handler.model_save_path}.pkl")
+        print(
+            f"Saved full output to {self.database_handler.model_save_path}.pkl")
 
         # # Create a copy without the model to avoid pickling issues with PyMC5
         # picklable_dict = out_dict.copy()
@@ -497,9 +498,9 @@ class DatabaseHandler:
             not (
                 os.path.join(
                     os.path.dirname(x),
-                    os.path.basename(x).split(".")[0]) \
-                        in list(self.fit_database["exp.save_path"])) \
-                    for x in file_list
+                    os.path.basename(x).split(".")[0])
+                in list(self.fit_database["exp.save_path"]))
+            for x in file_list
         ]
         print(
             f"{sum(mismatch_from_database)} mismatches from database"
