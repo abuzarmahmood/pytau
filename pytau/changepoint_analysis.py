@@ -3,8 +3,8 @@ Helper classes and functions to perform analysis on fitted models
 """
 
 import os
-import cloudpickle as pkl
 
+import cloudpickle as pkl
 import numpy as np
 import pandas as pd
 from scipy.stats import f_oneway, mode, ttest_rel
@@ -147,11 +147,14 @@ class _firing:
         # Check that inputs are valid, if not, raise error
         boilerplate_msg = "Error in _firing initialization:\n"
         assert isinstance(tau_instance, _tau), \
-                boilerplate_msg + f"tau_instance must be of type _tau, currently {type(tau_instance)}" 
+            boilerplate_msg + \
+            f"tau_instance must be of type _tau, currently {type(tau_instance)}"
         assert isinstance(processed_spikes, np.ndarray), \
-                boilerplate_msg + f"processed_spikes must be a numpy array, currently {type(processed_spikes)}"
+            boilerplate_msg + \
+            f"processed_spikes must be a numpy array, currently {type(processed_spikes)}"
         assert isinstance(metadata, dict), \
-                boilerplate_msg + f"metadata must be a dict, currently {type(metadata)}"
+            boilerplate_msg + \
+            f"metadata must be a dict, currently {type(metadata)}"
 
         self.tau = tau_instance
         self.processed_spikes = processed_spikes
@@ -198,16 +201,19 @@ class _tau:
             tau_array ([type]): Array of samples from fitted model
             metadata (Dict): Dict containing metadata on fit
         """
-        
+
         # Check that inputs are valid, if not, raise error
         boilerplate_msg = "Error in _tau initialization:\n"
         assert isinstance(metadata, dict), \
-                boilerplate_msg + f"metadata must be a dict, currently {type(metadata)}"
+            boilerplate_msg + \
+            f"metadata must be a dict, currently {type(metadata)}"
         assert isinstance(tau_array, np.ndarray), \
-                boilerplate_msg + f"tau_array must be a numpy array, currently {type(tau_array)}"
+            boilerplate_msg + \
+            f"tau_array must be a numpy array, currently {type(tau_array)}"
         if n_trials is not None:
             assert isinstance(n_trials, int), \
-                boilerplate_msg + f"n_trials must be an int, currently {type(n_trials)}"
+                boilerplate_msg + \
+                f"n_trials must be an int, currently {type(n_trials)}"
 
         self.raw_tau = tau_array
 
