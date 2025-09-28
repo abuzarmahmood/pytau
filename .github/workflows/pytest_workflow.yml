@@ -42,7 +42,7 @@ jobs:
   test-summary:
     needs: test
     runs-on: ubuntu-latest
-    if: always()
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
     - uses: actions/checkout@v4
     - name: Download test results
@@ -72,8 +72,7 @@ jobs:
         path: |
           test_summary.md
           test_results_table.md
-    - name: Commit updated README (main branch only)
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    - name: Commit updated README
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
@@ -94,6 +93,7 @@ jobs:
   execute-notebooks:
     needs: test-summary
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
     - uses: actions/checkout@v4
       with:
