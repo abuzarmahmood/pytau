@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import f_oneway, mode, ttest_rel
 
-from .utils import EphysData
+from pytau.utils import EphysData
 
 
 def get_transition_snips(spike_array, tau_array, window_radius=300):
@@ -144,6 +144,15 @@ class _firing:
             processed_spikes (Numpy array): Numpy array containing processed spiking data
             metadata (Dict): Dict containing metadata on fit
         """
+        # Check that inputs are valid, if not, raise error
+        boilerplate_msg = "Error in _firing initialization:\n"
+        assert isinstance(tau_instance, _tau), \
+                boilerplate_msg + f"tau_instance must be of type _tau, currently {type(tau_instance)}" 
+        assert isinstance(processed_spikes, np.ndarray), \
+                boilerplate_msg + f"processed_spikes must be a numpy array, currently {type(processed_spikes)}"
+        assert isinstance(metadata, dict), \
+                boilerplate_msg + f"metadata must be a dict, currently {type(metadata)}"
+
         self.tau = tau_instance
         self.processed_spikes = processed_spikes
         self.metadata = metadata
@@ -189,6 +198,17 @@ class _tau:
             tau_array ([type]): Array of samples from fitted model
             metadata (Dict): Dict containing metadata on fit
         """
+        
+        # Check that inputs are valid, if not, raise error
+        boilerplate_msg = "Error in _tau initialization:\n"
+        assert isinstance(metadata, dict), \
+                boilerplate_msg + f"metadata must be a dict, currently {type(metadata)}"
+        assert isinstance(tau_array, np.ndarray), \
+                boilerplate_msg + f"tau_array must be a numpy array, currently {type(tau_array)}"
+        if n_trials is not None:
+            assert isinstance(n_trials, int), \
+                boilerplate_msg + f"n_trials must be an int, currently {type(n_trials)}"
+
         self.raw_tau = tau_array
 
         # Handle case where tau_array is None (e.g., from fallback pickling)
