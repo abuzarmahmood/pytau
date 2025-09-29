@@ -1,5 +1,7 @@
 # Import modules
+import os
 import sys
+from glob import glob
 
 import pylab as plt
 
@@ -7,10 +9,15 @@ from pytau.changepoint_analysis import PklHandler
 from pytau.changepoint_io import DatabaseHandler, FitHandler
 from pytau.utils import plotting
 
-base_dir = "/media/bigdata/projects/pytau"
+try:
+    pytau_base_dir = os.path.dirname(os.path.abspath(__file__))
+except:
+    pytau_base_dir = os.path.dirname(os.getcwd())
+print(f"Using PyTAU base dir: {pytau_base_dir}")
 
-sys.path.append(base_dir)
-
+# Find hf5 file
+h5_path = glob(os.path.join(pytau_base_dir, "**", "*.h5"), recursive=True)[0]
+data_dir = os.path.dirname(h5_path)
 
 # Specify params for fit
 model_parameters = dict(
@@ -27,11 +34,11 @@ preprocess_parameters = dict(
 )
 
 FitHandler_kwargs = dict(
-    data_dir="/path/to/data/directory",
-    taste_num=[0, 1, 2, 3],
-    region_name=["CA1"],  # Should match specification in info file
-    laser_type=["off"],
-    experiment_name=["pytau_test"],
+    data_dir=data_dir,
+    taste_num=0,
+    region_name="bla",  # Should match specification in info file
+    laser_type=None,
+    experiment_name="pytau_test",
 )
 
 # Initialize handler, and feed paramters

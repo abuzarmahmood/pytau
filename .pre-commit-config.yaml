@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
@@ -8,13 +8,15 @@ repos:
     -   id: check-added-large-files
     -   id: check-ast
     -   id: check-json
+        exclude_types: [jupyter]
+        exclude: \.ipynb$
     -   id: check-merge-conflict
     -   id: detect-private-key
     -   id: check-toml
     -   id: debug-statements
     -   id: pretty-format-json
         args:
-            - "--autofix"
+            - "--autofix"  # Ensure this allows automatic fixing
             - "--indent=4"
             - "--no-sort-keys"
 
@@ -25,15 +27,9 @@ repos:
     -   id: isort
         args: ['--profile', 'black']
 
--   repo: https://github.com/psf/black
-    rev: 25.1.0
-    hooks:
-    -   id: black
-        args: ['--line-length=100']
-
 -   repo: https://github.com/hhatto/autopep8
     rev: v2.3.2  # select the tag or revision you want, or run `pre-commit autoupdate`
     hooks:
     -   id: autopep8
         args:
-            - "--in-place"
+            - "--in-place"  # Ensure this allows in-place modifications

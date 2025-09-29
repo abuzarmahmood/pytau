@@ -4,24 +4,36 @@ Pipeline to handle model fitting from data extraction to saving results
 
 import json
 import os
-import pickle
 import shutil
 import uuid
 from datetime import date, datetime
 from glob import glob
 
+import cloudpickle as pickle
 import numpy as np
 import pandas as pd
-import pymc3
-import theano
+import pymc
 
 from . import changepoint_model, changepoint_preprocess
 from .utils import EphysData
 
-# import changepoint_model
-# import changepoint_preprocess
-# from utils import EphysData
+# Import theano for version info (used in aggregate_metadata)
 
+
+class SimpleApprox:
+    """Simple approximation object that only stores the hist attribute for ELBO plotting"""
+
+    def __init__(self, hist):
+        self.hist = hist
+
+
+try:
+    import theano
+except ImportError:
+    # Create a mock theano module for testing
+    class MockTheano:
+        __version__ = '1.0.0'
+    theano = MockTheano()
 
 MODULE_DIR = os.path.dirname(__file__)
 # Use a local directory for model saving instead of reading from a parameter file
@@ -302,7 +314,6 @@ class FitHandler:
         # In future iterations, before fitting model,
         # check that a similar entry doesn't exist
 
-        changepoint_model.compile_wait()
         print(
             f"Generating Model, model func: <{self.model_template.__name__}>")
         self.model = self.model_template(
@@ -323,7 +334,6 @@ class FitHandler:
         if "inference_func" not in dir(self):
             self.inference_func_selector()
 
-        changepoint_model.compile_wait()
         print(
             "Running inference, inference func: " f"<{self.inference_func.__name__}>")
         temp_outs = self.inference_func(
@@ -373,8 +383,49 @@ class FitHandler:
         if "inference_outs" not in dir(self):
             self.run_inference()
         out_dict = self._return_fit_output()
+
+        # Save output to pkl file
         with open(self.database_handler.model_save_path + ".pkl", "wb") as buff:
             pickle.dump(out_dict, buff)
+        print(
+            f"Saved full output to {self.database_handler.model_save_path}.pkl")
+
+        # # Create a copy without the model to avoid pickling issues with PyMC5
+        # picklable_dict = out_dict.copy()
+        # if "model_data" in picklable_dict and "model" in picklable_dict["model_data"]:
+        #     picklable_model_data = picklable_dict["model_data"].copy()
+        #     # Remove the model object as it contains unpicklable local functions in PyMC5
+        #     picklable_model_data.pop("model", None)
+        #     picklable_dict["model_data"] = picklable_model_data
+        #
+        # with open(self.database_handler.model_save_path + ".pkl", "wb") as buff:
+        #     try:
+        #         pickle.dump(picklable_dict, buff)
+        #     except (TypeError, AttributeError) as e:
+        #         print(
+        #             f"Warning: Full pickling failed ({e}). Saving metadata-only version.")
+        #         # If pickling fails, save only metadata and basic info
+        #         model_data_fallback = {
+        #             "tau_array": picklable_dict.get("model_data", {}).get("tau_array"),
+        #             "processed_spikes": picklable_dict.get("model_data", {}).get("processed_spikes"),
+        #         }
+        #
+        #         # Try to save approx.hist for ELBO plotting if available
+        #         approx_obj = picklable_dict.get("model_data", {}).get("approx")
+        #         if approx_obj and hasattr(approx_obj, 'hist'):
+        #             try:
+        #                 # Create a simple object with just the hist attribute
+        #                 model_data_fallback["approx"] = SimpleApprox(
+        #                     approx_obj.hist)
+        #             except Exception:
+        #                 # If even hist fails to pickle, skip it
+        #                 pass
+        #
+        #         metadata_only_dict = {
+        #             "metadata": picklable_dict.get("metadata", {}),
+        #             "model_data": model_data_fallback
+        #         }
+        #         pickle.dump(metadata_only_dict, buff)
 
         json_file_name = os.path.join(
             self.database_handler.model_save_path + ".info")
@@ -442,8 +493,14 @@ class DatabaseHandler:
             not os.path.exists(x + ".pkl") for x in self.fit_database["exp.save_path"]
         ]
         file_list = glob(os.path.join(self.model_save_base_dir, "*/*.pkl"))
+        # Only split basename by '.' in case there are multiple '.' in filenpath
         mismatch_from_file = [
-            not (x.split(".")[0] in list(self.fit_database["exp.save_path"])) for x in file_list
+            not (
+                os.path.join(
+                    os.path.dirname(x),
+                    os.path.basename(x).split(".")[0])
+                in list(self.fit_database["exp.save_path"]))
+            for x in file_list
         ]
         print(
             f"{sum(mismatch_from_database)} mismatches from database"
@@ -584,8 +641,8 @@ class DatabaseHandler:
 
         module_details = dict(
             zip(
-                ["pymc3_version", "theano_version"],
-                [pymc3.__version__, theano.__version__],
+                ["pymc_version", "theano_version"],
+                [pymc.__version__, theano.__version__],
             )
         )
 
@@ -608,6 +665,7 @@ class DatabaseHandler:
         else:
             flat_metadata.to_csv(self.model_database_path,
                                  mode="a", header=False)
+        print(f"Updated model database @ {self.model_database_path}")
 
     def check_exists(self):
         """Check if the given fit already exists in database

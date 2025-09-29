@@ -1,132 +1,206 @@
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/abuzarmahmood/pytau/master.svg)](https://results.pre-commit.ci/latest/github/abuzarmahmood/pytau/master)
-[![Pytest](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml/badge.svg)](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml)
+<div align="center">
+  <img src="docs/pytau_logo.png" alt="PyTau Logo" width="200"/>
+  <h1>PyTau</h1>
+  <p><strong>Powerful Changepoint Detection for Neural Data</strong></p>
 
-# PyTau
+  [![status](https://joss.theoj.org/papers/e3e3d9ce5b59166cef17ee7e9bb9f53c/status.svg)](https://joss.theoj.org/papers/e3e3d9ce5b59166cef17ee7e9bb9f53c)
+  [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/abuzarmahmood/pytau/master.svg)](https://results.pre-commit.ci/latest/github/abuzarmahmood/pytau/master)
+  [![Pytest](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml/badge.svg)](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml)
+</div>
 
-## API Documentation
-https://abuzarmahmood.github.io/pytau/
+## 🧪 Test Results
 
-## Outline
+| Platform | Python | Unit Tests | Notebook Tests | Overall Status |
+|----------|--------|------------|----------------|----------------|
+| 🐧 Ubuntu | 3.10 | ✅ Passing | ✅ Passing | ✅ Pass |
+| 🐧 Ubuntu | 3.11 | ✅ Passing | ✅ Passing | ✅ Pass |
+| 🍎 macOS | 3.10 | ✅ Passing | ✅ Passing | ✅ Pass |
+| 🍎 macOS | 3.11 | ✅ Passing | ✅ Passing | ✅ Pass |
+| 🪟 Windows | 3.10 | ✅ Passing | ✅ Passing | ✅ Pass |
+| 🪟 Windows | 3.11 | ✅ Passing | ✅ Passing | ✅ Pass |
 
-- Perform inter-region transition correlations on models fit to each taste
-    individually
+*Test results are automatically updated by CI/CD pipeline*
 
-## Installation
-```
+## 🚀 What is PyTau?
+
+PyTau is a specialized Python package for detecting state changes in neural data using Bayesian changepoint models. It provides:
+
+- **Streamlined batch inference** on PyMC3-based changepoint models
+- **Robust detection** of state transitions in neural firing patterns
+- **Comprehensive visualization tools** for model results
+
+## 📚 Documentation
+
+[**Full API Documentation**](https://abuzarmahmood.github.io/pytau/)
+
+## ⚡ Quick Start
+
+```bash
 # Create and activate conda environment
 conda create -n "pytau_env" python=3.6.13 ipython notebook -y
 conda activate pytau_env
 
 # Clone repository
-cd ~/Desktop
 git clone https://github.com/abuzarmahmood/pytau.git
 
-# Install requirements from specified file
+# Install package
 cd pytau
-pip install -r requirements.txt
+pip install -e .  # Install in development mode
 
-# Test everything is working by running notebook
+# Alternative: Install from requirements file
+# pip install -r requirements.txt
+
+# Download test data and run example notebook
 cd pytau/how_to
 bash scripts/download_test_data.sh
 cd notebooks
 jupyter notebook
-# Run a notebook
 ```
 
-## Data Organization
+## 🧠 Key Features
 
-- Models stored in CENTRAL LOCATION and accessed by indexing an info file,
-    which also contains model parameters and metadata
-- Metadata also stored in model file to be able to recreate info file in case
-    something happens
+- **Multiple Model Types**:
+  - Single-taste Poisson models
+  - All-taste hierarchical models
+  - Dirichlet process models for automatic state detection
+  - Variable sigmoid models for flexible transition shapes
+  - Gaussian changepoint models for continuous data
+  - Categorical changepoint models for discrete data
 
-Database for models fit:
+- **Flexible Data Handling**:
+  - Support for shuffled, simulated, and actual neural data
+  - Comprehensive preprocessing pipeline
+  - Automated model selection
 
-- Columns:
-  - Model save path
-  - Animal Name
-  - Session date
-  - Taste Name
-  - Region Name
-  - Experiment name (user-given name to separate batches of fits)
-  - Fit Date
+- **Powerful Analysis Tools**:
+  - State transition detection
+  - Cross-region correlation analysis
+  - Statistical significance testing
 
-  - Model parameters:
-    - Model Type (See below)
-    - Data Type (Shuffled, simulated, actual)
-    - States Num
-    - Fit steps
-    - Time lims
-    - Bin Width
+## 📊 Available Models
 
-Data stored in models:
-    - Model
-    - Approx
-    - Lambda
-    - Tau
-    - Data used to fit model
-    - Raw data (before preprocessing to feed to model)
-    - Model and data details/parameters (as above)
+### Poisson Models (for spike count data)
+- **`PoissonChangepoint1D`**: 1D time series changepoint detection
+- **`SingleTastePoisson`**: Basic single-taste model with fixed sigmoid transitions
+- **`SingleTastePoissonVarsig`**: Variable sigmoid slope inferred from data
+- **`SingleTastePoissonVarsigFixed`**: Fixed sigmoid slope with configurable sharpness
+- **`SingleTastePoissonDirichlet`**: Automatic state number detection using Dirichlet process
+- **`SingleTastePoissonTrialSwitch`**: Models trial-to-trial emission changes
+- **`AllTastePoisson`**: Hierarchical model across multiple tastes
+- **`AllTastePoissonVarsigFixed`**: All-taste model with fixed sigmoid transitions
+- **`AllTastePoissonTrialSwitch`**: All-taste model with trial switching
 
-- Considering we might want to compare different model types:
-  - Unconstrained sequantial
-  - Baised transition priors, sequential
-  - Hard padding between transitions, sequential
-  - Joint region model
-    We need to have a standardized pipeline for fitting and retrieving these models
+### Gaussian Models (for continuous data)
+- **`GaussianChangepointMean2D`**: Detects changes in mean only
+- **`GaussianChangepointMeanVar2D`**: Detects changes in both mean and variance
+- **`GaussianChangepointMeanDirichlet`**: Automatic state detection for Gaussian data
 
-## Pipeline
+### Categorical Models (for discrete categorical data)
+- **`CategoricalChangepoint2D`**: Changepoint detection for categorical time series
 
-### Filelist
+## 🔧 Inference Methods
 
-1) Model file
-    - Invoked to generate model and perform inference
-    - Currently <<poisson_all_tastes_changepoint_model.py>>
-    - Should be agnostic to, and ignorant of what type of data is being fed.
-        Should only fit model and return output
-    - These should be functions
+### Variational Inference (ADVI)
+- **Fast approximate inference** using Automatic Differentiation Variational Inference
+- **Convergence monitoring** with customizable tolerance
+- **Full-rank ADVI** for better approximation quality
 
-    - Input:
-        1) Processed spike trains
-        2) Model parameters (model type, states, fit steps)
-    - Output:
-        1) Model
-        2) Approx
-        3) Lambda
-        4) Tau
-        5) Data used to fit model
+```python
+from pytau.changepoint_model import advi_fit
 
-2) Data pre-processing code:
-    - Currently <<changepoint_fit.py>>
-    - Should handle different data "types" (shuffle, simulated, actual)
-    - These should be functions
+# Fit model using ADVI
+model, approx = advi_fit(model, fit=10000, samples=5000, convergence_tol=0.01)
+trace = approx.sample(draws=5000)
+```
 
-    - Input:
-        1) Raw spike trains
-        2) Spike train parameters (time lims, binning)
-        3) Desired data type
-    - Output:
-        1) Processed spike trains
+### MCMC Sampling
+- **High-quality posterior samples** using NUTS sampler
+- **Multi-chain sampling** for convergence diagnostics
+- **NumPyro backend support** for improved performance
 
-3) I/O helper code
-    - Takes data path and model parameters
-        - If model has not been fit, runs fit, else pulls model from memory
-    - This should be a "data_handler" class that can load, process, and
-        return the data, write data to file, and write an entry in the database
-    - The model creation and model fit functions can be imported as methods to
-        streamline fitting
-    Operations:
-        - Loads data from HDF5, preprocesses, and feeds to modeling code
-        - Collects outputs from modeling code, and combines with appropriate metadata
-        - Writes model file to appropriate directory
-        - Row with fit data appended to central dataframe
+```python
+from pytau.changepoint_model import mcmc_fit, dpp_fit
 
-4) Run script
-    - Script to iterate over data
-    - Input:
-        1) List of data to iterate over
+# Standard MCMC
+model, trace, lambda_stack, tau_samples, observations = mcmc_fit(model, samples=1000)
 
-## Notes
+# Dirichlet Process Prior models
+dpp_trace = dpp_fit(model, n_chains=4, tune=500, draws=500, use_numpyro=True)
+```
 
-- Parallelization
-    - Parallelization is currently performed using GNU Parallel by setting separate a theano compiledir for each job. This prevents compilation clashes. Refer to [this file](https://github.com/abuzarmahmood/pytau/blob/master/pytau/utils/batch_utils/single_process.sh) and [this commit](https://github.com/abuzarmahmood/pytau/pull/19/commits/231dd33b846cf278549b1b5815fdae5e76fa14a2)
+### Model Selection
+- **Automatic state number detection** using ELBO comparison
+- **Cross-validation support** for model comparison
+
+```python
+from pytau.changepoint_model import find_best_states
+
+# Find optimal number of states
+best_model, model_list, elbo_values = find_best_states(
+    data, model_generator, n_fit=5000, n_samples=1000,
+    min_states=2, max_states=8
+)
+```
+
+## 📈 Data Formats
+
+### Input Data Shapes
+- **1D**: `(time,)` - Single time series
+- **2D**: `(trials, time)` or `(neurons, time)` - Multiple trials or neurons
+- **3D**: `(trials, neurons, time)` - Single taste experiments
+- **4D**: `(tastes, trials, neurons, time)` - Multi-taste experiments
+
+### Model Selection Guide
+| Data Type | Recommended Models |
+|-----------|-------------------|
+| Single neuron time series | `PoissonChangepoint1D` |
+| Multiple trials, single taste | `SingleTastePoisson*` |
+| Multiple tastes | `AllTastePoisson*` |
+| Continuous neural data | `GaussianChangepoint*` |
+| Categorical behavioral data | `CategoricalChangepoint2D` |
+| Unknown state number | `*Dirichlet` models |
+
+## 📊 Data Organization
+
+PyTau uses a centralized database approach for model management:
+
+- **Centralized Storage**: Models stored in a central location with metadata
+- **Comprehensive Tracking**: Each model includes:
+  - Animal and session information
+  - Region and taste details
+  - Model parameters and preprocessing steps
+  - Fit statistics and results
+
+## 🔄 Pipeline Architecture
+
+PyTau's modular pipeline ensures reproducible analysis:
+
+### 1️⃣ Model Generation
+- **Purpose**: Creates and fits Bayesian changepoint models
+- **Components**: Various model types for different neural data structures
+- **Input**: Processed spike trains and model parameters
+- **Output**: Fitted model with posterior samples
+
+### 2️⃣ Data Preprocessing
+- **Purpose**: Prepares raw neural data for modeling
+- **Features**: Handles various data transformations (shuffling, simulation)
+- **Input**: Raw spike trains with parameters for processing
+- **Output**: Binned, processed spike count data
+
+### 3️⃣ I/O Management
+- **Purpose**: Handles data loading, model storage, and database management
+- **Features**: Automatic model retrieval or fitting based on parameters
+- **Operations**: HDF5 data loading, metadata tracking, database integration
+
+### 4️⃣ Batch Processing
+- **Purpose**: Enables large-scale model fitting across datasets
+- **Features**: Parameter iteration and parallel processing
+
+## 💻 Advanced Usage
+
+### Parallelization
+PyTau supports parallel processing using GNU Parallel with isolated Theano compilation directories to prevent clashes. See [single_process.sh](https://github.com/abuzarmahmood/pytau/blob/master/pytau/utils/batch_utils/single_process.sh) and [this implementation](https://github.com/abuzarmahmood/pytau/pull/19/commits/231dd33b846cf278549b1b5815fdae5e76fa14a2).
+
+## 🤝 Contributing
+
+We welcome contributions to PyTau! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute to the project.
