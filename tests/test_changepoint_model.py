@@ -20,6 +20,7 @@ from pytau.changepoint_model import (
     SingleTastePoissonTrialSwitch,
     SingleTastePoissonVarsig,
     SingleTastePoissonVarsigFixed,
+    TDistributionChangepointModel,
     advi_fit,
     extract_inferred_values,
     gen_test_array,
