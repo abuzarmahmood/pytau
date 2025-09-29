@@ -204,16 +204,3 @@ PyTau supports parallel processing using GNU Parallel with isolated Theano compi
 ## 🤝 Contributing
 
 We welcome contributions to PyTau! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute to the project.
-
-## 📜 Citation
-
-If you use PyTau in your research, please cite:
-```
-@article{pytau2023,
-  title={PyTau: Bayesian Changepoint Detection for Neural Data},
-  author={Mahmood, Abuzar},
-  journal={Journal of Open Source Software},
-  year={2023}
-}
-```
-# Trigger CI
