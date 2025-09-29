@@ -469,7 +469,8 @@ class TDistributionChangepointModel(ChangepointModel):
         length = idx.max() + 1
 
         with pm.Model() as model:
-            mu = pm.Normal("mu", mu=mean_vals, sigma=1, shape=(y_dim, n_states))
+            mu = pm.Normal("mu", mu=mean_vals, sigma=1,
+                           shape=(y_dim, n_states))
             sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim, n_states))
             # Degrees of freedom
             nu = pm.Exponential("nu", 1 / 30, shape=(y_dim, n_states))
