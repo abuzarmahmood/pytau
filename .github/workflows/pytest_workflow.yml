@@ -87,7 +87,7 @@ jobs:
   update-readme:
     needs: test-summary
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: always()
     steps:
     - uses: actions/checkout@v4
     - name: Download test summary
