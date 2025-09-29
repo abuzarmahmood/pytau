@@ -20,6 +20,7 @@ from pytau.changepoint_model import (
     SingleTastePoissonTrialSwitch,
     SingleTastePoissonVarsig,
     SingleTastePoissonVarsigFixed,
+    TDistributionChangepointModel,
     advi_fit,
     extract_inferred_values,
     gen_test_array,
@@ -77,6 +78,7 @@ def test_gen_test_array():
          (5, 10, 100), 3, {"switch_components": 2}),
         (AllTastePoissonTrialSwitch, (2, 5, 10, 100),
          3, {"switch_components": 2}),
+        (TDistributionChangepointModel, (10, 100), 3, {}),
         (CategoricalChangepoint2D, (5, 100), 3, {}),  # Changed to 2D shape
     ],
 )
