@@ -10,23 +10,23 @@ to create flexible changepoint models with different:
 """
 
 from .base import ChangepointComponent, EmissionComponent, LikelihoodComponent
-from .changepoints import FixedChangepoint, DirichletChangepoint
-from .emissions import PoissonEmission, GaussianEmission
-from .likelihoods import PoissonLikelihood, GaussianLikelihood
-from .models import ComposableModel
+from .changepoints import DirichletChangepoint, FixedChangepoint
+from .emissions import GaussianEmission, PoissonEmission
 from .examples import (
+    create_gaussian_dirichlet_step,
+    create_gaussian_fixed_sigmoid,
+    create_model,
+    create_poisson_dirichlet_sigmoid,
     create_poisson_fixed_sigmoid,
     create_poisson_fixed_step,
-    create_poisson_dirichlet_sigmoid,
-    create_gaussian_fixed_sigmoid,
-    create_gaussian_dirichlet_step,
-    create_model,
-    list_available_models
+    list_available_models,
 )
+from .likelihoods import GaussianLikelihood, PoissonLikelihood
+from .models import ComposableModel
 
 __all__ = [
     'ChangepointComponent',
-    'EmissionComponent', 
+    'EmissionComponent',
     'LikelihoodComponent',
     'FixedChangepoint',
     'DirichletChangepoint',

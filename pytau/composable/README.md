@@ -3,7 +3,7 @@
 This module provides a flexible framework for creating changepoint models by combining different components. This addresses issue #21 by allowing users to mix and match:
 
 1. **Changepoint types**: Fixed vs Dirichlet process
-2. **Change types**: Sigmoid vs step transitions  
+2. **Change types**: Sigmoid vs step transitions
 3. **Likelihood types**: Gaussian vs Poisson
 4. **Emission models**: Different parameter structures
 
@@ -17,7 +17,7 @@ Handles the generation of changepoint (tau) variables with different prior types
 - `FixedChangepoint`: Fixed number of changepoints with Beta priors
 - `DirichletChangepoint`: Dirichlet process for automatic state detection
 
-### EmissionComponent  
+### EmissionComponent
 Handles the generation of emission rate/mean variables for different likelihood types.
 
 - `PoissonEmission`: Lambda (rate) parameters for Poisson models
@@ -63,7 +63,7 @@ model = create_model('poisson_fixed_sigmoid', data, n_states=3)
 ### Available Model Combinations
 
 - `poisson_fixed_sigmoid`: Poisson likelihood, fixed changepoints, sigmoid transitions
-- `poisson_fixed_step`: Poisson likelihood, fixed changepoints, step transitions  
+- `poisson_fixed_step`: Poisson likelihood, fixed changepoints, step transitions
 - `poisson_dirichlet_sigmoid`: Poisson likelihood, Dirichlet process, sigmoid transitions
 - `gaussian_fixed_sigmoid`: Gaussian likelihood, fixed changepoints, sigmoid transitions
 - `gaussian_dirichlet_step`: Gaussian likelihood, Dirichlet process, step transitions
