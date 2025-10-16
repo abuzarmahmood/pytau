@@ -37,7 +37,7 @@ PyTau is a specialized Python package for detecting state changes in neural data
 
 ```bash
 # Create and activate conda environment
-conda create -n "pytau_env" python=3.6.13 ipython notebook -y
+conda create -n "pytau_env" python=3.10 ipython notebook -y
 conda activate pytau_env
 
 # Clone repository
