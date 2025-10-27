@@ -493,13 +493,20 @@ class DatabaseHandler:
             not os.path.exists(x + ".pkl") for x in self.fit_database["exp.save_path"]
         ]
         file_list = glob(os.path.join(self.model_save_base_dir, "*/*.pkl"))
+        # Normalize paths for comparison - convert to absolute paths
+        database_paths_normalized = set(
+            os.path.abspath(x) for x in self.fit_database["exp.save_path"]
+        )
         # Only split basename by '.' in case there are multiple '.' in filenpath
         mismatch_from_file = [
             not (
-                os.path.join(
-                    os.path.dirname(x),
-                    os.path.basename(x).split(".")[0])
-                in list(self.fit_database["exp.save_path"]))
+                os.path.abspath(
+                    os.path.join(
+                        os.path.dirname(x),
+                        os.path.basename(x).split(".")[0]
+                    )
+                ) in database_paths_normalized
+            )
             for x in file_list
         ]
         print(
