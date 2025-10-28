@@ -12,6 +12,7 @@ from pytau.changepoint_model import (
     CategoricalChangepoint2D,
     ChangepointModel,
     GaussianChangepointMean2D,
+    GaussianChangepointMean3D,
     GaussianChangepointMeanDirichlet,
     GaussianChangepointMeanTrialSwitch,
     GaussianChangepointMeanVar2D,
@@ -68,6 +69,7 @@ def test_gen_test_array():
         (GaussianChangepointMeanVar2D, (10, 100), 3, {}),
         (GaussianChangepointMeanDirichlet, (10, 100), None, {"max_states": 5}),
         (GaussianChangepointMean2D, (10, 100), 3, {}),
+        (GaussianChangepointMean3D, (5, 10, 100), 3, {}),
         (GaussianChangepointMeanTrialSwitch,
          (5, 10, 100), 3, {"switch_components": 2}),
         (SingleTastePoissonDirichlet, (5, 10, 100), None, {"max_states": 5}),
@@ -93,6 +95,7 @@ def test_model_initialization(model_class, data_shape, n_states, extra_args):
             GaussianChangepointMeanVar2D,
             GaussianChangepointMeanDirichlet,
             GaussianChangepointMean2D,
+            GaussianChangepointMean3D,
             GaussianChangepointMeanTrialSwitch,
         ]
         else "poisson"
