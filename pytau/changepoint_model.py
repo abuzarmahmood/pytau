@@ -655,7 +655,7 @@ def gaussian_changepoint_mean_trial_switch(data_array, switch_components, n_stat
 
 class GaussianChangepointMean3D(ChangepointModel):
     """Model for Gaussian changepoint on multi-trial data
-    
+
     Detects changes in mean only across trials.
     Similar to SingleTastePoisson but for Gaussian data.
     No hierarchical structure for emissions.
@@ -695,8 +695,8 @@ class GaussianChangepointMean3D(ChangepointModel):
         with pm.Model() as model:
             # Emissions: mean for each dimension and state
             mu = pm.Normal("mu", mu=mean_vals, sigma=5,
-                          shape=(y_dim, n_states))
-            
+                           shape=(y_dim, n_states))
+
             # One variance for each dimension
             sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim))
 
@@ -728,12 +728,12 @@ class GaussianChangepointMean3D(ChangepointModel):
             # Compute latent means: trials x dims x time
             mu_latent = tt.tensordot(weight_stack, mu, [
                                      1, 1]).swapaxes(1, 2)
-            
+
             # Broadcast sigma to match data shape
             sigma_latent = sigma.dimshuffle("x", 0, "x")
-            
-            observation = pm.Normal("obs", mu=mu_latent, sigma=sigma_latent, 
-                                   observed=data_array)
+
+            observation = pm.Normal("obs", mu=mu_latent, sigma=sigma_latent,
+                                    observed=data_array)
 
         return model
 
