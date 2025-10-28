@@ -91,7 +91,8 @@ jupyter notebook
 - **`AllTastePoissonTrialSwitch`**: All-taste model with trial switching
 
 ### Gaussian Models (for continuous data)
-- **`GaussianChangepointMean2D`**: Detects changes in mean only
+- **`GaussianChangepointMean2D`**: Detects changes in mean only (2D: dimensions x time)
+- **`GaussianChangepointMean3D`**: Multi-trial changepoint detection in mean (3D: trials x dimensions x time)
 - **`GaussianChangepointMeanVar2D`**: Detects changes in both mean and variance
 - **`GaussianChangepointMeanDirichlet`**: Automatic state detection for Gaussian data
 - **`GaussianChangepointMeanTrialSwitch`**: Models trial-to-trial mean changes for multi-trial Gaussian data
