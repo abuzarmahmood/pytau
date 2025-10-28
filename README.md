@@ -65,6 +65,7 @@ jupyter notebook
   - Dirichlet process models for automatic state detection
   - Variable sigmoid models for flexible transition shapes
   - Gaussian changepoint models for continuous data
+  - Student's t-distribution models for robust outlier handling
   - Categorical changepoint models for discrete data
 
 - **Flexible Data Handling**:
@@ -96,6 +97,10 @@ jupyter notebook
 - **`GaussianChangepointMeanVar2D`**: Detects changes in both mean and variance
 - **`GaussianChangepointMeanDirichlet`**: Automatic state detection for Gaussian data
 - **`GaussianChangepointMeanTrialSwitch`**: Models trial-to-trial mean changes for multi-trial Gaussian data
+
+### Student's t-Distribution Models (for continuous data with outliers)
+- **`TChangepointMean2D`**: Robust changepoint detection in mean using t-distribution (2D: dimensions x time)
+- **`TChangepointMean3D`**: Multi-trial robust changepoint detection using t-distribution (3D: trials x dimensions x time)
 
 ### Categorical Models (for discrete categorical data)
 - **`CategoricalChangepoint2D`**: Changepoint detection for categorical time series

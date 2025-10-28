@@ -770,6 +770,240 @@ def gaussian_changepoint_mean_3d(data_array, n_states, **kwargs):
     return model_class.generate_model()
 
 
+class TChangepointMean2D(ChangepointModel):
+    """Model for t-distributed data on 2D array detecting changes only in
+    the mean.
+    
+    Uses Student's t-distribution which is more robust to outliers than
+    Gaussian distribution.
+    """
+
+    def __init__(self, data_array, n_states, **kwargs):
+        """
+        Args:
+            data_array (2D Numpy array): <dimension> x time
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.n_states = n_states
+
+    def generate_model(self):
+        """
+        Returns:
+            pymc model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        n_states = self.n_states
+
+        mean_vals = np.array(
+            [np.mean(x, axis=-1)
+             for x in np.array_split(data_array, n_states, axis=-1)]
+        ).T
+        mean_vals += 0.01  # To avoid zero starting prob
+
+        y_dim = data_array.shape[0]
+        idx = np.arange(data_array.shape[-1])
+        length = idx.max() + 1
+
+        with pm.Model() as model:
+            mu = pm.Normal("mu", mu=mean_vals, sigma=1,
+                           shape=(y_dim, n_states))
+            # One scale parameter for each dimension
+            sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim))
+            
+            # Degrees of freedom for t-distribution
+            # Using Gamma prior with mean around 30 (robust but not too heavy-tailed)
+            nu = pm.Gamma("nu", alpha=2, beta=0.1, shape=(y_dim))
+
+            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
+
+            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
+            tau_latent = pm.Beta(
+                "tau_latent", a_tau, b_tau, initval=even_switches, shape=(n_states - 1)
+            ).sort(axis=-1)
+
+            tau = pm.Deterministic(
+                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
+
+            weight_stack = tt.math.sigmoid(
+                idx[np.newaxis, :] - tau[:, np.newaxis])
+            weight_stack = tt.concatenate(
+                [np.ones((1, length)), weight_stack], axis=0)
+            inverse_stack = 1 - weight_stack[1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((1, length))], axis=0)
+            weight_stack = np.multiply(weight_stack, inverse_stack)
+
+            mu_latent = mu.dot(weight_stack)
+            sigma_latent = sigma.dimshuffle(0, "x")
+            nu_latent = nu.dimshuffle(0, "x")
+            
+            # Use StudentT distribution instead of Normal
+            observation = pm.StudentT(
+                "obs", nu=nu_latent, mu=mu_latent, sigma=sigma_latent, observed=data_array)
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data with t-distribution
+        test_data = gen_test_array(
+            (10, 100), n_states=self.n_states, type="normal")
+
+        # Create model with test data
+        test_model = TChangepointMean2D(test_data, self.n_states)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "mu" in trace.varnames
+        assert "sigma" in trace.varnames
+        assert "nu" in trace.varnames
+        assert "tau" in trace.varnames
+
+        print("Test for TChangepointMean2D passed")
+        return True
+
+
+# For backward compatibility
+def t_changepoint_mean_2d(data_array, n_states, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = TChangepointMean2D(data_array, n_states, **kwargs)
+    return model_class.generate_model()
+
+
+class TChangepointMean3D(ChangepointModel):
+    """Model for t-distributed changepoint on multi-trial data
+    
+    Detects changes in mean only across trials.
+    Uses Student's t-distribution which is more robust to outliers.
+    Similar to GaussianChangepointMean3D but with t-distribution.
+    """
+
+    def __init__(self, data_array, n_states, **kwargs):
+        """
+        Args:
+            data_array (3D Numpy array): trials x dimensions x time
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.n_states = n_states
+
+    def generate_model(self):
+        """
+        Returns:
+            pymc model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        n_states = self.n_states
+
+        mean_vals = np.array(
+            [np.mean(x, axis=-1)
+             for x in np.array_split(data_array, n_states, axis=-1)]
+        ).T
+        mean_vals = np.mean(mean_vals, axis=1)
+        mean_vals += 0.01  # To avoid zero starting prob
+
+        y_dim = data_array.shape[1]
+        trials = data_array.shape[0]
+        idx = np.arange(data_array.shape[-1])
+        length = idx.max() + 1
+
+        with pm.Model() as model:
+            # Emissions: mean for each dimension and state
+            mu = pm.Normal("mu", mu=mean_vals, sigma=5,
+                          shape=(y_dim, n_states))
+            
+            # One scale parameter for each dimension
+            sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim))
+            
+            # Degrees of freedom for t-distribution
+            nu = pm.Gamma("nu", alpha=2, beta=0.1, shape=(y_dim))
+
+            # Changepoints
+            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
+
+            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
+            tau_latent = pm.Beta(
+                "tau_latent",
+                a_tau,
+                b_tau,
+                shape=(trials, n_states - 1),
+            ).sort(axis=-1)
+
+            tau = pm.Deterministic(
+                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
+
+            # Create weight stack for changepoints
+            weight_stack = tt.math.sigmoid(
+                idx[np.newaxis, :] - tau[:, :, np.newaxis])
+            weight_stack = tt.concatenate(
+                [np.ones((trials, 1, length)), weight_stack], axis=1)
+            inverse_stack = 1 - weight_stack[:, 1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((trials, 1, length))], axis=1)
+            weight_stack = np.multiply(weight_stack, inverse_stack)
+
+            # Compute latent means: trials x dims x time
+            mu_latent = tt.tensordot(weight_stack, mu, [
+                                     1, 1]).swapaxes(1, 2)
+            
+            # Broadcast sigma and nu to match data shape
+            sigma_latent = sigma.dimshuffle("x", 0, "x")
+            nu_latent = nu.dimshuffle("x", 0, "x")
+            
+            # Use StudentT distribution instead of Normal
+            observation = pm.StudentT("obs", nu=nu_latent, mu=mu_latent, 
+                                     sigma=sigma_latent, observed=data_array)
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data
+        test_data = gen_test_array(
+            (5, 10, 100), n_states=self.n_states, type="normal")
+
+        # Create model with test data
+        test_model = TChangepointMean3D(test_data, self.n_states)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "mu" in trace.varnames
+        assert "tau" in trace.varnames
+        assert "sigma" in trace.varnames
+        assert "nu" in trace.varnames
+
+        print("Test for TChangepointMean3D passed")
+        return True
+
+
+# For backward compatibility
+def t_changepoint_mean_3d(data_array, n_states, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = TChangepointMean3D(data_array, n_states, **kwargs)
+    return model_class.generate_model()
+
+
 def stick_breaking_trial(this_beta, trial_count):
     portion_remaining = tt.concatenate(
         [

@@ -22,6 +22,8 @@ from pytau.changepoint_model import (
     SingleTastePoissonTrialSwitch,
     SingleTastePoissonVarsig,
     SingleTastePoissonVarsigFixed,
+    TChangepointMean2D,
+    TChangepointMean3D,
     advi_fit,
     extract_inferred_values,
     gen_test_array,
@@ -72,6 +74,8 @@ def test_gen_test_array():
         (GaussianChangepointMean3D, (5, 10, 100), 3, {}),
         (GaussianChangepointMeanTrialSwitch,
          (5, 10, 100), 3, {"switch_components": 2}),
+        (TChangepointMean2D, (10, 100), 3, {}),
+        (TChangepointMean3D, (5, 10, 100), 3, {}),
         (SingleTastePoissonDirichlet, (5, 10, 100), None, {"max_states": 5}),
         (SingleTastePoisson, (5, 10, 100), 3, {}),
         # (SingleTastePoissonVarsig, (5, 10, 100), 3, {}),
@@ -97,6 +101,8 @@ def test_model_initialization(model_class, data_shape, n_states, extra_args):
             GaussianChangepointMean2D,
             GaussianChangepointMean3D,
             GaussianChangepointMeanTrialSwitch,
+            TChangepointMean2D,
+            TChangepointMean3D,
         ]
         else "poisson"
     )
