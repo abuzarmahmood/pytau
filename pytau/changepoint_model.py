@@ -655,7 +655,7 @@ def gaussian_changepoint_mean_trial_switch(data_array, switch_components, n_stat
 
 class GaussianChangepointMean3D(ChangepointModel):
     """Model for Gaussian changepoint on multi-trial data
-    
+
     Detects changes in mean only across trials.
     Similar to SingleTastePoisson but for Gaussian data.
     No hierarchical structure for emissions.
@@ -695,8 +695,8 @@ class GaussianChangepointMean3D(ChangepointModel):
         with pm.Model() as model:
             # Emissions: mean for each dimension and state
             mu = pm.Normal("mu", mu=mean_vals, sigma=5,
-                          shape=(y_dim, n_states))
-            
+                           shape=(y_dim, n_states))
+
             # One variance for each dimension
             sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim))
 
@@ -728,12 +728,12 @@ class GaussianChangepointMean3D(ChangepointModel):
             # Compute latent means: trials x dims x time
             mu_latent = tt.tensordot(weight_stack, mu, [
                                      1, 1]).swapaxes(1, 2)
-            
+
             # Broadcast sigma to match data shape
             sigma_latent = sigma.dimshuffle("x", 0, "x")
-            
-            observation = pm.Normal("obs", mu=mu_latent, sigma=sigma_latent, 
-                                   observed=data_array)
+
+            observation = pm.Normal("obs", mu=mu_latent, sigma=sigma_latent,
+                                    observed=data_array)
 
         return model
 
@@ -773,7 +773,7 @@ def gaussian_changepoint_mean_3d(data_array, n_states, **kwargs):
 class TChangepointMean2D(ChangepointModel):
     """Model for t-distributed data on 2D array detecting changes only in
     the mean.
-    
+
     Uses Student's t-distribution which is more robust to outliers than
     Gaussian distribution.
     """
@@ -812,7 +812,7 @@ class TChangepointMean2D(ChangepointModel):
                            shape=(y_dim, n_states))
             # One scale parameter for each dimension
             sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim))
-            
+
             # Degrees of freedom for t-distribution
             # Using Gamma prior with mean around 30 (robust but not too heavy-tailed)
             nu = pm.Gamma("nu", alpha=2, beta=0.1, shape=(y_dim))
@@ -840,7 +840,7 @@ class TChangepointMean2D(ChangepointModel):
             mu_latent = mu.dot(weight_stack)
             sigma_latent = sigma.dimshuffle(0, "x")
             nu_latent = nu.dimshuffle(0, "x")
-            
+
             # Use StudentT distribution instead of Normal
             observation = pm.StudentT(
                 "obs", nu=nu_latent, mu=mu_latent, sigma=sigma_latent, observed=data_array)
@@ -883,7 +883,7 @@ def t_changepoint_mean_2d(data_array, n_states, **kwargs):
 
 class TChangepointMean3D(ChangepointModel):
     """Model for t-distributed changepoint on multi-trial data
-    
+
     Detects changes in mean only across trials.
     Uses Student's t-distribution which is more robust to outliers.
     Similar to GaussianChangepointMean3D but with t-distribution.
@@ -923,11 +923,11 @@ class TChangepointMean3D(ChangepointModel):
         with pm.Model() as model:
             # Emissions: mean for each dimension and state
             mu = pm.Normal("mu", mu=mean_vals, sigma=5,
-                          shape=(y_dim, n_states))
-            
+                           shape=(y_dim, n_states))
+
             # One scale parameter for each dimension
             sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim))
-            
+
             # Degrees of freedom for t-distribution
             nu = pm.Gamma("nu", alpha=2, beta=0.1, shape=(y_dim))
 
@@ -959,14 +959,14 @@ class TChangepointMean3D(ChangepointModel):
             # Compute latent means: trials x dims x time
             mu_latent = tt.tensordot(weight_stack, mu, [
                                      1, 1]).swapaxes(1, 2)
-            
+
             # Broadcast sigma and nu to match data shape
             sigma_latent = sigma.dimshuffle("x", 0, "x")
             nu_latent = nu.dimshuffle("x", 0, "x")
-            
+
             # Use StudentT distribution instead of Normal
-            observation = pm.StudentT("obs", nu=nu_latent, mu=mu_latent, 
-                                     sigma=sigma_latent, observed=data_array)
+            observation = pm.StudentT("obs", nu=nu_latent, mu=mu_latent,
+                                      sigma=sigma_latent, observed=data_array)
 
         return model
 
