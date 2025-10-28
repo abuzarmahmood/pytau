@@ -94,6 +94,7 @@ jupyter notebook
 - **`GaussianChangepointMean2D`**: Detects changes in mean only
 - **`GaussianChangepointMeanVar2D`**: Detects changes in both mean and variance
 - **`GaussianChangepointMeanDirichlet`**: Automatic state detection for Gaussian data
+- **`GaussianChangepointMeanTrialSwitch`**: Models trial-to-trial mean changes for multi-trial Gaussian data
 
 ### Categorical Models (for discrete categorical data)
 - **`CategoricalChangepoint2D`**: Changepoint detection for categorical time series
