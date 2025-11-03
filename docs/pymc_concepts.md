@@ -30,9 +30,8 @@ from pytau.changepoint_model import SingleTastePoisson
 # Create a model for spike train data
 # spike_array shape: (trials, neurons, time)
 model_obj = SingleTastePoisson(
-    spike_array=spike_array,
-    states=3,  # Number of states to detect
-    fit_type='advi'
+    data_array=spike_array,
+    n_states=3  # Number of states to detect
 )
 
 # Generate the PyMC model
@@ -235,9 +234,8 @@ import matplotlib.pyplot as plt
 # 1. CREATE MODEL
 # Define the probabilistic model structure
 model_obj = SingleTastePoisson(
-    spike_array=spike_array,  # Your data: (trials, neurons, time)
-    states=3,
-    fit_type='advi'
+    data_array=spike_array,  # Your data: (trials, neurons, time)
+    n_states=3
 )
 model = model_obj.generate_model()
 
@@ -326,7 +324,7 @@ plt.show()
 from pytau.changepoint_model import SingleTastePoisson, advi_fit
 
 # Fit and get results in one go
-model_obj = SingleTastePoisson(spike_array=data, states=3, fit_type='advi')
+model_obj = SingleTastePoisson(data_array=data, n_states=3)
 model = model_obj.generate_model()
 model, approx, lambda_stack, tau_samples, _ = advi_fit(model, fit=10000, samples=5000)
 
@@ -350,7 +348,7 @@ best_model, model_list, elbo_values = find_best_states(
     max_states=6
 )
 
-print(f"Best model has {best_model.kwargs['states']} states")
+print(f"Best model has {best_model.n_states} states")
 ```
 
 ### Pattern 3: High-Quality Sampling
@@ -359,7 +357,7 @@ print(f"Best model has {best_model.kwargs['states']} states")
 from pytau.changepoint_model import mcmc_fit
 
 # Use MCMC for publication-quality results
-model_obj = SingleTastePoisson(spike_array=data, states=3, fit_type='mcmc')
+model_obj = SingleTastePoisson(data_array=data, n_states=3)
 model = model_obj.generate_model()
 model, trace, lambda_stack, tau_samples, _ = mcmc_fit(model, samples=2000)
 
