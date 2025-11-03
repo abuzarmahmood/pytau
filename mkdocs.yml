@@ -16,4 +16,5 @@ plugins:
 
 nav:
   - "Start": index.md
+  - "PyMC Concepts": pymc_concepts.md
   - "API": api.md
