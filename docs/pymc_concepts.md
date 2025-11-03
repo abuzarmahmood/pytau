@@ -52,14 +52,14 @@ with pm.Model() as model:
     # Prior on changepoint times (sorted)
     tau = pm.Uniform('tau', lower=0, upper=time_bins, shape=states-1)
     tau_sorted = tt.sort(tau)
-    
+
     # Prior on emission rates for each state
     lambda_latent = pm.Exponential('lambda', lam=1.0, shape=states)
-    
+
     # Assign rates to time bins based on changepoints
     # (simplified - actual implementation more complex)
     lambda_t = assign_rates_by_changepoints(tau_sorted, lambda_latent)
-    
+
     # Likelihood: observed spikes follow Poisson distribution
     obs = pm.Poisson('obs', mu=lambda_t, observed=spike_array)
 ```
@@ -197,9 +197,9 @@ predicted_spikes = posterior_predictive.posterior_predictive['obs'].values
 
 1. **Model checking**: Compare predicted data to actual data
    - If they look very different, the model may be misspecified
-   
+
 2. **Uncertainty quantification**: See the range of possible outcomes
-   
+
 3. **Validation**: Check if the model captures important data features
 
 ```python
@@ -270,7 +270,7 @@ axes[0].legend()
 
 # Plot emission rate distributions
 for state in range(lambda_stack.shape[1]):
-    axes[1].hist(lambda_stack[:, state, 0, 0], bins=50, alpha=0.5, 
+    axes[1].hist(lambda_stack[:, state, 0, 0], bins=50, alpha=0.5,
                  label=f'State {state+1}')
 axes[1].set_xlabel('Firing Rate (Hz)')
 axes[1].set_ylabel('Frequency')
