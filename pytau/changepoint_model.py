@@ -14,6 +14,7 @@ import numpy as np
 import pymc as pm
 import pytensor.tensor as tt
 from pymc.variational.callbacks import CheckParametersConvergence
+from sklearn.linear_model import LinearRegression
 from tqdm import tqdm
 
 ############################################################
@@ -2035,6 +2036,45 @@ def extract_inferred_values(trace):
     return out_dict
 
 
+def _find_elbow_point(x_values, y_values):
+    """Find elbow point using piece-wise linear regression
+
+    Args:
+        x_values (array): x-axis values (number of states)
+        y_values (array): y-axis values (ELBO values)
+
+    Returns:
+        int: Index of the elbow point
+    """
+    best_score = float('inf')
+    best_idx = 0
+
+    # Try each possible breakpoint (excluding endpoints)
+    for i in range(1, len(x_values) - 1):
+        # Fit two linear segments
+        x1, y1 = x_values[:i+1], y_values[:i+1]
+        x2, y2 = x_values[i:], y_values[i:]
+
+        # Fit linear regression for each segment
+        reg1 = LinearRegression().fit(x1.reshape(-1, 1), y1)
+        reg2 = LinearRegression().fit(x2.reshape(-1, 1), y2)
+
+        # Calculate residual sum of squares for both segments
+        pred1 = reg1.predict(x1.reshape(-1, 1))
+        pred2 = reg2.predict(x2.reshape(-1, 1))
+
+        rss1 = np.sum((y1 - pred1) ** 2)
+        rss2 = np.sum((y2 - pred2) ** 2)
+        total_rss = rss1 + rss2
+
+        # Keep track of the best breakpoint
+        if total_rss < best_score:
+            best_score = total_rss
+            best_idx = i
+
+    return best_idx
+
+
 def find_best_states(
         data,
         model_generator,
@@ -2042,6 +2082,7 @@ def find_best_states(
         min_states=2,
         max_states=10,
         convergence_tol=None,
+        method='min_elbo',
 ):
     """Convenience function to find best number of states for model
 
@@ -2053,12 +2094,18 @@ def find_best_states(
         min_states (int): Minimum number of states to test
         max_states (int): Maximum number of states to test
         convergence_tol (float): Tolerance for convergence. If None, will not check for convergence.
+        method (str): Method to find best states. Options:
+            - 'min_elbo': Use minimum ELBO value (default)
+            - 'elbow': Use piece-wise linear fit to find elbow point
 
     Returns:
         best_model: model with best number of states,
         model_list: list of models with different number of states,
         elbo_values: list of elbo values for different number of states
     """
+    if method not in ['min_elbo', 'elbow']:
+        raise ValueError("method must be either 'min_elbo' or 'elbow'")
+
     n_state_array = np.arange(min_states, max_states + 1)
     elbo_values = []
     model_list = []
@@ -2069,7 +2116,14 @@ def find_best_states(
         model, approx = advi_fit(model, n_fit, n_samples, convergence_tol)[:2]
         elbo_values.append(approx.hist[-1])
         model_list.append(model)
-    best_model = model_list[np.argmin(elbo_values)]
+
+    # Choose best model based on method
+    if method == 'min_elbo':
+        best_idx = np.argmin(elbo_values)
+    else:  # method == 'elbow'
+        best_idx = _find_elbow_point(n_state_array, np.array(elbo_values))
+
+    best_model = model_list[best_idx]
     return best_model, model_list, elbo_values
 
 
