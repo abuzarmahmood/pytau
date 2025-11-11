@@ -506,12 +506,14 @@ class DatabaseHandler:
 
         Returns:
             list: Boolean list indicating which database rows have no corresponding pkl file
+            pandas.Index: Row indices of mismatched rows in the dataframe
         """
         mismatch_from_database = [
             not os.path.exists(x + ".pkl") for x in self.fit_database["exp.save_path"]
         ]
+        mismatch_indices = self.fit_database.index[mismatch_from_database]
         print(f"{sum(mismatch_from_database)} mismatches from database")
-        return mismatch_from_database
+        return mismatch_from_database, mismatch_indices
 
     def check_mismatched_paths(self):
         """Check if there are any mismatched pkl files between database and directory
@@ -521,7 +523,7 @@ class DatabaseHandler:
             list: Boolean list indicating which pkl files cannot be matched to model in database
             list: All pkl files in save directory
         """
-        mismatch_from_database = self.check_mismatched_rows()
+        mismatch_from_database, _ = self.check_mismatched_rows()
         mismatch_from_file, file_list = self.check_mismatched_files()
         return mismatch_from_database, mismatch_from_file, file_list
 
