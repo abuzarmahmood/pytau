@@ -234,3 +234,89 @@ def test_tau_class_attributes():
 
     # Check that raw_int_tau is integer type
     assert tau_instance.raw_int_tau.dtype in [np.int32, np.int64, int, object]
+
+
+def test_pkl_handler_elbo_hist_property():
+    """Test PklHandler.elbo_hist property for accessing ELBO history."""
+    import cloudpickle as pkl
+    import tempfile
+
+    # Create a mock approximation object with hist attribute
+    class MockApprox:
+        def __init__(self):
+            self.hist = np.array([100.0, 90.0, 80.0, 75.0, 70.0])
+
+    # Create test data structure
+    test_data = {
+        "model_data": {
+            "approx": MockApprox(),
+            "tau": np.array([[100, 300], [200, 400]], dtype=float),
+            "data": np.random.rand(2, 5, 500),
+        },
+        "metadata": {
+            "preprocess": {"time_lims": [0, 1000], "bin_width": 1},
+            "data": {"data_dir": "/tmp", "region_name": "region", "taste_num": "all"}
+        }
+    }
+
+    # Create temporary pickle file
+    with tempfile.NamedTemporaryFile(mode='wb', suffix='.pkl', delete=False) as f:
+        pkl.dump(test_data, f)
+        temp_path = f.name
+
+    try:
+        # Test PklHandler with the temporary file
+        with patch('pytau.changepoint_analysis.EphysData'):
+            handler = PklHandler(temp_path)
+
+            # Test that elbo_hist property exists and returns the hist array
+            assert hasattr(handler, 'elbo_hist')
+            assert handler.elbo_hist is not None
+            np.testing.assert_array_equal(handler.elbo_hist, test_data["model_data"]["approx"].hist)
+
+            # Test that we can index the last ELBO value
+            last_elbo = handler.elbo_hist[-1]
+            assert last_elbo == 70.0
+
+            # Test that we can access any index
+            first_elbo = handler.elbo_hist[0]
+            assert first_elbo == 100.0
+
+    finally:
+        # Clean up temporary file
+        os.unlink(temp_path)
+
+
+def test_pkl_handler_elbo_hist_none():
+    """Test PklHandler.elbo_hist property when approx is None."""
+    import cloudpickle as pkl
+    import tempfile
+
+    # Create test data structure without approx
+    test_data = {
+        "model_data": {
+            "tau": np.array([[100, 300], [200, 400]], dtype=float),
+            "data": np.random.rand(2, 5, 500),
+        },
+        "metadata": {
+            "preprocess": {"time_lims": [0, 1000], "bin_width": 1},
+            "data": {"data_dir": "/tmp", "region_name": "region", "taste_num": "all"}
+        }
+    }
+
+    # Create temporary pickle file
+    with tempfile.NamedTemporaryFile(mode='wb', suffix='.pkl', delete=False) as f:
+        pkl.dump(test_data, f)
+        temp_path = f.name
+
+    try:
+        # Test PklHandler with the temporary file
+        with patch('pytau.changepoint_analysis.EphysData'):
+            handler = PklHandler(temp_path)
+
+            # Test that elbo_hist property returns None when approx is missing
+            assert handler.elbo_hist is None
+
+    finally:
+        # Clean up temporary file
+        os.unlink(temp_path)

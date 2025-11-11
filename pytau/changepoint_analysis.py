@@ -289,3 +289,19 @@ class PklHandler:
             self.processed_spikes, 'shape') else None
         self.tau = _tau(self.tau_array, self.metadata, n_trials)
         self.firing = _firing(self.tau, self.processed_spikes, self.metadata)
+
+    @property
+    def elbo_hist(self):
+        """Get ELBO history from the approximation object
+
+        Returns:
+            numpy.ndarray or None: ELBO history if available, None otherwise
+
+        Note:
+            The approximation object (MeanField) does not support direct indexing.
+            Use this property to access the ELBO history, e.g., handler.elbo_hist[-1]
+            to get the last ELBO value.
+        """
+        if self._fit_model is not None and hasattr(self._fit_model, 'hist'):
+            return self._fit_model.hist
+        return None
