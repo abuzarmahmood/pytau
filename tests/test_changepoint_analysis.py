@@ -238,8 +238,9 @@ def test_tau_class_attributes():
 
 def test_pkl_handler_elbo_hist_property():
     """Test PklHandler.elbo_hist property for accessing ELBO history."""
-    import cloudpickle as pkl
     import tempfile
+
+    import cloudpickle as pkl
 
     # Create a mock approximation object with hist attribute
     class MockApprox:
@@ -272,7 +273,8 @@ def test_pkl_handler_elbo_hist_property():
             # Test that elbo_hist property exists and returns the hist array
             assert hasattr(handler, 'elbo_hist')
             assert handler.elbo_hist is not None
-            np.testing.assert_array_equal(handler.elbo_hist, test_data["model_data"]["approx"].hist)
+            np.testing.assert_array_equal(
+                handler.elbo_hist, test_data["model_data"]["approx"].hist)
 
             # Test that we can index the last ELBO value
             last_elbo = handler.elbo_hist[-1]
@@ -289,8 +291,9 @@ def test_pkl_handler_elbo_hist_property():
 
 def test_pkl_handler_elbo_hist_none():
     """Test PklHandler.elbo_hist property when approx is None."""
-    import cloudpickle as pkl
     import tempfile
+
+    import cloudpickle as pkl
 
     # Create test data structure without approx
     test_data = {
