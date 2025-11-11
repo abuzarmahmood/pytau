@@ -481,17 +481,13 @@ class DatabaseHandler:
         print(f"Removing {sum(dup_inds)} duplicate rows")
         self.fit_database = self.fit_database.loc[~dup_inds]
 
-    def check_mismatched_paths(self):
-        """Check if there are any mismatched pkl files between database and directory
+    def check_mismatched_files(self):
+        """Check if there are pkl files in directory that cannot be matched to database entries
 
         Returns:
-            pandas dataframe: Dataframe containing rows for which pkl file not present
-            list: pkl files which cannot be matched to model in database
-            list: all files in save directory
+            list: Boolean list indicating which pkl files cannot be matched to model in database
+            list: All pkl files in save directory
         """
-        mismatch_from_database = [
-            not os.path.exists(x + ".pkl") for x in self.fit_database["exp.save_path"]
-        ]
         file_list = glob(os.path.join(self.model_save_base_dir, "*/*.pkl"))
         # Only split basename by '.' in case there are multiple '.' in filenpath
         mismatch_from_file = [
@@ -502,11 +498,31 @@ class DatabaseHandler:
                 in list(self.fit_database["exp.save_path"]))
             for x in file_list
         ]
-        print(
-            f"{sum(mismatch_from_database)} mismatches from database"
-            + "\n"
-            + f"{sum(mismatch_from_file)} mismatches from files"
-        )
+        print(f"{sum(mismatch_from_file)} mismatches from files")
+        return mismatch_from_file, file_list
+
+    def check_mismatched_rows(self):
+        """Check if there are database rows for which pkl files do not exist
+
+        Returns:
+            list: Boolean list indicating which database rows have no corresponding pkl file
+        """
+        mismatch_from_database = [
+            not os.path.exists(x + ".pkl") for x in self.fit_database["exp.save_path"]
+        ]
+        print(f"{sum(mismatch_from_database)} mismatches from database")
+        return mismatch_from_database
+
+    def check_mismatched_paths(self):
+        """Check if there are any mismatched pkl files between database and directory
+
+        Returns:
+            list: Boolean list indicating which database rows have no corresponding pkl file
+            list: Boolean list indicating which pkl files cannot be matched to model in database
+            list: All pkl files in save directory
+        """
+        mismatch_from_database = self.check_mismatched_rows()
+        mismatch_from_file, file_list = self.check_mismatched_files()
         return mismatch_from_database, mismatch_from_file, file_list
 
     def clear_mismatched_paths(self):
