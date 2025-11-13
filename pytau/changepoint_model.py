@@ -45,16 +45,16 @@ class ChangepointModel:
 def sharp_sigmoid(x):
     """
     Sharp sigmoid function for changepoint transitions.
-    
+
     Uses a steeper slope (100) compared to the default sigmoid to enforce
     sharper state changes while maintaining smoothness for VI and HMC.
     This is particularly useful when binning is large.
-    
+
     Formula: 1 / (1 + exp(-100 * x))
-    
+
     Args:
         x: Input tensor
-        
+
     Returns:
         Sigmoid-transformed tensor with sharp transitions
     """
