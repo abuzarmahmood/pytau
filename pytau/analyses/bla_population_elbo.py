@@ -67,7 +67,7 @@ wanted_frame = wanted_frame[wanted_frame["data.basename"].isin(
 # for ind in trange(len(file_list)):
 #    file_path = file_list[ind]
 #    model_dat = PklHandler(file_path)
-#    fin_elbo_list.append(-model_dat.data['model_data']['approx'].hist[-1])
+#    fin_elbo_list.append(-model_dat.elbo_hist[-1])
 
 
 def get_elbo(file_path):
@@ -75,7 +75,7 @@ def get_elbo(file_path):
         # file_path = file_list[ind]
         print(f"Reading file {file_path}")
         model_dat = PklHandler(file_path)
-        return -model_dat.data["model_data"]["approx"].hist[-1]
+        return -model_dat.elbo_hist[-1]
     except:
         return None
 
