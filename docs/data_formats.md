@@ -26,7 +26,7 @@ model = PoissonChangepoint1D(data_1d, states=2)
 ### 2D: Multiple Trials or Neurons
 **Shape**: `(trials, time)` or `(neurons, time)`
 
-**Use Case**: 
+**Use Case**:
 - Multiple trials of a single neuron
 - Multiple neurons recorded simultaneously
 - Single condition experiments
@@ -43,7 +43,7 @@ model = single_taste_poisson(data_2d, states=3)
 ### 3D: Trials × Neurons × Time
 **Shape**: `(trials, neurons, time)`
 
-**Use Case**: 
+**Use Case**:
 - Multi-neuron recordings
 - Single stimulus/condition
 - Population analysis
@@ -215,7 +215,7 @@ import numpy as np
 def bin_spike_times(spike_times, bin_width, time_range):
     """
     Bin spike times into counts.
-    
+
     Parameters
     ----------
     spike_times : array-like
@@ -224,7 +224,7 @@ def bin_spike_times(spike_times, bin_width, time_range):
         Width of each bin in seconds
     time_range : tuple
         (start_time, end_time) in seconds
-    
+
     Returns
     -------
     spike_counts : ndarray
@@ -250,28 +250,28 @@ import numpy as np
 
 def check_data_quality(data):
     """Check data for common issues."""
-    
+
     # Check for NaNs
     if np.any(np.isnan(data)):
         print("⚠️ Warning: Data contains NaN values")
-    
+
     # Check for infinities
     if np.any(np.isinf(data)):
         print("⚠️ Warning: Data contains infinite values")
-    
+
     # Check for negative values (spike counts should be non-negative)
     if np.any(data < 0):
         print("⚠️ Warning: Data contains negative values")
-    
+
     # Check for excessive zeros
     zero_fraction = np.mean(data == 0)
     if zero_fraction > 0.8:
         print(f"⚠️ Warning: {zero_fraction*100:.1f}% of data is zero")
-    
+
     # Check variance
     if np.var(data) < 1e-10:
         print("⚠️ Warning: Data has very low variance")
-    
+
     print("✅ Data quality check complete")
 
 # Example

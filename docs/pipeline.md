@@ -272,7 +272,7 @@ for states, bin_width, model_type in itertools.product(
         save_dir='/path/to/models',
         bin_width=bin_width
     )
-    
+
     handler.fit_and_save(
         model_type=model_type,
         states=states,
@@ -296,7 +296,7 @@ def fit_session(session_info):
         animal_name=session_info['animal'],
         session_date=session_info['session']
     )
-    
+
     handler.fit_and_save(
         model_type='single_taste_poisson',
         states=3,
@@ -461,21 +461,21 @@ class ProgressTracker:
         self.completed_jobs = 0
         self.failed_jobs = 0
         self.start_time = time.time()
-    
+
     def update(self, success=True):
         if success:
             self.completed_jobs += 1
         else:
             self.failed_jobs += 1
-        
+
         elapsed = time.time() - self.start_time
         rate = self.completed_jobs / elapsed if elapsed > 0 else 0
         remaining = (self.total_jobs - self.completed_jobs) / rate if rate > 0 else 0
-        
+
         print(f'Progress: {self.completed_jobs}/{self.total_jobs} '
               f'({self.failed_jobs} failed) '
               f'[{elapsed:.1f}s elapsed, {remaining:.1f}s remaining]')
-    
+
     def save(self, path='progress.json'):
         with open(path, 'w') as f:
             json.dump({
@@ -553,19 +553,19 @@ with tqdm(total=total, desc='Processing') as pbar:
                         animal_name=animal,
                         session_date=session
                     )
-                    
+
                     # Fit and save
                     handler.fit_and_save(
                         model_type='single_taste_poisson',
                         states=states,
                         fit_steps=10000
                     )
-                    
+
                     logger.info(f'Completed: {animal}/{session}/states={states}')
-                    
+
                 except Exception as e:
                     logger.error(f'Failed: {animal}/{session}/states={states}: {e}')
-                
+
                 finally:
                     pbar.update(1)
 

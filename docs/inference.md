@@ -31,7 +31,7 @@ from pytau.changepoint_model import advi_fit
 
 # Fit model using ADVI
 model, approx = advi_fit(
-    model, 
+    model,
     fit=10000,           # Number of optimization iterations
     samples=5000,        # Number of samples to draw from approximation
     convergence_tol=0.01 # Convergence tolerance
@@ -46,11 +46,11 @@ trace = approx.sample(draws=5000)
 - **fit**: Number of ADVI iterations (default: 10000)
   - More iterations = better approximation but slower
   - Monitor ELBO to check convergence
-  
+
 - **samples**: Number of samples to draw (default: 5000)
   - More samples = better posterior estimates
   - Typically 1000-10000 is sufficient
-  
+
 - **convergence_tol**: Relative change in ELBO for convergence (default: 0.01)
   - Smaller values = stricter convergence
   - 0.001-0.01 is typical
@@ -116,15 +116,15 @@ model, trace, lambda_stack, tau_samples, observations = mcmc_fit(
 - **samples**: Number of posterior samples per chain (default: 1000)
   - More samples = better posterior estimates
   - 1000-5000 is typical
-  
+
 - **tune**: Number of tuning/warm-up samples (default: 500)
   - Discarded samples used to tune sampler
   - 500-2000 is typical
-  
+
 - **chains**: Number of independent chains (default: 4)
   - Multiple chains enable convergence diagnostics
   - 4 chains is standard
-  
+
 - **cores**: Number of CPU cores for parallel sampling
   - Set to number of chains for maximum parallelization
 
