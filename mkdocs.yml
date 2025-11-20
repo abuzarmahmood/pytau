@@ -15,6 +15,11 @@ plugins:
   - mkdocstrings
 
 nav:
-  - "Start": index.md
+  - "Home": index.md
+  - "User Guide":
+    - "Available Models": models.md
+    - "Inference Methods": inference.md
+    - "Data Formats": data_formats.md
+    - "Pipeline Architecture": pipeline.md
   - "PyMC Concepts": pymc_concepts.md
-  - "API": api.md
+  - "API Reference": api.md
