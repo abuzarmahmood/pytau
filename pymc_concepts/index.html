@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>PyMC Concepts - PyTau</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../css/brands.min.css" rel="stylesheet">
+        <link href="../css/solid.min.css" rel="stylesheet">
+        <link href="../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">PyTau</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="nav-item">
+                                <a href=".." class="nav-link">Start</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="./" class="nav-link active" aria-current="page">PyMC Concepts</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../api/" class="nav-link">API</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href=".." class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../api/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#understanding-pymc-concepts-in-pytau" class="nav-link">Understanding PyMC Concepts in PyTau</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#overview" class="nav-link">Overview</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#core-concepts" class="nav-link">Core Concepts</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#how-everything-fits-together" class="nav-link">How Everything Fits Together</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#key-takeaways" class="nav-link">Key Takeaways</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#common-patterns-in-pytau" class="nav-link">Common Patterns in PyTau</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#additional-resources" class="nav-link">Additional Resources</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#troubleshooting" class="nav-link">Troubleshooting</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#next-steps" class="nav-link">Next Steps</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="understanding-pymc-concepts-in-pytau">Understanding PyMC Concepts in PyTau</h1>
+<p>This guide explains the key PyMC concepts used in PyTau for users who may not be familiar with Bayesian modeling or PyMC. For more detailed information, refer to the <a href="https://www.pymc.io/welcome.html">official PyMC documentation</a>.</p>
+<h2 id="overview">Overview</h2>
+<p>PyTau uses <a href="https://www.pymc.io/">PyMC</a>, a probabilistic programming library, to perform Bayesian inference on changepoint models. This approach allows us to:</p>
+<ul>
+<li>Quantify uncertainty in changepoint locations</li>
+<li>Incorporate prior knowledge about neural dynamics</li>
+<li>Obtain full posterior distributions rather than point estimates</li>
+</ul>
+<h2 id="core-concepts">Core Concepts</h2>
+<h3 id="1-model">1. Model</h3>
+<p>A <strong>model</strong> in PyMC is a probabilistic representation of your data and assumptions. It consists of:</p>
+<ul>
+<li><strong>Prior distributions</strong>: What we believe about parameters before seeing data</li>
+<li><strong>Likelihood</strong>: How the data is generated given the parameters</li>
+<li><strong>Observed data</strong>: The actual measurements we want to explain</li>
+</ul>
+<p>In PyTau, models are defined as classes that inherit from <code>ChangepointModel</code> and implement a <code>generate_model()</code> method.</p>
+<h4 id="example-single-taste-poisson-model">Example: Single Taste Poisson Model</h4>
+<pre><code class="language-python">from pytau.changepoint_model import SingleTastePoisson
+
+# Create a model for spike train data
+# spike_array shape: (trials, neurons, time)
+model_obj = SingleTastePoisson(
+    data_array=spike_array,
+    n_states=3  # Number of states to detect
+)
+
+# Generate the PyMC model
+model = model_obj.generate_model()
+</code></pre>
+<p><strong>What happens inside the model:</strong></p>
+<ol>
+<li><strong>Priors on changepoint times (tau)</strong>: Where state transitions might occur</li>
+<li><strong>Priors on emission rates (lambda)</strong>: Firing rates in each state</li>
+<li><strong>Likelihood</strong>: Poisson distribution connecting rates to observed spike counts</li>
+</ol>
+<p>The model structure looks like this:</p>
+<pre><code class="language-python">with pm.Model() as model:
+    # Prior on changepoint times (sorted)
+    tau = pm.Uniform('tau', lower=0, upper=time_bins, shape=states-1)
+    tau_sorted = tt.sort(tau)
+
+    # Prior on emission rates for each state
+    lambda_latent = pm.Exponential('lambda', lam=1.0, shape=states)
+
+    # Assign rates to time bins based on changepoints
+    # (simplified - actual implementation more complex)
+    lambda_t = assign_rates_by_changepoints(tau_sorted, lambda_latent)
+
+    # Likelihood: observed spikes follow Poisson distribution
+    obs = pm.Poisson('obs', mu=lambda_t, observed=spike_array)
+</code></pre>
+<p>For more details on PyMC models, see the <a href="https://www.pymc.io/projects/docs/en/stable/learn/core_notebooks/pymc_overview.html">PyMC Model Building Guide</a>.</p>
+<hr />
+<h3 id="2-inference-samples-and-trace">2. Inference: Samples and Trace</h3>
+<p>Once we have a model, we need to perform <strong>inference</strong> to learn about the parameters from the data. PyMC offers two main approaches:</p>
+<h4 id="variational-inference-advi">Variational Inference (ADVI)</h4>
+<p><strong>ADVI</strong> (Automatic Differentiation Variational Inference) is a fast approximate inference method that:</p>
+<ul>
+<li>Finds a simpler distribution that approximates the true posterior</li>
+<li>Is much faster than MCMC but less accurate</li>
+<li>Good for initial exploration or large datasets</li>
+</ul>
+<pre><code class="language-python">from pytau.changepoint_model import advi_fit
+
+# Fit the model using ADVI
+model, approx, lambda_stack, tau_samples, data = advi_fit(
+    model,
+    fit=10000,      # Number of optimization iterations
+    samples=5000    # Number of samples to draw from approximation
+)
+</code></pre>
+<p><strong>What you get:</strong>
+- <code>approx</code>: The fitted approximation (a simpler distribution)
+- <code>lambda_stack</code>: Samples of emission rates (shape: <code>[samples, states, ...]</code>)
+- <code>tau_samples</code>: Samples of changepoint times (shape: <code>[samples, states-1]</code>)</p>
+<h4 id="mcmc-sampling">MCMC Sampling</h4>
+<p><strong>MCMC</strong> (Markov Chain Monte Carlo) generates samples by:</p>
+<ul>
+<li>Exploring the parameter space using random walks</li>
+<li>Spending more time in high-probability regions</li>
+<li>Providing high-quality samples but slower than ADVI</li>
+</ul>
+<pre><code class="language-python">from pytau.changepoint_model import mcmc_fit
+
+# Fit the model using MCMC
+model, trace, lambda_stack, tau_samples, data = mcmc_fit(
+    model,
+    samples=1000  # Number of samples per chain
+)
+</code></pre>
+<p><strong>What you get:</strong>
+- <code>trace</code>: An InferenceData object containing all samples
+- <code>lambda_stack</code>: Samples of emission rates
+- <code>tau_samples</code>: Samples of changepoint times</p>
+<p>For more on inference methods, see:
+- <a href="https://www.pymc.io/projects/docs/en/stable/api/inference/variational.html">ADVI in PyMC</a>
+- <a href="https://www.pymc.io/projects/docs/en/stable/api/inference/sampling.html">MCMC in PyMC</a></p>
+<hr />
+<h3 id="3-trace-inferencedata">3. Trace / InferenceData</h3>
+<p>A <strong>trace</strong> (or <strong>InferenceData</strong> in modern PyMC) is a container for all the samples drawn during inference. Think of it as a table where:</p>
+<ul>
+<li>Each row is a sample from the posterior distribution</li>
+<li>Each column is a parameter in your model</li>
+</ul>
+<pre><code class="language-python"># After fitting with MCMC
+print(trace.posterior)
+# Output shows available variables: tau, lambda, etc.
+
+# Access specific parameter samples
+tau_samples = trace.posterior['tau'].values  # Shape: (chains, draws, states-1)
+lambda_samples = trace.posterior['lambda'].values  # Shape: (chains, draws, states, ...)
+</code></pre>
+<p><strong>Key operations with traces:</strong></p>
+<pre><code class="language-python">import arviz as az
+
+# Summary statistics
+summary = az.summary(trace)
+print(summary)
+
+# Visualize posterior distributions
+az.plot_posterior(trace, var_names=['tau'])
+
+# Check convergence diagnostics
+az.plot_trace(trace, var_names=['tau', 'lambda'])
+</code></pre>
+<p><strong>Understanding the samples:</strong></p>
+<p>Each sample represents one plausible set of parameter values given the data. By collecting many samples, we can:</p>
+<ul>
+<li>Estimate parameter means and medians</li>
+<li>Quantify uncertainty with credible intervals</li>
+<li>Visualize the full posterior distribution</li>
+</ul>
+<p>For more on working with traces, see the <a href="https://python.arviz.org/en/stable/index.html">ArviZ documentation</a>.</p>
+<hr />
+<h3 id="4-posterior-predictive">4. Posterior Predictive</h3>
+<p>The <strong>posterior predictive distribution</strong> answers: "If my model is correct, what new data would I expect to see?"</p>
+<p>It's generated by:</p>
+<ol>
+<li>Taking parameter samples from the posterior (trace)</li>
+<li>Simulating new data using those parameters</li>
+<li>Collecting the simulated datasets</li>
+</ol>
+<pre><code class="language-python"># Generate posterior predictive samples
+with model:
+    posterior_predictive = pm.sample_posterior_predictive(
+        trace,
+        var_names=['obs']  # Variable to predict
+    )
+
+# Access the predictions
+predicted_spikes = posterior_predictive.posterior_predictive['obs'].values
+# Shape: (chains, draws, trials, neurons, time)
+</code></pre>
+<p><strong>Why is this useful?</strong></p>
+<ol>
+<li><strong>Model checking</strong>: Compare predicted data to actual data</li>
+<li>
+<p>If they look very different, the model may be misspecified</p>
+</li>
+<li>
+<p><strong>Uncertainty quantification</strong>: See the range of possible outcomes</p>
+</li>
+<li>
+<p><strong>Validation</strong>: Check if the model captures important data features</p>
+</li>
+</ol>
+<pre><code class="language-python">import matplotlib.pyplot as plt
+
+# Compare actual vs predicted data
+actual_mean = spike_array.mean(axis=0)  # Average across trials
+predicted_mean = predicted_spikes.mean(axis=(0,1))  # Average across chains and draws
+
+plt.figure(figsize=(12, 4))
+plt.plot(actual_mean.T, alpha=0.5, label='Actual')
+plt.plot(predicted_mean.T, alpha=0.5, linestyle='--', label='Predicted')
+plt.xlabel('Time')
+plt.ylabel('Spike Count')
+plt.legend()
+plt.title('Actual vs Posterior Predictive')
+plt.show()
+</code></pre>
+<p>For more on posterior predictive checks, see the <a href="https://www.pymc.io/projects/docs/en/stable/learn/core_notebooks/posterior_predictive.html">PyMC Posterior Predictive Guide</a>.</p>
+<hr />
+<h2 id="how-everything-fits-together">How Everything Fits Together</h2>
+<p>Here's a complete workflow showing how these concepts connect:</p>
+<pre><code class="language-python">from pytau.changepoint_model import SingleTastePoisson, advi_fit
+import arviz as az
+import matplotlib.pyplot as plt
+
+# 1. CREATE MODEL
+# Define the probabilistic model structure
+model_obj = SingleTastePoisson(
+    data_array=spike_array,  # Your data: (trials, neurons, time)
+    n_states=3
+)
+model = model_obj.generate_model()
+
+# 2. PERFORM INFERENCE
+# Learn parameter distributions from data
+model, approx, lambda_stack, tau_samples, data = advi_fit(
+    model,
+    fit=10000,
+    samples=5000
+)
+
+# 3. ANALYZE TRACE
+# Examine the posterior distribution
+print(&quot;Changepoint locations (mean ± std):&quot;)
+for i in range(tau_samples.shape[1]):
+    mean_tau = tau_samples[:, i].mean()
+    std_tau = tau_samples[:, i].std()
+    print(f&quot;  Tau {i+1}: {mean_tau:.2f} ± {std_tau:.2f}&quot;)
+
+# Visualize posterior distributions
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+# Plot changepoint distributions
+axes[0].hist(tau_samples[:, 0], bins=50, alpha=0.7, label='Tau 1')
+axes[0].hist(tau_samples[:, 1], bins=50, alpha=0.7, label='Tau 2')
+axes[0].set_xlabel('Time (bins)')
+axes[0].set_ylabel('Frequency')
+axes[0].set_title('Posterior Distribution of Changepoints')
+axes[0].legend()
+
+# Plot emission rate distributions
+for state in range(lambda_stack.shape[1]):
+    axes[1].hist(lambda_stack[:, state, 0, 0], bins=50, alpha=0.5,
+                 label=f'State {state+1}')
+axes[1].set_xlabel('Firing Rate (Hz)')
+axes[1].set_ylabel('Frequency')
+axes[1].set_title('Posterior Distribution of Emission Rates')
+axes[1].legend()
+
+plt.tight_layout()
+plt.show()
+
+# 4. POSTERIOR PREDICTIVE CHECK
+# Validate the model by simulating new data
+with model:
+    # Convert approx to trace for posterior predictive sampling
+    idata = approx.sample(draws=1000)
+    posterior_predictive = pm.sample_posterior_predictive(
+        idata,
+        var_names=['obs']
+    )
+
+# Compare actual vs predicted
+actual_mean = spike_array.mean(axis=0)
+predicted_mean = posterior_predictive.posterior_predictive['obs'].values.mean(axis=(0,1))
+
+plt.figure(figsize=(12, 4))
+plt.plot(actual_mean[0], label='Actual', linewidth=2)
+plt.plot(predicted_mean[0], label='Predicted', linestyle='--', linewidth=2)
+plt.xlabel('Time (bins)')
+plt.ylabel('Mean Spike Count')
+plt.title('Posterior Predictive Check')
+plt.legend()
+plt.show()
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>What It Is</th>
+<th>Why It Matters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Model</strong></td>
+<td>Mathematical representation of data generation</td>
+<td>Encodes assumptions and structure</td>
+</tr>
+<tr>
+<td><strong>Inference</strong></td>
+<td>Process of learning from data</td>
+<td>Produces parameter estimates</td>
+</tr>
+<tr>
+<td><strong>Samples</strong></td>
+<td>Individual draws from posterior</td>
+<td>Represent uncertainty</td>
+</tr>
+<tr>
+<td><strong>Trace</strong></td>
+<td>Collection of all samples</td>
+<td>Contains full posterior information</td>
+</tr>
+<tr>
+<td><strong>Posterior Predictive</strong></td>
+<td>Simulated data from fitted model</td>
+<td>Validates model quality</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="common-patterns-in-pytau">Common Patterns in PyTau</h2>
+<h3 id="pattern-1-quick-model-fitting">Pattern 1: Quick Model Fitting</h3>
+<pre><code class="language-python">from pytau.changepoint_model import SingleTastePoisson, advi_fit
+
+# Fit and get results in one go
+model_obj = SingleTastePoisson(data_array=data, n_states=3)
+model = model_obj.generate_model()
+model, approx, lambda_stack, tau_samples, _ = advi_fit(model, fit=10000, samples=5000)
+
+# Analyze changepoints
+mean_changepoints = tau_samples.mean(axis=0)
+print(f&quot;Detected changepoints at: {mean_changepoints}&quot;)
+</code></pre>
+<h3 id="pattern-2-model-comparison">Pattern 2: Model Comparison</h3>
+<pre><code class="language-python">from pytau.changepoint_model import find_best_states
+
+# Automatically find optimal number of states
+best_model, model_list, elbo_values = find_best_states(
+    data=spike_array,
+    model_generator=SingleTastePoisson,
+    n_fit=5000,
+    n_samples=1000,
+    min_states=2,
+    max_states=6
+)
+
+print(f&quot;Best model has {best_model.n_states} states&quot;)
+</code></pre>
+<h3 id="pattern-3-high-quality-sampling">Pattern 3: High-Quality Sampling</h3>
+<pre><code class="language-python">from pytau.changepoint_model import mcmc_fit
+
+# Use MCMC for publication-quality results
+model_obj = SingleTastePoisson(data_array=data, n_states=3)
+model = model_obj.generate_model()
+model, trace, lambda_stack, tau_samples, _ = mcmc_fit(model, samples=2000)
+
+# Check convergence
+import arviz as az
+print(az.summary(trace, var_names=['tau', 'lambda']))
+</code></pre>
+<hr />
+<h2 id="additional-resources">Additional Resources</h2>
+<ul>
+<li><a href="https://www.pymc.io/welcome.html">PyMC Documentation</a> - Official PyMC guide</li>
+<li><a href="https://www.pymc.io/projects/examples/en/latest/gallery.html">PyMC Examples</a> - Gallery of example models</li>
+<li><a href="https://github.com/CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers">Bayesian Methods for Hackers</a> - Practical introduction to Bayesian methods</li>
+<li><a href="https://python.arviz.org/">ArviZ Documentation</a> - Tools for analyzing Bayesian models</li>
+<li><a href="https://discourse.pymc.io/">PyMC Discourse</a> - Community forum for questions</li>
+</ul>
+<hr />
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="my-samples-look-weird">"My samples look weird"</h3>
+<p><strong>Check convergence:</strong></p>
+<pre><code class="language-python">import arviz as az
+az.plot_trace(trace)  # Look for &quot;hairy caterpillar&quot; patterns
+print(az.summary(trace))  # Check r_hat values (should be ~1.0)
+</code></pre>
+<h3 id="inference-is-too-slow">"Inference is too slow"</h3>
+<p><strong>Try these approaches:</strong>
+1. Use ADVI instead of MCMC for initial exploration
+2. Reduce the number of samples
+3. Simplify the model (fewer states)
+4. Use NumPyro backend for MCMC: <code>pm.sample(nuts_sampler='numpyro')</code></p>
+<h3 id="results-dont-match-my-expectations">"Results don't match my expectations"</h3>
+<p><strong>Validate your model:</strong>
+1. Check posterior predictive samples
+2. Visualize the fitted changepoints on your data
+3. Try different prior specifications
+4. Ensure data preprocessing is correct</p>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<p>Now that you understand the core PyMC concepts, you can:</p>
+<ol>
+<li>Explore the <a href="../api/">API documentation</a> for detailed function references</li>
+<li>Try the example notebooks in <code>pytau/how_to/notebooks/</code></li>
+<li>Experiment with different model types for your data</li>
+<li>Customize models for your specific research questions</li>
+</ol>
+<p>For questions or issues, please visit the <a href="https://github.com/abuzarmahmood/pytau">PyTau GitHub repository</a>.</p></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js"></script>
+        <script src="../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
