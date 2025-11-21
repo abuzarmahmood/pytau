@@ -234,7 +234,7 @@ class _tau:
         # Ensure raw_mode_result is 1D array of changepoints
         if raw_mode_result.ndim == 0:
             raw_mode_result = np.array([raw_mode_result])
-        
+
         # If n_trials is provided, replicate changepoints for each trial
         # This is needed for functions that expect (n_trials, n_changepoints)
         if n_trials is not None:
