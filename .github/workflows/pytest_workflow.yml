@@ -40,7 +40,8 @@ jobs:
         pytest --nbmake pytau/how_to/notebooks/ -v --tb=short
 
         echo "Testing example notebooks..."
-        pytest --nbmake pytau/how_to/examples/ -v --tb=short
+        # Skip Bayesian_Changepoint_Model.ipynb as it requires pymc3 (deprecated)
+        pytest --nbmake pytau/how_to/examples/ -v --tb=short --ignore=pytau/how_to/examples/Bayesian_Changepoint_Model.ipynb
 
         echo "Notebook testing completed"
       shell: bash
