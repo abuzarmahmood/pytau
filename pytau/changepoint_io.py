@@ -341,6 +341,11 @@ class FitHandler:
         )
         varnames = ["model", "approx", "lambda", "tau", "data"]
         self.inference_outs = dict(zip(varnames, temp_outs))
+        
+        # If data is None (e.g., from advi_fit to avoid PyMC5 compatibility issues),
+        # use the preprocessed_data that was used for inference
+        if self.inference_outs["data"] is None and hasattr(self, "preprocessed_data"):
+            self.inference_outs["data"] = self.preprocessed_data
 
     def _gen_fit_metadata(self):
         """Generate metadata for fit
