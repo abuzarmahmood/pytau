@@ -230,7 +230,17 @@ class _tau:
         bin_width = metadata["preprocess"]["bin_width"]
 
         self.raw_int_tau = np.vectorize(int)(self.raw_tau)
-        self.raw_mode_tau = mode(self.raw_int_tau)[0][0]
+        raw_mode_result = np.squeeze(mode(self.raw_int_tau)[0])
+        # Ensure raw_mode_result is 1D array of changepoints
+        if raw_mode_result.ndim == 0:
+            raw_mode_result = np.array([raw_mode_result])
+        
+        # If n_trials is provided, replicate changepoints for each trial
+        # This is needed for functions that expect (n_trials, n_changepoints)
+        if n_trials is not None:
+            self.raw_mode_tau = np.tile(raw_mode_result, (n_trials, 1))
+        else:
+            self.raw_mode_tau = raw_mode_result
 
         self.scaled_tau = (self.raw_tau * bin_width) + time_lims[0]
         self.scaled_int_tau = np.vectorize(int)(self.scaled_tau)
