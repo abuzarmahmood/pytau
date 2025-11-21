@@ -344,7 +344,7 @@ class FitHandler:
 
         # If data is None (e.g., from advi_fit to avoid PyMC5 compatibility issues),
         # use the preprocessed_data that was used for inference
-        if self.inference_outs["data"] is None and hasattr(self, "preprocessed_data"):
+        if self.inference_outs.get("data") is None and hasattr(self, "preprocessed_data"):
             self.inference_outs["data"] = self.preprocessed_data
 
     def _gen_fit_metadata(self):
