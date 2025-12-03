@@ -39,11 +39,6 @@ jobs:
         echo "Testing how-to notebooks..."
         pytest --nbmake pytau/how_to/notebooks/ -v --tb=short
 
-        echo "Testing example notebooks..."
-        # Skip Bayesian_Changepoint_Model.ipynb as it requires pymc3 (deprecated)
-        # Allow no tests collected since we're ignoring the only notebook
-        pytest --nbmake pytau/how_to/examples/ -v --tb=short --ignore=pytau/how_to/examples/Bayesian_Changepoint_Model.ipynb || [ $? -eq 5 ]
-
         echo "Notebook testing completed"
       shell: bash
     - name: Upload test results
