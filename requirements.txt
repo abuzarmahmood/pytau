@@ -4,3 +4,4 @@ numpyro==0.15.1
 arviz==0.18.0
 graphviz==0.20.3
 easygui
+notebook
