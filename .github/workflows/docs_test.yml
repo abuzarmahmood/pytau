@@ -1,11 +1,6 @@
 name: Test Documentation Build
 
 on:
-  push:
-    paths:
-      - 'mkdocs.yml'
-      - 'docs/**'
-      - 'requirements-docs.txt'
   pull_request:
     paths:
       - 'mkdocs.yml'
