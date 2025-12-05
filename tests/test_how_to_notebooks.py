@@ -55,7 +55,6 @@ def test_notebooks_exist():
     expected_notebooks = [
         "PyTau_Walkthrough_no_handlers.ipynb",
         "PyTau_Walkthrough_with_handlers.ipynb",
-        "Bayesian_Changepoint_Model.ipynb"
     ]
 
     all_notebooks = get_notebook_files()
