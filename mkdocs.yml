@@ -20,6 +20,5 @@ nav:
     - "Available Models": models.md
     - "Inference Methods": inference.md
     - "Data Formats": data_formats.md
-    - "Pipeline Architecture": pipeline.md
   - "PyMC Concepts": pymc_concepts.md
   - "API Reference": api.md
