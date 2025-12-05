@@ -112,7 +112,7 @@ To build and view the documentation locally:
 
 ```bash
 # Install documentation dependencies
-pip install mkdocs mkdocs-material
+pip install -r requirements-docs.txt 
 
 # Serve documentation locally
 mkdocs serve
