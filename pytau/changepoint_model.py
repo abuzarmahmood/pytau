@@ -460,6 +460,316 @@ def gaussian_changepoint_mean_2d(data_array, n_states, **kwargs):
     return model_class.generate_model()
 
 
+class GaussianChangepointMeanTrialSwitch(ChangepointModel):
+    """
+    Gaussian model with trial switches
+    Assuming only emissions change across trials
+    Changepoint distribution remains constant
+    """
+
+    def __init__(self, data_array, switch_components, n_states, **kwargs):
+        """
+        Args:
+            data_array (3D Numpy array): trials x dimensions x time
+            switch_components (int): Number of trial switch components
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.switch_components = switch_components
+        self.n_states = n_states
+
+    def generate_model(self):
+        """
+        Returns:
+            pymc model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        switch_components = self.switch_components
+        n_states = self.n_states
+
+        trial_num, y_dim, time_bins = data_array.shape
+
+        with pm.Model() as model:
+            # Define Emissions (means)
+
+            # dims
+            dim_mu = pm.Normal("dim_mu", mu=0, sigma=5, shape=(y_dim))
+
+            # dims x switch_comps
+            trial_mu = pm.Normal(
+                "trial_mu",
+                mu=dim_mu.dimshuffle(0, "x"),
+                sigma=5,
+                shape=(y_dim, switch_components),
+            )
+
+            # dims x switch_comps x n_states
+            state_mu = pm.Normal(
+                "state_mu",
+                mu=trial_mu.dimshuffle(0, 1, "x"),
+                sigma=5,
+                shape=(y_dim, switch_components, n_states),
+            )
+
+            # One variance for each dimension
+            sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim))
+
+            # Define Changepoints
+            # Assuming distribution of changepoints remains
+            # the same across all trials
+
+            a = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
+
+            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
+            tau_latent = pm.Beta(
+                "tau_latent", a, b,
+                shape=(trial_num, n_states - 1)
+            ).sort(axis=-1)
+
+            # Trials x Changepoints
+            tau = pm.Deterministic("tau", time_bins * tau_latent)
+
+            # Define trial switches
+            # Will have same structure as regular changepoints
+
+            even_trial_switches = np.linspace(
+                0, 1, switch_components + 1)[1:-1]
+            tau_trial_latent = pm.Beta(
+                "tau_trial_latent",
+                1,
+                1,
+                initval=even_trial_switches,
+                shape=(switch_components - 1),
+            ).sort(axis=-1)
+
+            # Trial_changepoints
+            tau_trial = pm.Deterministic(
+                "tau_trial", trial_num * tau_trial_latent)
+
+            trial_idx = np.arange(trial_num)
+            trial_selector = tt.math.sigmoid(
+                trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, "x")
+            )
+
+            trial_selector = tt.concatenate(
+                [np.ones((1, trial_num)), trial_selector], axis=0)
+            inverse_trial_selector = 1 - trial_selector[1:, :]
+            inverse_trial_selector = tt.concatenate(
+                [inverse_trial_selector, np.ones((1, trial_num))], axis=0
+            )
+
+            # First, we can "select" sets of emissions depending on trial_changepoints
+            # switch_comps x trials
+            trial_selector = np.multiply(
+                trial_selector, inverse_trial_selector)
+
+            # state_mu: dims x switch_comps x states
+
+            # selected_trial_mu : dims x states x trials
+            selected_trial_mu = pm.Deterministic(
+                "selected_trial_mu",
+                tt.sum(
+                    # "dims" x switch_comps x "states" x trials
+                    trial_selector.dimshuffle("x", 0, "x", 1)
+                    * state_mu.dimshuffle(0, 1, 2, "x"),
+                    axis=1,
+                ),
+            )
+
+            # Then, we can select state_emissions for every trial
+            idx = np.arange(time_bins)
+
+            # tau : Trials x Changepoints
+            weight_stack = tt.math.sigmoid(
+                idx[np.newaxis, :] - tau[:, :, np.newaxis])
+            weight_stack = tt.concatenate(
+                [np.ones((trial_num, 1, time_bins)), weight_stack], axis=1
+            )
+            inverse_stack = 1 - weight_stack[:, 1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((trial_num, 1, time_bins))], axis=1
+            )
+
+            # Trials x states x Time
+            weight_stack = np.multiply(weight_stack, inverse_stack)
+
+            # Convert selected_trial_mu : dims x trials x states x "time"
+
+            # dims x trials x time
+            mu_latent = tt.sum(
+                selected_trial_mu.dimshuffle(0, 2, 1, "x")
+                * weight_stack.dimshuffle("x", 0, 1, 2),
+                axis=2,
+            )
+
+            # Convert to : trials x dims x time
+            mu_latent = mu_latent.dimshuffle(1, 0, 2)
+
+            # Broadcast sigma to match data shape
+            sigma_latent = sigma.dimshuffle("x", 0, "x")
+
+            # Add observations
+            observation = pm.Normal(
+                "obs", mu=mu_latent, sigma=sigma_latent, observed=data_array)
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data
+        test_data = gen_test_array(
+            (5, 10, 100), n_states=self.n_states, type="normal")
+
+        # Create model with test data
+        test_model = GaussianChangepointMeanTrialSwitch(
+            test_data, self.switch_components, self.n_states)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "dim_mu" in trace.varnames
+        assert "tau" in trace.varnames
+        assert "tau_trial" in trace.varnames
+        assert "state_mu" in trace.varnames
+
+        print("Test for GaussianChangepointMeanTrialSwitch passed")
+        return True
+
+
+# For backward compatibility
+def gaussian_changepoint_mean_trial_switch(data_array, switch_components, n_states, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = GaussianChangepointMeanTrialSwitch(
+        data_array, switch_components, n_states, **kwargs)
+    return model_class.generate_model()
+
+
+class GaussianChangepointMean3D(ChangepointModel):
+    """Model for Gaussian changepoint on multi-trial data
+
+    Detects changes in mean only across trials.
+    Similar to SingleTastePoisson but for Gaussian data.
+    No hierarchical structure for emissions.
+    """
+
+    def __init__(self, data_array, n_states, **kwargs):
+        """
+        Args:
+            data_array (3D Numpy array): trials x dimensions x time
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = data_array
+        self.n_states = n_states
+
+    def generate_model(self):
+        """
+        Returns:
+            pymc model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        n_states = self.n_states
+
+        mean_vals = np.array(
+            [np.mean(x, axis=-1)
+             for x in np.array_split(data_array, n_states, axis=-1)]
+        ).T
+        mean_vals = np.mean(mean_vals, axis=1)
+        mean_vals += 0.01  # To avoid zero starting prob
+
+        y_dim = data_array.shape[1]
+        trials = data_array.shape[0]
+        idx = np.arange(data_array.shape[-1])
+        length = idx.max() + 1
+
+        with pm.Model() as model:
+            # Emissions: mean for each dimension and state
+            mu = pm.Normal("mu", mu=mean_vals, sigma=5,
+                           shape=(y_dim, n_states))
+
+            # One variance for each dimension
+            sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim))
+
+            # Changepoints
+            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
+
+            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
+            tau_latent = pm.Beta(
+                "tau_latent",
+                a_tau,
+                b_tau,
+                shape=(trials, n_states - 1),
+            ).sort(axis=-1)
+
+            tau = pm.Deterministic(
+                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
+
+            # Create weight stack for changepoints
+            weight_stack = tt.math.sigmoid(
+                idx[np.newaxis, :] - tau[:, :, np.newaxis])
+            weight_stack = tt.concatenate(
+                [np.ones((trials, 1, length)), weight_stack], axis=1)
+            inverse_stack = 1 - weight_stack[:, 1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((trials, 1, length))], axis=1)
+            weight_stack = np.multiply(weight_stack, inverse_stack)
+
+            # Compute latent means: trials x dims x time
+            mu_latent = tt.tensordot(weight_stack, mu, [
+                                     1, 1]).swapaxes(1, 2)
+
+            # Broadcast sigma to match data shape
+            sigma_latent = sigma.dimshuffle("x", 0, "x")
+
+            observation = pm.Normal("obs", mu=mu_latent, sigma=sigma_latent,
+                                    observed=data_array)
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data
+        test_data = gen_test_array(
+            (5, 10, 100), n_states=self.n_states, type="normal")
+
+        # Create model with test data
+        test_model = GaussianChangepointMean3D(test_data, self.n_states)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "mu" in trace.varnames
+        assert "tau" in trace.varnames
+        assert "sigma" in trace.varnames
+
+        print("Test for GaussianChangepointMean3D passed")
+        return True
+
+
+# For backward compatibility
+def gaussian_changepoint_mean_3d(data_array, n_states, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = GaussianChangepointMean3D(data_array, n_states, **kwargs)
+    return model_class.generate_model()
+
+
 def stick_breaking_trial(this_beta, trial_count):
     portion_remaining = tt.concatenate(
         [
