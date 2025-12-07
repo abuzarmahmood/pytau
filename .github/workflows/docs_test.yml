@@ -1,0 +1,31 @@
+name: Test Documentation Build
+
+on:
+  pull_request:
+    paths:
+      - 'mkdocs.yml'
+      - 'docs/**'
+      - 'requirements-docs.txt'
+
+jobs:
+  test-docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Install documentation dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-docs.txt
+    - name: Test documentation build
+      run: |
+        mkdocs build
+    - name: Upload built docs as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: built-docs
+        path: site/
+        retention-days: 7

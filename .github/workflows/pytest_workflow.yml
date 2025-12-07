@@ -1,10 +1,14 @@
 name: Pytest
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
-    branches: [ '**' ]
+    paths:
+      - '**.py'
+      - '**.ipynb'
+      - 'pyproject.toml'
+      - 'setup.py'
+      - 'requirements*.txt'
+      - '.github/workflows/pytest_workflow.yml'
 
 jobs:
   test-primary:
