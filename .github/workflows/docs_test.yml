@@ -1,4 +1,4 @@
-name: Test Documentation Build
+name: Test and Deploy Documentation
 
 on:
   pull_request:
@@ -6,19 +6,16 @@ on:
       - 'mkdocs.yml'
       - 'docs/**'
       - 'requirements-docs.txt'
-  push:
-    branches:
-      - master
-    paths:
-      - 'mkdocs.yml'
-      - 'docs/**'
-      - 'requirements-docs.txt'
 
 jobs:
-  test-docs:
+  test-and-deploy-docs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
       with:
@@ -36,25 +33,6 @@ jobs:
         name: built-docs
         path: site/
         retention-days: 7
-
-  deploy-docs:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    needs: test-docs
-    permissions:
-      contents: write
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    - name: Install documentation dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements-docs.txt
     - name: Configure git
       run: |
         git config user.name "github-actions[bot]"
