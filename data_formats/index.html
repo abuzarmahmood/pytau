@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Data Formats - PyTau</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../css/brands.min.css" rel="stylesheet">
+        <link href="../css/solid.min.css" rel="stylesheet">
+        <link href="../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">PyTau</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="nav-item">
+                                <a href=".." class="nav-link">Home</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle active" aria-current="page" role="button" data-bs-toggle="dropdown"  aria-expanded="false">User Guide</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../models/" class="dropdown-item">Available Models</a>
+</li>
+                                    
+<li>
+    <a href="../inference/" class="dropdown-item">Inference Methods</a>
+</li>
+                                    
+<li>
+    <a href="./" class="dropdown-item active" aria-current="page">Data Formats</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../pymc_concepts/" class="nav-link">PyMC Concepts</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../api/" class="nav-link">API Reference</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../inference/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../pymc_concepts/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#data-formats" class="nav-link">Data Formats</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#input-data-shapes" class="nav-link">Input Data Shapes</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#data-types" class="nav-link">Data Types</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#data-preprocessing" class="nav-link">Data Preprocessing</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#time-binning" class="nav-link">Time Binning</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#data-quality-checks" class="nav-link">Data Quality Checks</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#data-organization" class="nav-link">Data Organization</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#example-workflows" class="nav-link">Example Workflows</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#common-issues-and-solutions" class="nav-link">Common Issues and Solutions</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#best-practices-summary" class="nav-link">Best Practices Summary</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#next-steps" class="nav-link">Next Steps</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="data-formats">Data Formats</h1>
+<p>PyTau is designed to work with various neural data formats and experimental designs. This page describes the expected data formats, preprocessing options, and best practices for preparing your data.</p>
+<h2 id="input-data-shapes">Input Data Shapes</h2>
+<p>PyTau models accept data in different dimensionalities depending on the experimental design:</p>
+<h3 id="1d-single-time-series">1D: Single Time Series</h3>
+<p><strong>Shape</strong>: <code>(time,)</code></p>
+<p><strong>Use Case</strong>: Single neuron or single trial analysis</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">import numpy as np
+
+# Single neuron spike counts over time
+data_1d = np.array([5, 3, 7, 2, 1, 0, 0, 1, 2, 4])
+# 10 time bins
+
+from pytau.changepoint_model import PoissonChangepoint1D
+model = PoissonChangepoint1D(data_1d, states=2)
+</code></pre>
+<h3 id="2d-multiple-trials-or-neurons">2D: Multiple Trials or Neurons</h3>
+<p><strong>Shape</strong>: <code>(trials, time)</code> or <code>(neurons, time)</code></p>
+<p><strong>Use Case</strong>:
+- Multiple trials of a single neuron
+- Multiple neurons recorded simultaneously
+- Single condition experiments</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python"># 20 trials, 100 time bins
+data_2d = np.random.poisson(lam=5, size=(20, 100))
+
+from pytau.changepoint_model import single_taste_poisson
+model = single_taste_poisson(data_2d, states=3)
+</code></pre>
+<h3 id="3d-trials-neurons-time">3D: Trials × Neurons × Time</h3>
+<p><strong>Shape</strong>: <code>(trials, neurons, time)</code></p>
+<p><strong>Use Case</strong>:
+- Multi-neuron recordings
+- Single stimulus/condition
+- Population analysis</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python"># 30 trials, 15 neurons, 100 time bins
+data_3d = np.random.poisson(lam=3, size=(30, 15, 100))
+
+from pytau.changepoint_model import single_taste_poisson
+model = single_taste_poisson(data_3d, states=3)
+</code></pre>
+<h3 id="4d-tastes-trials-neurons-time">4D: Tastes × Trials × Neurons × Time</h3>
+<p><strong>Shape</strong>: <code>(tastes, trials, neurons, time)</code></p>
+<p><strong>Use Case</strong>:
+- Multi-stimulus experiments
+- Taste/odor discrimination studies
+- Condition comparison</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python"># 4 tastes, 30 trials per taste, 15 neurons, 100 time bins
+data_4d = np.random.poisson(lam=4, size=(4, 30, 15, 100))
+
+from pytau.changepoint_model import all_taste_poisson
+model = all_taste_poisson(data_4d, states=3)
+</code></pre>
+<h2 id="data-types">Data Types</h2>
+<h3 id="spike-count-data-poisson-models">Spike Count Data (Poisson Models)</h3>
+<p><strong>Format</strong>: Integer counts per time bin</p>
+<p><strong>Preprocessing</strong>:</p>
+<pre><code class="language-python">import numpy as np
+
+# Raw spike times (in seconds)
+spike_times = np.array([0.1, 0.15, 0.23, 0.45, 0.67, ...])
+
+# Bin into counts
+bin_width = 0.05  # 50 ms bins
+time_bins = np.arange(0, 2.0, bin_width)
+spike_counts, _ = np.histogram(spike_times, bins=time_bins)
+
+# spike_counts is now ready for PyTau
+</code></pre>
+<p><strong>Best Practices</strong>:
+- Choose bin width based on firing rate (typically 10-100 ms)
+- Ensure sufficient counts per bin (avoid too many zeros)
+- Consider smoothing for very sparse data</p>
+<h3 id="continuous-data-gaussian-models">Continuous Data (Gaussian Models)</h3>
+<p><strong>Format</strong>: Floating-point values</p>
+<p><strong>Examples</strong>:
+- Local field potentials (LFP)
+- Calcium imaging traces
+- Behavioral measurements</p>
+<p><strong>Preprocessing</strong>:</p>
+<pre><code class="language-python"># Raw continuous signal
+lfp_signal = load_lfp_data()
+
+# Downsample if needed
+from scipy.signal import resample
+downsampled = resample(lfp_signal, num=100)
+
+# Normalize (optional but recommended)
+normalized = (downsampled - downsampled.mean()) / downsampled.std()
+
+from pytau.changepoint_model import gaussian_changepoint_mean_2d
+model = gaussian_changepoint_mean_2d(normalized, states=3)
+</code></pre>
+<p><strong>Best Practices</strong>:
+- Normalize data (z-score or min-max)
+- Remove artifacts and outliers
+- Consider filtering (bandpass, lowpass)</p>
+<h3 id="categorical-data-categorical-models">Categorical Data (Categorical Models)</h3>
+<p><strong>Format</strong>: Integer category labels</p>
+<p><strong>Examples</strong>:
+- Behavioral states
+- Decoded neural states
+- Discrete choices</p>
+<p><strong>Preprocessing</strong>:</p>
+<pre><code class="language-python"># Behavioral states: 0=rest, 1=approach, 2=consume
+behavior = np.array([0, 0, 0, 1, 1, 2, 2, 2, 0, 0])
+
+from pytau.changepoint_model import categorical_changepoint_2d
+model = categorical_changepoint_2d(behavior, states=2, n_categories=3)
+</code></pre>
+<p><strong>Best Practices</strong>:
+- Use consecutive integers starting from 0
+- Ensure all categories are represented
+- Consider temporal resolution</p>
+<h2 id="data-preprocessing">Data Preprocessing</h2>
+<p>PyTau provides built-in preprocessing options for different analysis needs:</p>
+<h3 id="actual-data">Actual Data</h3>
+<p>Use your real experimental data as-is:</p>
+<pre><code class="language-python">from pytau.changepoint_io import FitHandler
+
+handler = FitHandler(
+    data_type='actual',
+    # ... other parameters
+)
+</code></pre>
+<h3 id="shuffled-data">Shuffled Data</h3>
+<p>Shuffle trials to create null distribution:</p>
+<pre><code class="language-python">handler = FitHandler(
+    data_type='shuffled',
+    # Randomly shuffles trial order
+)
+</code></pre>
+<h3 id="simulated-data">Simulated Data</h3>
+<p>Generate synthetic data for testing:</p>
+<pre><code class="language-python">handler = FitHandler(
+    data_type='simulated',
+    # Generates data from known changepoint model
+)
+</code></pre>
+<h2 id="time-binning">Time Binning</h2>
+<h3 id="choosing-bin-width">Choosing Bin Width</h3>
+<p>The bin width affects model performance and interpretation:</p>
+<p><strong>Too Small</strong> (&lt; 10 ms):
+- Many zero counts
+- Noisy estimates
+- Slower inference</p>
+<p><strong>Too Large</strong> (&gt; 200 ms):
+- Loss of temporal resolution
+- Missed fast transitions
+- Oversmoothing</p>
+<p><strong>Recommended</strong>:
+- Start with 50 ms bins
+- Adjust based on firing rate
+- Higher firing rate → smaller bins possible</p>
+<h3 id="binning-example">Binning Example</h3>
+<pre><code class="language-python">import numpy as np
+
+def bin_spike_times(spike_times, bin_width, time_range):
+    &quot;&quot;&quot;
+    Bin spike times into counts.
+
+    Parameters
+    ----------
+    spike_times : array-like
+        Spike times in seconds
+    bin_width : float
+        Width of each bin in seconds
+    time_range : tuple
+        (start_time, end_time) in seconds
+
+    Returns
+    -------
+    spike_counts : ndarray
+        Binned spike counts
+    bin_edges : ndarray
+        Edges of time bins
+    &quot;&quot;&quot;
+    bin_edges = np.arange(time_range[0], time_range[1], bin_width)
+    spike_counts, _ = np.histogram(spike_times, bins=bin_edges)
+    return spike_counts, bin_edges
+
+# Example usage
+spike_times = np.array([0.1, 0.15, 0.23, 0.45, 0.67, 0.89, 1.2, 1.5])
+counts, edges = bin_spike_times(spike_times, bin_width=0.1, time_range=(0, 2))
+</code></pre>
+<h2 id="data-quality-checks">Data Quality Checks</h2>
+<h3 id="check-for-issues">Check for Issues</h3>
+<pre><code class="language-python">import numpy as np
+
+def check_data_quality(data):
+    &quot;&quot;&quot;Check data for common issues.&quot;&quot;&quot;
+
+    # Check for NaNs
+    if np.any(np.isnan(data)):
+        print(&quot;⚠️ Warning: Data contains NaN values&quot;)
+
+    # Check for infinities
+    if np.any(np.isinf(data)):
+        print(&quot;⚠️ Warning: Data contains infinite values&quot;)
+
+    # Check for negative values (spike counts should be non-negative)
+    if np.any(data &lt; 0):
+        print(&quot;⚠️ Warning: Data contains negative values&quot;)
+
+    # Check for excessive zeros
+    zero_fraction = np.mean(data == 0)
+    if zero_fraction &gt; 0.8:
+        print(f&quot;⚠️ Warning: {zero_fraction*100:.1f}% of data is zero&quot;)
+
+    # Check variance
+    if np.var(data) &lt; 1e-10:
+        print(&quot;⚠️ Warning: Data has very low variance&quot;)
+
+    print(&quot;✅ Data quality check complete&quot;)
+
+# Example
+check_data_quality(spike_counts)
+</code></pre>
+<h3 id="handle-missing-data">Handle Missing Data</h3>
+<pre><code class="language-python"># Remove trials with missing data
+def remove_incomplete_trials(data):
+    &quot;&quot;&quot;Remove trials containing NaN or Inf.&quot;&quot;&quot;
+    # Assuming data shape is (trials, neurons, time)
+    valid_trials = ~np.any(np.isnan(data) | np.isinf(data), axis=(1, 2))
+    return data[valid_trials]
+
+cleaned_data = remove_incomplete_trials(data_3d)
+</code></pre>
+<h2 id="data-organization">Data Organization</h2>
+<h3 id="file-structure">File Structure</h3>
+<p>Organize your data files consistently:</p>
+<pre><code>project/
+├── data/
+│   ├── animal1/
+│   │   ├── session1/
+│   │   │   ├── spikes.h5
+│   │   │   └── metadata.json
+│   │   └── session2/
+│   │       ├── spikes.h5
+│   │       └── metadata.json
+│   └── animal2/
+│       └── ...
+└── models/
+    └── fitted_models/
+</code></pre>
+<h3 id="hdf5-format">HDF5 Format</h3>
+<p>PyTau works well with HDF5 files for large datasets:</p>
+<pre><code class="language-python">import h5py
+
+# Save data
+with h5py.File('spikes.h5', 'w') as f:
+    f.create_dataset('spike_counts', data=spike_counts)
+    f.create_dataset('time_bins', data=time_bins)
+    f.attrs['bin_width'] = 0.05
+    f.attrs['animal'] = 'mouse1'
+    f.attrs['session'] = '2024-01-15'
+
+# Load data
+with h5py.File('spikes.h5', 'r') as f:
+    spike_counts = f['spike_counts'][:]
+    time_bins = f['time_bins'][:]
+    bin_width = f.attrs['bin_width']
+</code></pre>
+<h2 id="example-workflows">Example Workflows</h2>
+<h3 id="single-neuron-analysis">Single Neuron Analysis</h3>
+<pre><code class="language-python">import numpy as np
+from pytau.changepoint_model import PoissonChangepoint1D, advi_fit
+
+# Load spike times
+spike_times = load_spike_times('neuron1.npy')
+
+# Bin spikes
+bin_width = 0.05  # 50 ms
+time_range = (0, 2.0)  # 2 seconds
+bin_edges = np.arange(time_range[0], time_range[1], bin_width)
+spike_counts, _ = np.histogram(spike_times, bins=bin_edges)
+
+# Fit model
+model = PoissonChangepoint1D(spike_counts, states=3)
+model, approx = advi_fit(model, fit=10000, samples=5000)
+</code></pre>
+<h3 id="multi-trial-population-analysis">Multi-Trial Population Analysis</h3>
+<pre><code class="language-python">import numpy as np
+from pytau.changepoint_model import single_taste_poisson, advi_fit
+
+# Load data: (trials, neurons, time)
+data = load_population_data('session1.h5')
+
+# Check data quality
+check_data_quality(data)
+
+# Fit model
+model = single_taste_poisson(data, states=4)
+model, approx = advi_fit(model, fit=10000, samples=5000)
+</code></pre>
+<h3 id="multi-taste-experiment">Multi-Taste Experiment</h3>
+<pre><code class="language-python">import numpy as np
+from pytau.changepoint_model import all_taste_poisson, advi_fit
+
+# Load data: (tastes, trials, neurons, time)
+data = load_multitaste_data('experiment1.h5')
+
+# Fit hierarchical model
+model = all_taste_poisson(data, states=3)
+model, approx = advi_fit(model, fit=15000, samples=5000)
+</code></pre>
+<h2 id="common-issues-and-solutions">Common Issues and Solutions</h2>
+<h3 id="issue-too-many-zeros">Issue: Too Many Zeros</h3>
+<p><strong>Solution</strong>: Increase bin width or combine neurons</p>
+<h3 id="issue-unequal-trial-lengths">Issue: Unequal Trial Lengths</h3>
+<p><strong>Solution</strong>: Pad with NaN and mask, or truncate to shortest trial</p>
+<h3 id="issue-different-sampling-rates">Issue: Different Sampling Rates</h3>
+<p><strong>Solution</strong>: Resample to common rate before analysis</p>
+<h3 id="issue-outlier-trials">Issue: Outlier Trials</h3>
+<p><strong>Solution</strong>: Use robust preprocessing or remove outliers</p>
+<h3 id="issue-memory-errors">Issue: Memory Errors</h3>
+<p><strong>Solution</strong>: Process data in batches or reduce dimensionality</p>
+<h2 id="best-practices-summary">Best Practices Summary</h2>
+<ol>
+<li><strong>Choose appropriate bin width</strong> based on firing rate</li>
+<li><strong>Normalize continuous data</strong> for better convergence</li>
+<li><strong>Check data quality</strong> before fitting models</li>
+<li><strong>Use consistent data organization</strong> across experiments</li>
+<li><strong>Save preprocessing parameters</strong> for reproducibility</li>
+<li><strong>Start with simple models</strong> on subset of data</li>
+<li><strong>Validate results</strong> with held-out data</li>
+</ol>
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li>See <a href="../models/">Available Models</a> for model selection</li>
+<li>See <a href="../inference/">Inference Methods</a> for fitting models</li>
+<li>See <a href="pipeline.md">Pipeline Architecture</a> for batch processing</li>
+<li>Check the <a href="../api/">API documentation</a> for detailed function signatures</li>
+</ul></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js"></script>
+        <script src="../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

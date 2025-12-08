@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Inference Methods - PyTau</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../css/brands.min.css" rel="stylesheet">
+        <link href="../css/solid.min.css" rel="stylesheet">
+        <link href="../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">PyTau</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="nav-item">
+                                <a href=".." class="nav-link">Home</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle active" aria-current="page" role="button" data-bs-toggle="dropdown"  aria-expanded="false">User Guide</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../models/" class="dropdown-item">Available Models</a>
+</li>
+                                    
+<li>
+    <a href="./" class="dropdown-item active" aria-current="page">Inference Methods</a>
+</li>
+                                    
+<li>
+    <a href="../data_formats/" class="dropdown-item">Data Formats</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../pymc_concepts/" class="nav-link">PyMC Concepts</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../api/" class="nav-link">API Reference</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../models/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../data_formats/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#inference-methods" class="nav-link">Inference Methods</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#overview" class="nav-link">Overview</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#variational-inference-advi" class="nav-link">Variational Inference (ADVI)</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#mcmc-sampling" class="nav-link">MCMC Sampling</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#model-selection" class="nav-link">Model Selection</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#choosing-an-inference-method" class="nav-link">Choosing an Inference Method</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#inference-best-practices" class="nav-link">Inference Best Practices</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#troubleshooting" class="nav-link">Troubleshooting</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#next-steps" class="nav-link">Next Steps</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="inference-methods">Inference Methods</h1>
+<p>PyTau provides multiple inference methods for fitting changepoint models to neural data. This page covers the available inference approaches, their trade-offs, and usage examples.</p>
+<h2 id="overview">Overview</h2>
+<p>PyTau supports three main inference approaches:</p>
+<ol>
+<li><strong>Variational Inference (ADVI)</strong>: Fast approximate inference</li>
+<li><strong>MCMC Sampling</strong>: High-quality posterior samples</li>
+<li><strong>Model Selection</strong>: Automatic determination of optimal state numbers</li>
+</ol>
+<h2 id="variational-inference-advi">Variational Inference (ADVI)</h2>
+<p>Automatic Differentiation Variational Inference (ADVI) provides fast approximate inference by optimizing a variational distribution to approximate the posterior.</p>
+<h3 id="advantages">Advantages</h3>
+<ul>
+<li><strong>Speed</strong>: Much faster than MCMC, especially for large datasets</li>
+<li><strong>Scalability</strong>: Handles high-dimensional models efficiently</li>
+<li><strong>Convergence monitoring</strong>: Built-in convergence diagnostics</li>
+</ul>
+<h3 id="disadvantages">Disadvantages</h3>
+<ul>
+<li><strong>Approximation</strong>: May not capture complex posterior structure</li>
+<li><strong>Local optima</strong>: Can get stuck in local minima</li>
+<li><strong>Underestimated uncertainty</strong>: Tends to underestimate posterior variance</li>
+</ul>
+<h3 id="usage">Usage</h3>
+<pre><code class="language-python">from pytau.changepoint_model import advi_fit
+
+# Fit model using ADVI
+model, approx = advi_fit(
+    model,
+    fit=10000,           # Number of optimization iterations
+    samples=5000,        # Number of samples to draw from approximation
+    convergence_tol=0.01 # Convergence tolerance
+)
+
+# Draw samples from the approximation
+trace = approx.sample(draws=5000)
+</code></pre>
+<h3 id="parameters">Parameters</h3>
+<ul>
+<li><strong>fit</strong>: Number of ADVI iterations (default: 10000)</li>
+<li>More iterations = better approximation but slower</li>
+<li>
+<p>Monitor ELBO to check convergence</p>
+</li>
+<li>
+<p><strong>samples</strong>: Number of samples to draw (default: 5000)</p>
+</li>
+<li>More samples = better posterior estimates</li>
+<li>
+<p>Typically 1000-10000 is sufficient</p>
+</li>
+<li>
+<p><strong>convergence_tol</strong>: Relative change in ELBO for convergence (default: 0.01)</p>
+</li>
+<li>Smaller values = stricter convergence</li>
+<li>0.001-0.01 is typical</li>
+</ul>
+<h3 id="full-rank-advi">Full-Rank ADVI</h3>
+<p>PyTau uses full-rank ADVI by default, which models correlations between parameters:</p>
+<pre><code class="language-python"># Full-rank ADVI (default)
+model, approx = advi_fit(model, fit=10000)
+
+# The approximation captures parameter correlations
+# Better approximation quality than mean-field ADVI
+</code></pre>
+<h3 id="monitoring-convergence">Monitoring Convergence</h3>
+<pre><code class="language-python"># Access ELBO history
+elbo_history = approx.hist
+
+# Plot convergence
+import matplotlib.pyplot as plt
+plt.plot(elbo_history)
+plt.xlabel('Iteration')
+plt.ylabel('ELBO')
+plt.title('ADVI Convergence')
+plt.show()
+</code></pre>
+<h2 id="mcmc-sampling">MCMC Sampling</h2>
+<p>Markov Chain Monte Carlo (MCMC) sampling provides high-quality posterior samples using the No-U-Turn Sampler (NUTS).</p>
+<h3 id="advantages_1">Advantages</h3>
+<ul>
+<li><strong>Accuracy</strong>: Provides exact samples from the posterior (asymptotically)</li>
+<li><strong>Uncertainty quantification</strong>: Accurate uncertainty estimates</li>
+<li><strong>Convergence diagnostics</strong>: Rich diagnostics (R-hat, effective sample size)</li>
+</ul>
+<h3 id="disadvantages_1">Disadvantages</h3>
+<ul>
+<li><strong>Speed</strong>: Much slower than ADVI</li>
+<li><strong>Scalability</strong>: Can be challenging for very high-dimensional models</li>
+<li><strong>Tuning</strong>: Requires warm-up/tuning phase</li>
+</ul>
+<h3 id="standard-mcmc">Standard MCMC</h3>
+<pre><code class="language-python">from pytau.changepoint_model import mcmc_fit
+
+# Fit model using MCMC
+model, trace, lambda_stack, tau_samples, observations = mcmc_fit(
+    model,
+    samples=1000,    # Number of samples per chain
+    tune=500,        # Number of tuning samples
+    chains=4,        # Number of chains
+    cores=4          # Number of CPU cores to use
+)
+</code></pre>
+<h3 id="parameters_1">Parameters</h3>
+<ul>
+<li><strong>samples</strong>: Number of posterior samples per chain (default: 1000)</li>
+<li>More samples = better posterior estimates</li>
+<li>
+<p>1000-5000 is typical</p>
+</li>
+<li>
+<p><strong>tune</strong>: Number of tuning/warm-up samples (default: 500)</p>
+</li>
+<li>Discarded samples used to tune sampler</li>
+<li>
+<p>500-2000 is typical</p>
+</li>
+<li>
+<p><strong>chains</strong>: Number of independent chains (default: 4)</p>
+</li>
+<li>Multiple chains enable convergence diagnostics</li>
+<li>
+<p>4 chains is standard</p>
+</li>
+<li>
+<p><strong>cores</strong>: Number of CPU cores for parallel sampling</p>
+</li>
+<li>Set to number of chains for maximum parallelization</li>
+</ul>
+<h3 id="dirichlet-process-prior-models">Dirichlet Process Prior Models</h3>
+<p>For models with Dirichlet process priors (automatic state detection), use the specialized fitting function:</p>
+<pre><code class="language-python">from pytau.changepoint_model import dpp_fit
+
+# Fit Dirichlet process model
+dpp_trace = dpp_fit(
+    model,
+    n_chains=4,
+    tune=500,
+    draws=500,
+    use_numpyro=True  # Use NumPyro backend for better performance
+)
+</code></pre>
+<h3 id="numpyro-backend">NumPyro Backend</h3>
+<p>PyTau supports the NumPyro backend for improved MCMC performance:</p>
+<pre><code class="language-python"># Use NumPyro for faster sampling
+trace = dpp_fit(model, use_numpyro=True)
+
+# NumPyro advantages:
+# - Faster sampling (GPU support)
+# - Better memory efficiency
+# - Improved convergence for complex models
+</code></pre>
+<h3 id="convergence-diagnostics">Convergence Diagnostics</h3>
+<pre><code class="language-python">import arviz as az
+
+# Convert trace to ArviZ InferenceData
+idata = az.from_pymc3(trace)
+
+# Check R-hat (should be &lt; 1.01)
+print(az.summary(idata, var_names=['tau']))
+
+# Plot trace
+az.plot_trace(idata, var_names=['tau'])
+
+# Check effective sample size
+print(az.ess(idata))
+</code></pre>
+<h2 id="model-selection">Model Selection</h2>
+<p>PyTau provides tools for automatically determining the optimal number of states using ELBO comparison.</p>
+<h3 id="automatic-state-detection">Automatic State Detection</h3>
+<pre><code class="language-python">from pytau.changepoint_model import find_best_states
+
+# Find optimal number of states
+best_model, model_list, elbo_values = find_best_states(
+    data,
+    model_generator,
+    n_fit=5000,        # ADVI iterations per model
+    n_samples=1000,    # Samples per model
+    min_states=2,      # Minimum states to try
+    max_states=8       # Maximum states to try
+)
+
+# best_model: Model with highest ELBO
+# model_list: List of all fitted models
+# elbo_values: ELBO for each state number
+</code></pre>
+<h3 id="plotting-model-comparison">Plotting Model Comparison</h3>
+<pre><code class="language-python">import matplotlib.pyplot as plt
+
+# Plot ELBO vs number of states
+states = range(min_states, max_states + 1)
+plt.plot(states, elbo_values, 'o-')
+plt.xlabel('Number of States')
+plt.ylabel('ELBO')
+plt.title('Model Selection')
+plt.show()
+
+# Higher ELBO = better model fit
+# Look for elbow or plateau
+</code></pre>
+<h3 id="cross-validation">Cross-Validation</h3>
+<p>For more robust model selection, use cross-validation:</p>
+<pre><code class="language-python">from pytau.changepoint_model import cross_validate_states
+
+# K-fold cross-validation
+cv_scores = cross_validate_states(
+    data,
+    model_generator,
+    k_folds=5,
+    min_states=2,
+    max_states=8
+)
+
+# Select model with best cross-validation score
+best_n_states = cv_scores.argmax() + min_states
+</code></pre>
+<h2 id="choosing-an-inference-method">Choosing an Inference Method</h2>
+<h3 id="use-advi-when">Use ADVI when:</h3>
+<ul>
+<li>You need fast results</li>
+<li>You're doing exploratory analysis</li>
+<li>You're fitting many models (batch processing)</li>
+<li>Approximate inference is sufficient</li>
+</ul>
+<h3 id="use-mcmc-when">Use MCMC when:</h3>
+<ul>
+<li>You need accurate uncertainty estimates</li>
+<li>You're doing final analysis for publication</li>
+<li>You have time for longer computation</li>
+<li>You need convergence diagnostics</li>
+</ul>
+<h3 id="use-dirichlet-models-when">Use Dirichlet Models when:</h3>
+<ul>
+<li>Number of states is unknown</li>
+<li>You want data-driven state detection</li>
+<li>You can afford longer inference time</li>
+</ul>
+<h2 id="inference-best-practices">Inference Best Practices</h2>
+<h3 id="1-start-with-advi">1. Start with ADVI</h3>
+<p>Begin with ADVI for quick exploration, then use MCMC for final analysis if needed.</p>
+<h3 id="2-check-convergence">2. Check Convergence</h3>
+<p>Always check convergence diagnostics:
+- ADVI: Monitor ELBO convergence
+- MCMC: Check R-hat &lt; 1.01 and effective sample size</p>
+<h3 id="3-multiple-chains">3. Multiple Chains</h3>
+<p>Use multiple chains (4+) for MCMC to detect convergence issues.</p>
+<h3 id="4-sufficient-samples">4. Sufficient Samples</h3>
+<p>Use enough samples:
+- ADVI: 1000-10000 samples
+- MCMC: 1000-5000 samples per chain</p>
+<h3 id="5-tune-appropriately">5. Tune Appropriately</h3>
+<p>For MCMC, use sufficient tuning:
+- Simple models: 500 tuning samples
+- Complex models: 1000-2000 tuning samples</p>
+<h3 id="6-parallel-processing">6. Parallel Processing</h3>
+<p>Use multiple cores for MCMC to speed up sampling:</p>
+<pre><code class="language-python"># Use all available cores
+import multiprocessing
+n_cores = multiprocessing.cpu_count()
+trace = mcmc_fit(model, cores=n_cores, chains=n_cores)
+</code></pre>
+<h3 id="7-save-results">7. Save Results</h3>
+<p>Save fitted models for later analysis:</p>
+<pre><code class="language-python">import pickle
+
+# Save model and trace
+with open('fitted_model.pkl', 'wb') as f:
+    pickle.dump({'model': model, 'trace': trace}, f)
+</code></pre>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="advi-not-converging">ADVI Not Converging</h3>
+<ul>
+<li>Increase <code>fit</code> iterations</li>
+<li>Try different random seeds</li>
+<li>Check for numerical issues in data (NaNs, infinities)</li>
+<li>Consider data preprocessing (normalization, binning)</li>
+</ul>
+<h3 id="mcmc-divergences">MCMC Divergences</h3>
+<ul>
+<li>Increase <code>tune</code> samples</li>
+<li>Reparameterize model</li>
+<li>Check for label switching in changepoint models</li>
+<li>Use stronger priors</li>
+</ul>
+<h3 id="slow-inference">Slow Inference</h3>
+<ul>
+<li>Use ADVI instead of MCMC</li>
+<li>Reduce data size (coarser binning, fewer trials)</li>
+<li>Use NumPyro backend for MCMC</li>
+<li>Parallelize across multiple cores</li>
+</ul>
+<h3 id="memory-issues">Memory Issues</h3>
+<ul>
+<li>Reduce number of samples</li>
+<li>Process data in batches</li>
+<li>Use ADVI instead of MCMC</li>
+<li>Increase system swap space</li>
+</ul>
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li>See <a href="../models/">Available Models</a> for model descriptions</li>
+<li>See <a href="../data_formats/">Data Formats</a> for data preparation</li>
+<li>See <a href="pipeline.md">Pipeline Architecture</a> for batch processing</li>
+<li>Check the <a href="../api/">API documentation</a> for detailed function signatures</li>
+</ul></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js"></script>
+        <script src="../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

@@ -36,13 +36,30 @@
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
                             <li class="nav-item">
-                                <a href="." class="nav-link active" aria-current="page">Start</a>
+                                <a href="." class="nav-link active" aria-current="page">Home</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">User Guide</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="models/" class="dropdown-item">Available Models</a>
+</li>
+                                    
+<li>
+    <a href="inference/" class="dropdown-item">Inference Methods</a>
+</li>
+                                    
+<li>
+    <a href="data_formats/" class="dropdown-item">Data Formats</a>
+</li>
+                                </ul>
                             </li>
                             <li class="nav-item">
                                 <a href="pymc_concepts/" class="nav-link">PyMC Concepts</a>
                             </li>
                             <li class="nav-item">
-                                <a href="api/" class="nav-link">API</a>
+                                <a href="api/" class="nav-link">API Reference</a>
                             </li>
                         </ul>
 
@@ -58,7 +75,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="pymc_concepts/" class="nav-link">
+                                <a rel="next" href="models/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
@@ -311,5 +328,5 @@ model, approx, lambda_stack, tau_samples, data = advi_fit(model, fit=10000, samp
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2025-11-20 18:26:08.035452+00:00
+Build Date UTC : 2025-12-08 14:03:01.197657+00:00
 -->

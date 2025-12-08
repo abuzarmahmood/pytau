@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Available Models - PyTau</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../css/brands.min.css" rel="stylesheet">
+        <link href="../css/solid.min.css" rel="stylesheet">
+        <link href="../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">PyTau</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="nav-item">
+                                <a href=".." class="nav-link">Home</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle active" aria-current="page" role="button" data-bs-toggle="dropdown"  aria-expanded="false">User Guide</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="./" class="dropdown-item active" aria-current="page">Available Models</a>
+</li>
+                                    
+<li>
+    <a href="../inference/" class="dropdown-item">Inference Methods</a>
+</li>
+                                    
+<li>
+    <a href="../data_formats/" class="dropdown-item">Data Formats</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../pymc_concepts/" class="nav-link">PyMC Concepts</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../api/" class="nav-link">API Reference</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href=".." class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../inference/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#available-models" class="nav-link">Available Models</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#model-selection-guide" class="nav-link">Model Selection Guide</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#poisson-models" class="nav-link">Poisson Models</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#gaussian-models" class="nav-link">Gaussian Models</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#categorical-models" class="nav-link">Categorical Models</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#model-naming-conventions" class="nav-link">Model Naming Conventions</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#choosing-the-right-model" class="nav-link">Choosing the Right Model</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#next-steps" class="nav-link">Next Steps</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="available-models">Available Models</h1>
+<p>PyTau provides a comprehensive suite of changepoint detection models designed for different types of neural data and experimental designs. This page details all available models and their use cases.</p>
+<h2 id="model-selection-guide">Model Selection Guide</h2>
+<table>
+<thead>
+<tr>
+<th>Data Type</th>
+<th>Recommended Models</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Single neuron time series</td>
+<td><code>PoissonChangepoint1D</code></td>
+</tr>
+<tr>
+<td>Multiple trials, single taste</td>
+<td><code>SingleTastePoisson*</code></td>
+</tr>
+<tr>
+<td>Multiple tastes</td>
+<td><code>AllTastePoisson*</code></td>
+</tr>
+<tr>
+<td>Continuous neural data</td>
+<td><code>GaussianChangepoint*</code></td>
+</tr>
+<tr>
+<td>Categorical behavioral data</td>
+<td><code>CategoricalChangepoint2D</code></td>
+</tr>
+<tr>
+<td>Unknown state number</td>
+<td><code>*Dirichlet</code> models</td>
+</tr>
+</tbody>
+</table>
+<h2 id="poisson-models">Poisson Models</h2>
+<p>Poisson models are designed for spike count data from neural recordings. They model the firing rate of neurons and detect when these rates change over time.</p>
+<h3 id="poissonchangepoint1d">PoissonChangepoint1D</h3>
+<p><strong>Purpose</strong>: 1D time series changepoint detection</p>
+<p><strong>Use Case</strong>: Single neuron or single trial analysis where you want to detect changes in firing rate over time.</p>
+<p><strong>Data Shape</strong>: <code>(time,)</code></p>
+<p><strong>Key Features</strong>:
+- Simplest Poisson model
+- Ideal for exploratory analysis
+- Fast inference</p>
+<h3 id="singletastepoisson">SingleTastePoisson</h3>
+<p><strong>Purpose</strong>: Basic single-taste model with fixed sigmoid transitions</p>
+<p><strong>Use Case</strong>: Multi-trial experiments with a single stimulus (taste) where you want to detect consistent changepoints across trials.</p>
+<p><strong>Data Shape</strong>: <code>(trials, neurons, time)</code> or <code>(trials, time)</code></p>
+<p><strong>Key Features</strong>:
+- Fixed sigmoid transition shape
+- Assumes consistent changepoint timing across trials
+- Hierarchical structure across neurons</p>
+<h3 id="singletastepoissonvarsig">SingleTastePoissonVarsig</h3>
+<p><strong>Purpose</strong>: Variable sigmoid slope inferred from data</p>
+<p><strong>Use Case</strong>: When transition sharpness is unknown and should be learned from data.</p>
+<p><strong>Data Shape</strong>: <code>(trials, neurons, time)</code> or <code>(trials, time)</code></p>
+<p><strong>Key Features</strong>:
+- Infers transition sharpness from data
+- More flexible than fixed sigmoid
+- Longer inference time</p>
+<h3 id="singletastepoissonvarsigfixed">SingleTastePoissonVarsigFixed</h3>
+<p><strong>Purpose</strong>: Fixed sigmoid slope with configurable sharpness</p>
+<p><strong>Use Case</strong>: When you want to specify transition sharpness based on prior knowledge.</p>
+<p><strong>Data Shape</strong>: <code>(trials, neurons, time)</code> or <code>(trials, time)</code></p>
+<p><strong>Key Features</strong>:
+- User-specified transition sharpness
+- Faster than variable sigmoid
+- Good for batch processing with consistent parameters</p>
+<h3 id="singletastepoissondirichlet">SingleTastePoissonDirichlet</h3>
+<p><strong>Purpose</strong>: Automatic state number detection using Dirichlet process</p>
+<p><strong>Use Case</strong>: When the number of states is unknown and should be inferred from data.</p>
+<p><strong>Data Shape</strong>: <code>(trials, neurons, time)</code> or <code>(trials, time)</code></p>
+<p><strong>Key Features</strong>:
+- Automatically determines optimal number of states
+- Uses Dirichlet process prior
+- Requires MCMC sampling (no ADVI support)
+- Longer inference time but more flexible</p>
+<h3 id="singletastepoissontrialswitch">SingleTastePoissonTrialSwitch</h3>
+<p><strong>Purpose</strong>: Models trial-to-trial emission changes</p>
+<p><strong>Use Case</strong>: When changepoint times are consistent but firing rates vary across trials.</p>
+<p><strong>Data Shape</strong>: <code>(trials, neurons, time)</code> or <code>(trials, time)</code></p>
+<p><strong>Key Features</strong>:
+- Fixed changepoint times across trials
+- Trial-specific emission rates
+- Useful for detecting trial-to-trial variability</p>
+<h3 id="alltastepoisson">AllTastePoisson</h3>
+<p><strong>Purpose</strong>: Hierarchical model across multiple tastes</p>
+<p><strong>Use Case</strong>: Multi-taste experiments where you want to detect both taste-specific and shared changepoints.</p>
+<p><strong>Data Shape</strong>: <code>(tastes, trials, neurons, time)</code></p>
+<p><strong>Key Features</strong>:
+- Hierarchical structure across tastes
+- Can detect shared patterns across stimuli
+- More complex inference</p>
+<h3 id="alltastepoissonvarsigfixed">AllTastePoissonVarsigFixed</h3>
+<p><strong>Purpose</strong>: All-taste model with fixed sigmoid transitions</p>
+<p><strong>Use Case</strong>: Multi-taste experiments with specified transition sharpness.</p>
+<p><strong>Data Shape</strong>: <code>(tastes, trials, neurons, time)</code></p>
+<p><strong>Key Features</strong>:
+- Fixed sigmoid slope across all tastes
+- Faster than variable sigmoid version
+- Good for batch processing</p>
+<h3 id="alltastepoissontrialswitch">AllTastePoissonTrialSwitch</h3>
+<p><strong>Purpose</strong>: All-taste model with trial switching</p>
+<p><strong>Use Case</strong>: Multi-taste experiments with trial-to-trial variability in emissions.</p>
+<p><strong>Data Shape</strong>: <code>(tastes, trials, neurons, time)</code></p>
+<p><strong>Key Features</strong>:
+- Trial-specific emission rates
+- Taste-specific changepoint structure
+- Captures complex experimental designs</p>
+<h2 id="gaussian-models">Gaussian Models</h2>
+<p>Gaussian models are designed for continuous neural data such as LFP signals, calcium imaging, or other continuous measurements.</p>
+<h3 id="gaussianchangepointmean2d">GaussianChangepointMean2D</h3>
+<p><strong>Purpose</strong>: Detects changes in mean only</p>
+<p><strong>Use Case</strong>: When variance is stable but mean changes over time.</p>
+<p><strong>Data Shape</strong>: <code>(trials, time)</code> or <code>(neurons, time)</code></p>
+<p><strong>Key Features</strong>:
+- Assumes constant variance
+- Faster inference than mean+variance model
+- Good for data with stable noise levels</p>
+<h3 id="gaussianchangepointmeanvar2d">GaussianChangepointMeanVar2D</h3>
+<p><strong>Purpose</strong>: Detects changes in both mean and variance</p>
+<p><strong>Use Case</strong>: When both signal level and noise characteristics change.</p>
+<p><strong>Data Shape</strong>: <code>(trials, time)</code> or <code>(neurons, time)</code></p>
+<p><strong>Key Features</strong>:
+- Models both mean and variance changes
+- More flexible but slower inference
+- Better for complex signals</p>
+<h3 id="gaussianchangepointmeandirichlet">GaussianChangepointMeanDirichlet</h3>
+<p><strong>Purpose</strong>: Automatic state detection for Gaussian data</p>
+<p><strong>Use Case</strong>: Continuous data with unknown number of states.</p>
+<p><strong>Data Shape</strong>: <code>(trials, time)</code> or <code>(neurons, time)</code></p>
+<p><strong>Key Features</strong>:
+- Dirichlet process prior for state number
+- Detects changes in mean only
+- Requires MCMC sampling</p>
+<h2 id="categorical-models">Categorical Models</h2>
+<p>Categorical models are designed for discrete categorical data such as behavioral states or decoded neural states.</p>
+<h3 id="categoricalchangepoint2d">CategoricalChangepoint2D</h3>
+<p><strong>Purpose</strong>: Changepoint detection for categorical time series</p>
+<p><strong>Use Case</strong>: Behavioral data or decoded states where you want to detect transitions between discrete categories.</p>
+<p><strong>Data Shape</strong>: <code>(trials, time)</code> with integer category labels</p>
+<p><strong>Key Features</strong>:
+- Models categorical distributions
+- Detects changes in category probabilities
+- Useful for behavioral analysis</p>
+<h2 id="model-naming-conventions">Model Naming Conventions</h2>
+<p>PyTau models follow consistent naming conventions:</p>
+<ul>
+<li><strong>Dimension suffix</strong> (1D, 2D): Indicates the dimensionality of input data</li>
+<li><strong>Varsig</strong>: Variable sigmoid transition shape</li>
+<li><strong>VarsigFixed</strong>: Fixed sigmoid with configurable slope</li>
+<li><strong>Dirichlet</strong>: Uses Dirichlet process prior for automatic state detection</li>
+<li><strong>TrialSwitch</strong>: Models trial-to-trial variability in emissions</li>
+<li><strong>AllTaste</strong>: Hierarchical model across multiple stimuli/conditions</li>
+</ul>
+<h2 id="choosing-the-right-model">Choosing the Right Model</h2>
+<h3 id="start-simple">Start Simple</h3>
+<p>Begin with basic models (e.g., <code>SingleTastePoisson</code>) and add complexity only if needed.</p>
+<h3 id="consider-your-data">Consider Your Data</h3>
+<ul>
+<li><strong>Spike counts</strong>: Use Poisson models</li>
+<li><strong>Continuous signals</strong>: Use Gaussian models</li>
+<li><strong>Categorical data</strong>: Use Categorical models</li>
+</ul>
+<h3 id="unknown-states">Unknown States</h3>
+<p>If you don't know how many states to expect, use Dirichlet models, but be prepared for longer inference times.</p>
+<h3 id="transition-shape">Transition Shape</h3>
+<ul>
+<li>Use <strong>Varsig</strong> if transition sharpness is unknown</li>
+<li>Use <strong>VarsigFixed</strong> if you have prior knowledge about transitions</li>
+<li>Fixed sigmoid models are faster for batch processing</li>
+</ul>
+<h3 id="trial-variability">Trial Variability</h3>
+<p>Use <strong>TrialSwitch</strong> models if you expect changepoint times to be consistent but firing rates to vary across trials.</p>
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li>See <a href="../inference/">Inference Methods</a> for details on fitting these models</li>
+<li>See <a href="../data_formats/">Data Formats</a> for information on preparing your data</li>
+<li>Check the <a href="../api/">API documentation</a> for detailed function signatures</li>
+</ul></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js"></script>
+        <script src="../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
