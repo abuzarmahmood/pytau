@@ -8,7 +8,7 @@ on:
       - 'requirements-docs.txt'
   push:
     branches:
-      - main
+      - master
     paths:
       - 'mkdocs.yml'
       - 'docs/**'
@@ -39,7 +39,7 @@ jobs:
 
   deploy-docs:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     needs: test-docs
     permissions:
       contents: write
