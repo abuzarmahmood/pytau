@@ -59,7 +59,7 @@ The package employs Automatic Differentiation Variational Inference (ADVI) [@kuc
 from pytau.changepoint_io import FitHandler
 
 # Initialize fit handler
-fh = FitHandler(data_dir='/path/to/data', taste_num=1, 
+fh = FitHandler(data_dir='/path/to/data', taste_num=1,
                 region_name='GC', experiment_name='example')
 
 # Set preprocessing and model parameters

@@ -75,7 +75,7 @@ from pytau.utils.plotting import plot_changepoint_raster
 
 # Plot spike rasters with changepoint overlays
 fig, ax = plt.subplots(figsize=(10, 6))
-plot_changepoint_raster(pkl_handler.processed_spikes, 
+plot_changepoint_raster(pkl_handler.processed_spikes,
                         pkl_handler.tau.scaled_mode_tau,
                         plot_lims=[0, 2000])
 plt.title('Spike Rasters with Changepoint Overlays')
@@ -88,7 +88,7 @@ plt.show()
 from pytau.utils.plotting import plot_state_firing_rates
 
 # Plot state-dependent firing rates
-plot_state_firing_rates(pkl_handler.processed_spikes, 
+plot_state_firing_rates(pkl_handler.processed_spikes,
                         pkl_handler.tau.scaled_mode_tau)
 plt.title('State-Specific Neuron Activity')
 plt.show()
@@ -100,8 +100,8 @@ plt.show()
 from pytau.utils.plotting import plot_aligned_state_firing
 
 # Plot transition-aligned activity
-plot_aligned_state_firing(pkl_handler.processed_spikes, 
-                          pkl_handler.tau.scaled_mode_tau, 
+plot_aligned_state_firing(pkl_handler.processed_spikes,
+                          pkl_handler.tau.scaled_mode_tau,
                           window_radius=300)
 plt.title('Transition-Aligned Neural Activity')
 plt.show()
@@ -113,7 +113,7 @@ plt.show()
 from pytau.utils.plotting import plot_changepoint_overview
 
 # Plot state timing overview
-plot_changepoint_overview(pkl_handler.tau.scaled_mode_tau, 
+plot_changepoint_overview(pkl_handler.tau.scaled_mode_tau,
                          plot_lims=[0, 2000])
 plt.title('State Timing Overview')
 plt.show()
@@ -228,7 +228,7 @@ for dataset in datasets:
         region_name=dataset['region'],
         experiment_name=dataset['name']
     )
-    
+
     # Set parameters and run pipeline
     fh.set_preprocess_params(time_lims=[0, 2000], bin_width=10)
     fh.set_model_params(states=3, fit=5000, samples=1000)
@@ -237,7 +237,7 @@ for dataset in datasets:
     fh.create_model()
     fh.run_inference()
     fh.save_fit_output()
-    
+
     # Add to database
     db_handler.add_fit(fh.get_metadata())
 ```
