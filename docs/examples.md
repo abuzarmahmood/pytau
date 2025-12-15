@@ -212,13 +212,10 @@ pairwise_significant = calc_significant_neurons_snippets(transition_snips, p_val
 
 ## Batch Processing
 
-For processing multiple datasets or parameter configurations:
+For processing multiple datasets or parameter configurations, use the `FitHandler` class in a loop:
 
 ```python
-from pytau.changepoint_io import DatabaseHandler
-
-# Initialize database handler
-db_handler = DatabaseHandler(database_path='/path/to/database.csv')
+from pytau.changepoint_io import FitHandler
 
 # Process multiple datasets
 for dataset in datasets:
@@ -230,16 +227,13 @@ for dataset in datasets:
     )
 
     # Set parameters and run pipeline
-    fh.set_preprocess_params(time_lims=[0, 2000], bin_width=10)
+    fh.set_preprocess_params(time_lims=[0, 2000], bin_width=10, data_transform=None)
     fh.set_model_params(states=3, fit=5000, samples=1000)
     fh.load_spike_trains()
     fh.preprocess_data()
     fh.create_model()
     fh.run_inference()
     fh.save_fit_output()
-
-    # Add to database
-    db_handler.add_fit(fh.get_metadata())
 ```
 
 ## Advanced Usage
@@ -252,12 +246,7 @@ fh.set_model_params(
     states=4,
     fit=10000,
     samples=2000,
-    model_kwargs={
-        'tau_prior_mean': 1000,  # Custom prior for changepoint times
-        'tau_prior_std': 200,
-        'lambda_prior_alpha': 2,  # Custom prior for firing rates
-        'lambda_prior_beta': 1
-    }
+    model_kwargs={}  # Additional model-specific parameters can be passed here
 )
 ```
 
@@ -268,21 +257,20 @@ fh.set_model_params(
 fh.set_preprocess_params(
     time_lims=[0, 2000],
     bin_width=10,
-    data_transform='sqrt'  # Square root transformation
+    data_transform='sqrt'  # Options: None, 'sqrt', 'log', etc.
 )
 ```
 
 ### Model Comparison
 
 ```python
-from pytau.utils.plotting import plot_elbo_history
-
 # Compare models with different state numbers
 elbo_values = []
 for n_states in range(2, 8):
     fh.set_model_params(states=n_states, fit=5000, samples=1000)
     fh.create_model()
     fh.run_inference()
+    # Access ELBO from the fitted model
     elbo_values.append(fh.model.approx.hist[-1])
 
 # Plot ELBO comparison
@@ -299,22 +287,24 @@ Comprehensive tutorials are available in the repository's `how_to` directory:
 
 ### Jupyter Notebooks
 
-Step-by-step walkthroughs demonstrating package functionality:
+Step-by-step walkthroughs demonstrating package functionality are available in `pytau/how_to/notebooks/`:
 
-- `01_basic_usage.ipynb`: Introduction to basic PyTau workflow
-- `02_model_comparison.ipynb`: Comparing different model types
-- `03_batch_processing.ipynb`: Processing multiple datasets
-- `04_visualization.ipynb`: Creating publication-quality figures
-- `05_statistical_analysis.ipynb`: Analyzing state-dependent activity
+- `PyTau_Walkthrough_with_handlers.ipynb`: Complete workflow using FitHandler
+- `PyTau_Walkthrough_no_handlers.ipynb`: Manual workflow without handlers
+
+Additional model-specific notebooks are in `pytau/how_to/model_notebooks/`:
+
+- `SingleTastePoisson.ipynb`: Single taste Poisson model examples
+- `AllTastePoisson.ipynb`: Multi-taste model examples
+- `GaussianChangepointMean2D.ipynb`: Gaussian changepoint models
+- And more...
 
 ### Example Scripts
 
-Ready-to-run Python scripts:
+Ready-to-run Python scripts in `pytau/how_to/scripts/`:
 
-- `fit_single_model.py`: Fit a single changepoint model
-- `batch_fit_models.py`: Batch process multiple datasets
-- `analyze_results.py`: Analyze and visualize fitted models
-- `compare_models.py`: Compare models with different parameters
+- `fit_with_fit_handler.py`: Fit models using FitHandler
+- `fit_manually.py`: Manual model fitting workflow
 
 ### Test Data
 
