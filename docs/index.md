@@ -59,6 +59,19 @@ jupyter notebook
 # Run a notebook
 ```
 
+### Windows Users
+
+On Windows, the bash script for downloading test data may encounter issues due to line ending differences and command availability. If you experience errors when running `bash scripts/download_test_data.sh`, use the following commands directly in your activated conda environment:
+
+```bash
+pip install gdown
+mkdir test_data
+cd test_data
+gdown 1s1svxg4CvyUi9eeMzqUbcpiwCtNc170z -O test_data.zip
+unzip test_data.zip
+rm test_data.zip
+```
+
 ## Usage
 
 PyTau provides a streamlined workflow for fitting changepoint models to neural data. Here's a basic example of how to use the package:

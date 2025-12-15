@@ -63,6 +63,8 @@ cd notebooks
 jupyter notebook
 ```
 
+**Note for Windows users:** If the download script fails, see the [Installation section in the documentation](https://abuzarmahmood.github.io/pytau/#windows-users) for manual download instructions.
+
 For a minimal usage example, see the [documentation](https://abuzarmahmood.github.io/pytau/).
 
 ## 🧠 Key Features
