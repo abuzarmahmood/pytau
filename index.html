@@ -168,7 +168,7 @@
 <h2 id="installation">Installation</h2>
 <p>To set up PyTau, follow these steps:</p>
 <pre><code class="language-bash"># Create and activate conda environment
-conda create -n &quot;pytau_env&quot; python=3.6.13 ipython notebook -y
+conda create -n &quot;pytau_env&quot; python=3.10 ipython notebook -y
 conda activate pytau_env
 
 # Clone repository
@@ -185,6 +185,15 @@ bash scripts/download_test_data.sh
 cd notebooks
 jupyter notebook
 # Run a notebook
+</code></pre>
+<h3 id="windows-users">Windows Users</h3>
+<p>On Windows, the bash script for downloading test data may encounter issues due to line ending differences and command availability. If you experience errors when running <code>bash scripts/download_test_data.sh</code>, use the following commands directly in your activated conda environment:</p>
+<pre><code class="language-bash">pip install gdown
+mkdir test_data
+cd test_data
+gdown 1s1svxg4CvyUi9eeMzqUbcpiwCtNc170z -O test_data.zip
+unzip test_data.zip
+rm test_data.zip
 </code></pre>
 <h2 id="usage">Usage</h2>
 <p>PyTau provides a streamlined workflow for fitting changepoint models to neural data. Here's a basic example of how to use the package:</p>
@@ -328,5 +337,5 @@ model, approx, lambda_stack, tau_samples, data = advi_fit(model, fit=10000, samp
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2025-12-08 14:03:01.197657+00:00
+Build Date UTC : 2025-12-15 21:26:38.756503+00:00
 -->
