@@ -40,7 +40,7 @@ To set up PyTau, follow these steps:
 
 ```bash
 # Create and activate conda environment
-conda create -n "pytau_env" python=3.6.13 ipython notebook -y
+conda create -n "pytau_env" python=3.10 ipython notebook -y
 conda activate pytau_env
 
 # Clone repository
@@ -57,6 +57,19 @@ bash scripts/download_test_data.sh
 cd notebooks
 jupyter notebook
 # Run a notebook
+```
+
+### Windows Users
+
+On Windows, the bash script for downloading test data may encounter issues due to line ending differences and command availability. If you experience errors when running `bash scripts/download_test_data.sh`, use the following commands directly in your activated conda environment:
+
+```bash
+pip install gdown
+mkdir test_data
+cd test_data
+gdown 1s1svxg4CvyUi9eeMzqUbcpiwCtNc170z -O test_data.zip
+unzip test_data.zip
+rm test_data.zip
 ```
 
 ## Usage
