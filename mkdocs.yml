@@ -20,5 +20,6 @@ nav:
     - "Available Models": models.md
     - "Inference Methods": inference.md
     - "Data Formats": data_formats.md
+    - "Examples and Tutorials": examples.md
   - "PyMC Concepts": pymc_concepts.md
   - "API Reference": api.md
