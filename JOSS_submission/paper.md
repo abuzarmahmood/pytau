@@ -21,7 +21,7 @@ bibliography: paper.bib
 
 # Summary
 
-Neural activity often exhibits sharp transitions between distinct states, captured by changepoint models [@Seidemann1994; @Jones2007; @Saravani2019]. `pytau` is a Python package for batched Bayesian changepoint inference across parameter grids and datasets. It integrates with PyMC3 to provide uncertainty estimates critical for noisy neuroscience data with small sample sizes and low channel counts, and includes tools for preprocessing, model fitting, result visualization, and statistical analysis. The package has been successfully applied in published research examining taste processing [@Mahmood2023] and taste aversion learning [@Flores2023], and is currently being utilized in several ongoing neuroscience studies [@MazzioInPrep; @BaasThomasInPrep; @MahmoodInPrep; @CaliaBoganInPrep].
+Neural activity often exhibits sharp transitions between distinct states, captured by changepoint models [@Seidemann1994; @Jones2007; @Saravani2019]. `pytau` is a Python package for batched Bayesian changepoint inference across parameter grids and datasets. It integrates with PyMC3 to provide uncertainty estimates critical for noisy neuroscience data with small sample sizes and low channel counts, and includes tools for preprocessing, model fitting, result visualization, and statistical analysis. The package has been successfully applied in published research examining taste processing [@Mahmood2023; @Mahmood2025] and taste aversion learning [@Flores2023], and is currently being utilized in several ongoing neuroscience studies [@MazzioInPrep; @BaasThomasInPrep; @CaliaBoganInPrep; @Maigler2024].
 
 # Statement of need
 
@@ -34,7 +34,7 @@ Understanding how neural populations encode information often involves analyzing
 3. **Visualization tools**: Provides specialized plotting functions including raster plots with overlaid changepoints, state-dependent firing rate visualizations, and transition-aligned activity plots
 4. **Statistical analysis**: Includes tools for significance testing of state-dependent neural activity, such as ANOVA-based detection of neurons with significant state-dependent firing and pairwise t-tests for transition-triggered activity
 
-Its adoption in studies of taste processing [@Mahmood2023] and taste aversion learning [@Flores2023] demonstrates its practical utility for researchers studying state transitions in neural activity.
+Its adoption in studies of taste processing [@Mahmood2023; @Mahmood2025; @Maigler2024], taste aversion learning [@Flores2023], and ingestive behavior [@BaasThomasInPrep] demonstrates its practical utility for researchers studying state transitions in neural activity.
 
 ![**Spike rasters with changepoint overlays** visualize inferred changepoints across trials and neurons](figs/state_raster_overlay.png)
 
