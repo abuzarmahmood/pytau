@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Examples and Tutorials - PyTau</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../css/brands.min.css" rel="stylesheet">
+        <link href="../css/solid.min.css" rel="stylesheet">
+        <link href="../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">PyTau</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="nav-item">
+                                <a href=".." class="nav-link">Home</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle active" aria-current="page" role="button" data-bs-toggle="dropdown"  aria-expanded="false">User Guide</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../models/" class="dropdown-item">Available Models</a>
+</li>
+                                    
+<li>
+    <a href="../inference/" class="dropdown-item">Inference Methods</a>
+</li>
+                                    
+<li>
+    <a href="../data_formats/" class="dropdown-item">Data Formats</a>
+</li>
+                                    
+<li>
+    <a href="./" class="dropdown-item active" aria-current="page">Examples and Tutorials</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../pymc_concepts/" class="nav-link">PyMC Concepts</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../api/" class="nav-link">API Reference</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../data_formats/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../pymc_concepts/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#examples-and-tutorials" class="nav-link">Examples and Tutorials</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#complete-analysis-workflow" class="nav-link">Complete Analysis Workflow</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#analyzing-fitted-models" class="nav-link">Analyzing Fitted Models</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#visualization-examples" class="nav-link">Visualization Examples</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#model-selection" class="nav-link">Model Selection</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#statistical-analysis" class="nav-link">Statistical Analysis</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#batch-processing" class="nav-link">Batch Processing</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#advanced-usage" class="nav-link">Advanced Usage</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#tutorials" class="nav-link">Tutorials</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#next-steps" class="nav-link">Next Steps</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="examples-and-tutorials">Examples and Tutorials</h1>
+<p>This page provides detailed examples and tutorials for using PyTau to analyze neural data with changepoint models.</p>
+<h2 id="complete-analysis-workflow">Complete Analysis Workflow</h2>
+<p>Below is a comprehensive example demonstrating the full workflow from data loading to visualization:</p>
+<pre><code class="language-python">from pytau.changepoint_io import FitHandler
+from pytau.changepoint_analysis import PklHandler
+import matplotlib.pyplot as plt
+from pytau.utils.plotting import plot_changepoint_raster, plot_state_firing_rates
+
+# Initialize fit handler
+fh = FitHandler(
+    data_dir='/path/to/data',
+    taste_num=1,
+    region_name='GC',
+    experiment_name='example_experiment'
+)
+
+# Set preprocessing parameters
+fh.set_preprocess_params(
+    time_lims=[0, 2000],  # Time window in ms
+    bin_width=10,         # Bin width in ms
+    data_transform=None   # No transformation
+)
+
+# Set model parameters
+fh.set_model_params(
+    states=3,             # Number of states to fit
+    fit=5000,             # ADVI iterations
+    samples=1000,         # Number of posterior samples
+    model_kwargs={}       # Additional model parameters
+)
+
+# Run the full pipeline
+fh.load_spike_trains()
+fh.preprocess_data()
+fh.create_model()
+fh.run_inference()
+fh.save_fit_output()
+</code></pre>
+<h2 id="analyzing-fitted-models">Analyzing Fitted Models</h2>
+<p>After fitting, analyze the results using the <code>PklHandler</code> class:</p>
+<pre><code class="language-python">from pytau.changepoint_analysis import PklHandler
+
+# Load fitted model
+pkl_handler = PklHandler('/path/to/saved/model.pkl')
+
+# Access model components
+tau = pkl_handler.tau  # Changepoint times
+firing = pkl_handler.firing  # Firing rate analysis
+
+# Analyze significant neurons
+significant_neurons = firing.anova_significant_neurons
+
+# Access transition analysis data
+transition_snippets = firing.transition_snips
+pairwise_significant = firing.pairwise_significant_neurons
+</code></pre>
+<h2 id="visualization-examples">Visualization Examples</h2>
+<h3 id="spike-rasters-with-changepoint-overlays">Spike Rasters with Changepoint Overlays</h3>
+<pre><code class="language-python">import matplotlib.pyplot as plt
+from pytau.utils.plotting import plot_changepoint_raster
+
+# Plot spike rasters with changepoint overlays
+fig, ax = plt.subplots(figsize=(10, 6))
+plot_changepoint_raster(pkl_handler.processed_spikes,
+                        pkl_handler.tau.scaled_mode_tau,
+                        plot_lims=[0, 2000])
+plt.title('Spike Rasters with Changepoint Overlays')
+plt.show()
+</code></pre>
+<h3 id="state-dependent-firing-rates">State-Dependent Firing Rates</h3>
+<pre><code class="language-python">from pytau.utils.plotting import plot_state_firing_rates
+
+# Plot state-dependent firing rates
+plot_state_firing_rates(pkl_handler.processed_spikes,
+                        pkl_handler.tau.scaled_mode_tau)
+plt.title('State-Specific Neuron Activity')
+plt.show()
+</code></pre>
+<h3 id="transition-aligned-activity">Transition-Aligned Activity</h3>
+<pre><code class="language-python">from pytau.utils.plotting import plot_aligned_state_firing
+
+# Plot transition-aligned activity
+plot_aligned_state_firing(pkl_handler.processed_spikes,
+                          pkl_handler.tau.scaled_mode_tau,
+                          window_radius=300)
+plt.title('Transition-Aligned Neural Activity')
+plt.show()
+</code></pre>
+<h3 id="state-timing-overview">State Timing Overview</h3>
+<pre><code class="language-python">from pytau.utils.plotting import plot_changepoint_overview
+
+# Plot state timing overview
+plot_changepoint_overview(pkl_handler.tau.scaled_mode_tau,
+                         plot_lims=[0, 2000])
+plt.title('State Timing Overview')
+plt.show()
+</code></pre>
+<h2 id="model-selection">Model Selection</h2>
+<p>PyTau implements several types of changepoint models. For detailed descriptions of all available models, see the <a href="../models/">Available Models</a> documentation.</p>
+<p>Quick example of creating a model:</p>
+<pre><code class="language-python">from pytau.changepoint_model import single_taste_poisson
+
+# Create single taste Poisson model
+model = single_taste_poisson(spike_array, states=3)
+</code></pre>
+<h2 id="statistical-analysis">Statistical Analysis</h2>
+<p>For detailed information on statistical analysis tools, see the API documentation. Here are quick examples:</p>
+<pre><code class="language-python">from pytau.changepoint_analysis import get_state_firing, calc_significant_neurons_firing
+from pytau.changepoint_analysis import get_transition_snips, calc_significant_neurons_snippets
+
+# State-dependent firing rate analysis
+state_firing = get_state_firing(spike_array, tau_array)
+significant_neurons = calc_significant_neurons_firing(state_firing, p_val=0.05)
+
+# Transition analysis
+transition_snips = get_transition_snips(spike_array, tau_array, window_radius=300)
+pairwise_significant = calc_significant_neurons_snippets(transition_snips, p_val=0.05)
+</code></pre>
+<h2 id="batch-processing">Batch Processing</h2>
+<p>For processing multiple datasets or parameter configurations, use the <code>FitHandler</code> class in a loop:</p>
+<pre><code class="language-python">from pytau.changepoint_io import FitHandler
+
+# Process multiple datasets
+for dataset in datasets:
+    fh = FitHandler(
+        data_dir=dataset['path'],
+        taste_num=dataset['taste'],
+        region_name=dataset['region'],
+        experiment_name=dataset['name']
+    )
+
+    # Set parameters and run pipeline
+    fh.set_preprocess_params(time_lims=[0, 2000], bin_width=10, data_transform=None)
+    fh.set_model_params(states=3, fit=5000, samples=1000)
+    fh.load_spike_trains()
+    fh.preprocess_data()
+    fh.create_model()
+    fh.run_inference()
+    fh.save_fit_output()
+</code></pre>
+<h2 id="advanced-usage">Advanced Usage</h2>
+<h3 id="model-comparison">Model Comparison</h3>
+<p>For detailed information on model selection and comparison methods, see the <a href="../inference/#model-selection">Inference Methods</a> documentation.</p>
+<p>Quick example:</p>
+<pre><code class="language-python"># Compare models with different state numbers
+elbo_values = []
+for n_states in range(2, 8):
+    fh.set_model_params(states=n_states, fit=5000, samples=1000)
+    fh.create_model()
+    fh.run_inference()
+    elbo_values.append(fh.model.approx.hist[-1])
+
+# Plot ELBO comparison
+plt.plot(range(2, 8), elbo_values, 'o-')
+plt.xlabel('Number of States')
+plt.ylabel('ELBO')
+plt.title('Model Comparison')
+plt.show()
+</code></pre>
+<h2 id="tutorials">Tutorials</h2>
+<p>Comprehensive tutorials are available in the repository's <code>how_to</code> directory:</p>
+<h3 id="jupyter-notebooks">Jupyter Notebooks</h3>
+<p>Step-by-step walkthroughs demonstrating package functionality are available in <code>pytau/how_to/notebooks/</code>:</p>
+<ul>
+<li><code>PyTau_Walkthrough_with_handlers.ipynb</code>: Complete workflow using FitHandler</li>
+<li><code>PyTau_Walkthrough_no_handlers.ipynb</code>: Manual workflow without handlers</li>
+</ul>
+<p>Additional model-specific notebooks are in <code>pytau/how_to/model_notebooks/</code>:</p>
+<ul>
+<li><code>SingleTastePoisson.ipynb</code>: Single taste Poisson model examples</li>
+<li><code>AllTastePoisson.ipynb</code>: Multi-taste model examples</li>
+<li><code>GaussianChangepointMean2D.ipynb</code>: Gaussian changepoint models</li>
+<li>And more...</li>
+</ul>
+<h3 id="example-scripts">Example Scripts</h3>
+<p>Ready-to-run Python scripts in <code>pytau/how_to/scripts/</code>:</p>
+<ul>
+<li><code>fit_with_fit_handler.py</code>: Fit models using FitHandler</li>
+<li><code>fit_manually.py</code>: Manual model fitting workflow</li>
+</ul>
+<h3 id="test-data">Test Data</h3>
+<p>Scripts to download test datasets:</p>
+<pre><code class="language-bash">cd pytau/how_to/scripts
+bash download_test_data.sh
+</code></pre>
+<p>This downloads example neural data for practicing with the package.</p>
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li>See <a href="../models/">Available Models</a> for detailed model descriptions</li>
+<li>See <a href="../inference/">Inference Methods</a> for fitting strategies</li>
+<li>See <a href="../data_formats/">Data Formats</a> for data preparation</li>
+<li>Check the <a href="../api/">API documentation</a> for function signatures</li>
+</ul></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js"></script>
+        <script src="../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
