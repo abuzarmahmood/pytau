@@ -34,7 +34,7 @@ Understanding how neural populations encode information often involves analyzing
 3. **Visualization tools**: Provides specialized plotting functions including raster plots with overlaid changepoints, state-dependent firing rate visualizations, and transition-aligned activity plots
 4. **Statistical analysis**: Includes tools for significance testing of state-dependent neural activity, such as ANOVA-based detection of neurons with significant state-dependent firing and pairwise t-tests for transition-triggered activity
 
-Its adoption in studies of taste processing [@Mahmood2023; @Mahmood2025; @Maigler2024], taste aversion learning [@Flores2023], and ingestive behavior [@BaasThomasInPrep] demonstrates its practical utility for researchers studying state transitions in neural activity.
+Its adoption in studies of taste processing [@Mahmood2023; @Mahmood2025; @Maigler2024], taste aversion learning [@Flores2023], and ingestive behavior [@BaasThomasInPrep] demonstrates its practical utility for researchers studying state transitions in neural activity. Detailed documentation is available at [https://abuzarmahmood.github.io/pytau/](https://abuzarmahmood.github.io/pytau/).
 
 ![**Spike rasters with changepoint overlays** visualize inferred changepoints across trials and neurons](figs/state_raster_overlay.png)
 
@@ -42,14 +42,14 @@ Its adoption in studies of taste processing [@Mahmood2023; @Mahmood2025; @Maigle
 
 `pytau` is implemented in Python and built on NumPy, SciPy, PyMC3, and Matplotlib [@numpy; @pymc3]. The package is organized into several modules:
 
-1. **changepoint_model.py**: Contains model definitions for various changepoint models including Poisson and Gaussian models
+1. **changepoint_model.py**: Contains model definitions for various changepoint models including Poisson and Gaussian models (see [Available Models](https://abuzarmahmood.github.io/pytau/models/))
 2. **changepoint_io.py**: Handles data loading, preprocessing, and result storage through `FitHandler` and `DatabaseHandler` classes
 3. **changepoint_analysis.py**: Provides tools for analyzing fitted models, including significance testing and visualization
-4. **changepoint_preprocess.py**: Contains functions for data preprocessing, binning, and transformations
+4. **changepoint_preprocess.py**: Contains functions for data preprocessing, binning, and transformations (see [Data Formats](https://abuzarmahmood.github.io/pytau/data_formats/))
 
 The mathematical foundation is Bayesian changepoint detection. For a time series $X = \{x_1, x_2, ..., x_T\}$, the package models $K$ states with transitions at $\tau = \{\tau_1, \tau_2, ..., \tau_{K-1}\}$ and Poisson emissions: $x_t \sim \textrm{Poisson}(\lambda_k)$ for $\tau_{k-1} < t \leq \tau_k$, where $\lambda_k$ is the firing rate in state $k$.
 
-The package employs Automatic Differentiation Variational Inference (ADVI) [@kucukelbir2016automatic] for fast posterior approximation and Markov Chain Monte Carlo (MCMC) with the No-U-Turn Sampler (NUTS) [@hoffman2011no] for precise inference. A key feature is modeling state transitions with sigmoid functions, which enables continuous parameter exploration and detection of gradual changes in neural dynamics.
+The package employs Automatic Differentiation Variational Inference (ADVI) [@kucukelbir2016automatic] for fast posterior approximation and Markov Chain Monte Carlo (MCMC) with the No-U-Turn Sampler (NUTS) [@hoffman2011no] for precise inference (see [Inference Methods](https://abuzarmahmood.github.io/pytau/inference/)). A key feature is modeling state transitions with sigmoid functions, which enables continuous parameter exploration and detection of gradual changes in neural dynamics.
 
 # Example usage
 
@@ -90,7 +90,7 @@ firing = pkl_handler.firing  # Firing rate analysis
 significant_neurons = firing.anova_significant_neurons
 ```
 
-The package includes visualization tools for examining neural activity with overlaid changepoints, analyzing state-dependent firing rates, and visualizing transition-aligned activity. Comprehensive tutorials are available in the repository's `how_to` directory, including Jupyter notebooks and example scripts with test datasets.
+The package includes visualization tools for examining neural activity with overlaid changepoints, analyzing state-dependent firing rates, and visualizing transition-aligned activity. Comprehensive tutorials and detailed examples are available in the [documentation](https://abuzarmahmood.github.io/pytau/examples/), including Jupyter notebooks and example scripts with test datasets in the repository's `how_to` directory.
 
 ![**State timing overview** shows state durations and transition time distributions across trials](figs/state_timing_overview.png)
 
