@@ -119,13 +119,11 @@ plt.title('State Timing Overview')
 plt.show()
 ```
 
-## Model Types and Features
+## Model Selection
 
-PyTau implements several types of changepoint models to accommodate different analysis needs:
+PyTau implements several types of changepoint models. For detailed descriptions of all available models, see the [Available Models](models.md) documentation.
 
-### Single Taste Poisson Models
-
-For analyzing single-taste responses with Poisson emission distributions:
+Quick example of creating a model:
 
 ```python
 from pytau.changepoint_model import single_taste_poisson
@@ -134,79 +132,20 @@ from pytau.changepoint_model import single_taste_poisson
 model = single_taste_poisson(spike_array, states=3)
 ```
 
-### Variable Sigmoid Models
+## Statistical Analysis
 
-Models with learnable transition sharpness:
-
-```python
-from pytau.changepoint_model import single_taste_poisson_varsig
-
-# Create variable sigmoid model
-model = single_taste_poisson_varsig(spike_array, states=3)
-```
-
-### Fixed Sigmoid Models
-
-Models with fixed transition sharpness:
+For detailed information on statistical analysis tools, see the API documentation. Here are quick examples:
 
 ```python
-from pytau.changepoint_model import single_taste_poisson_varsig_fixed
-
-# Create fixed sigmoid model
-model = single_taste_poisson_varsig_fixed(spike_array, states=3, inds_span=1)
-```
-
-### All-Taste Models
-
-For analyzing responses across multiple stimuli:
-
-```python
-from pytau.changepoint_model import all_taste_poisson
-
-# Create all-taste model
-model = all_taste_poisson(spike_array, states=3)
-```
-
-### Dirichlet Process Models
-
-For automatically determining the number of states:
-
-```python
-from pytau.changepoint_model import single_taste_poisson_dirichlet
-
-# Create Dirichlet process model
-model = single_taste_poisson_dirichlet(spike_array, max_states=10)
-```
-
-## Statistical Analysis Tools
-
-### State-Dependent Firing Rate Analysis
-
-```python
-from pytau.changepoint_analysis import get_state_firing
-
-# Get state-dependent firing rates
-state_firing = get_state_firing(spike_array, tau_array)
-```
-
-### Significance Testing
-
-```python
-from pytau.changepoint_analysis import calc_significant_neurons_firing
-
-# Calculate significant neurons based on state-dependent firing
-significant_neurons = calc_significant_neurons_firing(state_firing, p_val=0.05)
-```
-
-### Transition Analysis
-
-```python
+from pytau.changepoint_analysis import get_state_firing, calc_significant_neurons_firing
 from pytau.changepoint_analysis import get_transition_snips, calc_significant_neurons_snippets
 
-# Get transition snippets
-transition_snips = get_transition_snips(spike_array, tau_array, window_radius=300)
+# State-dependent firing rate analysis
+state_firing = get_state_firing(spike_array, tau_array)
+significant_neurons = calc_significant_neurons_firing(state_firing, p_val=0.05)
 
-# Calculate significant neurons based on transition-triggered activity
+# Transition analysis
+transition_snips = get_transition_snips(spike_array, tau_array, window_radius=300)
 pairwise_significant = calc_significant_neurons_snippets(transition_snips, p_val=0.05)
 ```
 
@@ -238,30 +177,11 @@ for dataset in datasets:
 
 ## Advanced Usage
 
-### Custom Model Parameters
-
-```python
-# Set custom model parameters
-fh.set_model_params(
-    states=4,
-    fit=10000,
-    samples=2000,
-    model_kwargs={}  # Additional model-specific parameters can be passed here
-)
-```
-
-### Data Transformations
-
-```python
-# Apply data transformations
-fh.set_preprocess_params(
-    time_lims=[0, 2000],
-    bin_width=10,
-    data_transform='sqrt'  # Options: None, 'sqrt', 'log', etc.
-)
-```
-
 ### Model Comparison
+
+For detailed information on model selection and comparison methods, see the [Inference Methods](inference.md#model-selection) documentation.
+
+Quick example:
 
 ```python
 # Compare models with different state numbers
@@ -270,7 +190,6 @@ for n_states in range(2, 8):
     fh.set_model_params(states=n_states, fit=5000, samples=1000)
     fh.create_model()
     fh.run_inference()
-    # Access ELBO from the fitted model
     elbo_values.append(fh.model.approx.hist[-1])
 
 # Plot ELBO comparison
