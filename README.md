@@ -10,16 +10,25 @@
 
 ## 🚀 What is PyTau?
 
-PyTau is a specialized Python package for detecting state changes in neural data using Bayesian changepoint models. Understanding when neural activity transitions between different states is crucial for analyzing how the brain processes information, particularly in sensory neuroscience and behavioral studies. PyTau addresses this challenge by providing a comprehensive toolkit for identifying these state transitions in neural firing patterns.
+PyTau is a Python package for detecting state changes in time series data using Bayesian changepoint models. While originally developed for neural data analysis, the methods are applicable to any sequential data where identifying state transitions is important.
 
-The package is designed for neuroscientists and computational researchers working with spike train data from electrophysiological recordings. It enables users to:
+### Applications
 
+**Neuroscience** (primary focus):
 - Detect when neurons change their firing patterns in response to stimuli or behavioral events
 - Identify the number and timing of distinct neural states in an experiment
 - Compare state transitions across different experimental conditions, brain regions, or subjects
 - Quantify uncertainty in state transition timing using Bayesian inference
 
-PyTau builds on PyMC3 to provide flexible, extensible models while offering a streamlined interface for batch processing and analysis of large-scale neural datasets.
+**General Time Series Analysis**:
+- Event count data (e.g., coal mining disasters, accident rates)
+- Continuous measurements (e.g., temperature, quality control metrics)
+- Process monitoring and anomaly detection
+- Economic and financial regime changes
+
+See the [GeneralChangepointExamples notebook](pytau/how_to/model_notebooks/GeneralChangepointExamples.ipynb) for examples beyond neuroscience.
+
+PyTau builds on PyMC to provide flexible, extensible models while offering a streamlined interface for batch processing and analysis of large-scale datasets.
 
 ## 📚 Documentation
 

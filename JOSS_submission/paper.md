@@ -23,6 +23,8 @@ bibliography: paper.bib
 
 Neural activity often exhibits sharp transitions between distinct states, captured by changepoint models [@Seidemann1994; @Jones2007; @Saravani2019]. `pytau` is a Python package for batched Bayesian changepoint inference across parameter grids and datasets. It integrates with PyMC3 to provide uncertainty estimates critical for noisy neuroscience data with small sample sizes and low channel counts, and includes tools for preprocessing, model fitting, result visualization, and statistical analysis. The package has been successfully applied in published research examining taste processing [@Mahmood2023; @Mahmood2025] and taste aversion learning [@Flores2023], and is currently being utilized in several ongoing neuroscience studies [@MazzioInPrep; @BaasThomasInPrep; @CaliaBoganInPrep; @Maigler2024].
 
+While `pytau` is specialized for neural data analysis, the underlying Bayesian changepoint detection methods have broad applicability to any time series data where identifying state transitions is important. The package includes examples demonstrating its use on classic changepoint datasets from other domains, including historical event count data (coal mining disasters) and continuous measurements (temperature data), illustrating how the same framework can be applied to economic time series, environmental monitoring, quality control, and other sequential data analysis problems.
+
 # Statement of need
 
 Understanding how neural populations encode information often involves analyzing activity changes over time across different experimental conditions, parameters, or subjects. Fitting and comparing Bayesian changepoint models across numerous datasets or parameter settings is computationally intensive and logistically challenging. Existing changepoint detection tools lack the specialized functionality needed for neuroscience applications, particularly for handling multi-trial, multi-neuron spike train data.
@@ -93,11 +95,6 @@ significant_neurons = firing.anova_significant_neurons
 The package includes visualization tools for examining neural activity with overlaid changepoints, analyzing state-dependent firing rates, and visualizing transition-aligned activity. Comprehensive tutorials and detailed examples are available in the [documentation](https://abuzarmahmood.github.io/pytau/examples/), including Jupyter notebooks and example scripts with test datasets in the repository's `how_to` directory.
 
 ![**State timing overview** shows state durations and transition time distributions across trials](figs/state_timing_overview.png)
-
-
-
-
-
 
 
 # State of the field
