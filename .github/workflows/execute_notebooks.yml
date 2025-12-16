@@ -1,24 +1,23 @@
 name: Execute Notebooks
 
 on:
-  pull_request:
+  push:
+    branches:
+      - master
     paths:
       - '**.ipynb'
       - 'pytau/**/*.py'
       - 'pyproject.toml'
       - 'requirements*.txt'
-    types: [closed]
 
 jobs:
   execute-notebooks:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'master'
     permissions:
       contents: write
     steps:
     - uses: actions/checkout@v4
       with:
-        ref: master
         fetch-depth: 0
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
