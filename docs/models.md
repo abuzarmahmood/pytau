@@ -195,6 +195,12 @@ Categorical models are designed for discrete categorical data such as behavioral
 - Detects changes in category probabilities
 - Useful for behavioral analysis
 
+**Known Issues**:
+- ELBO values may become infinite during inference ([Issue #186](https://github.com/abuzarmahmood/pytau/issues/186))
+- This is a known issue and the model is being re-evaluated
+- Despite this issue, the model has been successfully used in research (see [Mahmood et al., 2025](https://www.biorxiv.org/content/10.1101/2025.10.01.679845v1.full))
+- If you encounter infinite ELBO values, consider tracking model parameters as described in the [PyMC documentation](https://www.pymc.io/projects/examples/en/2022.01.0/variational_inference/variational_api_quickstart.html#tracking-parameters)
+
 ## Model Naming Conventions
 
 PyTau models follow consistent naming conventions:
