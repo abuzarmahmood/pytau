@@ -5,7 +5,7 @@ on:
     paths:
       - 'mkdocs.yml'
       - 'docs/**'
-      - 'requirements-docs.txt'
+      - 'requirements/requirements-docs.txt'
     types: [opened, synchronize, reopened, closed]
 
 jobs:
