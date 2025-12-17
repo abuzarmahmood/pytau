@@ -21,7 +21,7 @@ bibliography: paper.bib
 
 # Summary
 
-Neural activity often exhibits sharp transitions between distinct states, captured by changepoint models [@Seidemann1994; @Jones2007; @Saravani2019]. `pytau` is a Python package for batched Bayesian changepoint inference across parameter grids and datasets. It integrates with PyMC3 to provide uncertainty estimates critical for noisy neuroscience data with small sample sizes and low channel counts, and includes tools for preprocessing, model fitting, result visualization, and statistical analysis. The package has been successfully applied in published research examining taste processing [@Mahmood2023; @Mahmood2025] and taste aversion learning [@Flores2023], and is currently being utilized in several ongoing neuroscience studies [@MazzioInPrep; @BaasThomasInPrep; @CaliaBoganInPrep; @Maigler2024].
+Neural activity often exhibits sharp transitions between distinct states, captured by changepoint models [@Seidemann1994; @Jones2007; @Saravani2019]. `pytau` is a Python package for batched Bayesian changepoint inference across parameter grids and datasets. It integrates with PyMC3 to provide uncertainty estimates that are critical for noisy neuroscience data with small sample sizes and low channel counts, and includes tools for preprocessing, model fitting, result visualization, and statistical analysis. The package has been successfully applied in published research examining taste processing [@Mahmood2023; @Mahmood2025] and taste aversion learning [@Flores2023], and is currently being utilized in several ongoing neuroscience studies [@MazzioInPrep; @BaasThomasInPrep; @CaliaBoganInPrep; @Maigler2024].
 
 While `pytau` is specialized for neural data analysis, the underlying Bayesian changepoint detection methods have broad applicability to any time series data where identifying state transitions is important. The package includes examples demonstrating its use on classic changepoint datasets from other domains, including historical event count data (coal mining disasters) and continuous measurements (temperature data), illustrating how the same framework can be applied to economic time series, environmental monitoring, quality control, and other sequential data analysis problems.
 
@@ -36,7 +36,8 @@ Understanding how neural populations encode information often involves analyzing
 3. **Visualization tools**: Provides specialized plotting functions including raster plots with overlaid changepoints, state-dependent firing rate visualizations, and transition-aligned activity plots
 4. **Statistical analysis**: Includes tools for significance testing of state-dependent neural activity, such as ANOVA-based detection of neurons with significant state-dependent firing and pairwise t-tests for transition-triggered activity
 
-Its adoption in studies of taste processing [@Mahmood2023; @Mahmood2025; @Maigler2024], taste aversion learning [@Flores2023], and ingestive behavior [@BaasThomasInPrep] demonstrates its practical utility for researchers studying state transitions in neural activity. Detailed documentation is available at [https://abuzarmahmood.github.io/pytau/](https://abuzarmahmood.github.io/pytau/).
+Its adoption in studies of taste processing [@Mahmood2023; @Mahmood2025; @Maigler2024], taste aversion learning [@Flores2023], and ingestive behavior [@BaasThomasInPrep] demonstrates its practical utility for researchers studying state transitions in neural activity.
+
 
 ![**Spike rasters with changepoint overlays** visualize inferred changepoints across trials and neurons](figs/state_raster_overlay.png)
 
@@ -99,7 +100,7 @@ The package includes visualization tools for examining neural activity with over
 
 # State of the field
 
-Several tools exist for changepoint detection, including `ruptures` [@ruptures] for offline change point detection, `bayesloop` [@bayesloop] for probabilistic time series analysis, `PyChange` [@pychange] for general time series changepoint detection, and Bayesian online changepoint detection methods [@adams2007bayesian; @fearnhead2007line]. While these general-purpose tools are valuable, `pytau` differs by focusing specifically on neuroscience applications. It provides specialized functionality for handling multi-trial, multi-neuron spike train data, batch processing across parameter grids, database management for model comparison, and neuroscience-specific visualization and statistical analysis tools. This specialization makes `pytau` particularly suited for researchers analyzing state transitions in neural population activity across different experimental paradigms.
+As discussed above, several tools exist for changepoint detection, including `ruptures` [@ruptures] for offline change point detection, `bayesloop` [@bayesloop] for probabilistic time series analysis, `PyChange` [@pychange] for general time series changepoint detection, and Bayesian online changepoint detection methods [@adams2007bayesian; @fearnhead2007line]. While these general-purpose tools are valuable, `pytau` differs by focusing specifically on neuroscience applications. It provides specialized functionality for handling multi-trial, multi-neuron spike train data, batch processing across parameter grids, database management for model comparison, and neuroscience-specific visualization and statistical analysis tools. This specialization makes `pytau` particularly suited for researchers analyzing state transitions in neural population activity across different experimental paradigms.
 
 # Acknowledgements
 
