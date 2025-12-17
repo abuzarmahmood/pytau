@@ -36,7 +36,13 @@ PyTau provides several fitting methods for these models:
 
 ## Installation
 
-To set up PyTau, follow these steps:
+### Install from PyPI (Stable Release)
+
+```bash
+pip install pytau
+```
+
+### Install from GitHub (Latest Version)
 
 ```bash
 # Create and activate conda environment
@@ -44,12 +50,11 @@ conda create -n "pytau_env" python=3.10 ipython notebook -y
 conda activate pytau_env
 
 # Clone repository
-cd ~/Desktop
 git clone https://github.com/abuzarmahmood/pytau.git
-
-# Install requirements from specified file
 cd pytau
-pip install -r requirements.txt
+
+# Install in development mode
+pip install -e .
 
 # Test everything is working by running notebook
 cd pytau/how_to
@@ -57,6 +62,24 @@ bash scripts/download_test_data.sh
 cd notebooks
 jupyter notebook
 # Run a notebook
+```
+
+### Optional Dependencies
+
+PyTau supports several optional dependency groups for different use cases:
+
+```bash
+# Development dependencies (testing, linting, etc.)
+pip install -e .[dev]
+
+# Documentation dependencies
+pip install -e .[docs]
+
+# GUI dependencies
+pip install -e .[gui]
+
+# Install all optional dependencies
+pip install -e .[all]
 ```
 
 ### Windows Users

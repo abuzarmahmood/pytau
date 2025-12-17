@@ -44,7 +44,7 @@ For detailed usage examples, model descriptions, and advanced features, please r
 pip install pytau
 ```
 
-**Note:** The PyPI version (0.1.1) is from 2022 and may not include the latest features. For the most up-to-date version, install from GitHub (see below).
+**Note:** The PyPI version (0.1.2) may not include the latest features. For the most up-to-date version, install from GitHub (see below).
 
 ### Install from GitHub (Latest Version)
 
@@ -59,6 +59,24 @@ cd pytau
 
 # Install in development mode
 pip install -e .
+```
+
+### Optional Dependencies
+
+PyTau supports several optional dependency groups for different use cases:
+
+```bash
+# Development dependencies (testing, linting, etc.)
+pip install -e .[dev]
+
+# Documentation dependencies
+pip install -e .[docs]
+
+# GUI dependencies
+pip install -e .[gui]
+
+# Install all optional dependencies
+pip install -e .[all]
 ```
 
 ### Quick Start Example
