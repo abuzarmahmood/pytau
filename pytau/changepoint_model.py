@@ -42,6 +42,25 @@ class ChangepointModel:
 ############################################################
 
 
+def sharp_sigmoid(x):
+    """
+    Sharp sigmoid function for changepoint transitions.
+
+    Uses a steeper slope (100) compared to the default sigmoid to enforce
+    sharper state changes while maintaining smoothness for VI and HMC.
+    This is particularly useful when binning is large.
+
+    Formula: 1 / (1 + exp(-100 * x))
+
+    Args:
+        x: Input tensor
+
+    Returns:
+        Sigmoid-transformed tensor with sharp transitions
+    """
+    return 1 / (1 + tt.exp(-100 * x))
+
+
 def gen_test_array(array_size, n_states, type="poisson"):
     """
     Generate test array for model fitting
@@ -181,7 +200,7 @@ class GaussianChangepointMeanVar2D(ChangepointModel):
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-            weight_stack = tt.math.sigmoid(
+            weight_stack = sharp_sigmoid(
                 idx[np.newaxis, :] - tau[:, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((1, length)), weight_stack], axis=0)
@@ -302,7 +321,7 @@ class GaussianChangepointMeanDirichlet(ChangepointModel):
             tau = pm.Deterministic("tau", tt.cumsum(w_latent * length)[:-1])
 
             # Weight stack to assign lambda's to point in time
-            weight_stack = tt.math.sigmoid(
+            weight_stack = sharp_sigmoid(
                 idx[np.newaxis, :] - tau[:, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((1, length)), weight_stack], axis=0)
@@ -411,7 +430,7 @@ class GaussianChangepointMean2D(ChangepointModel):
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-            weight_stack = tt.math.sigmoid(
+            weight_stack = sharp_sigmoid(
                 idx[np.newaxis, :] - tau[:, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((1, length)), weight_stack], axis=0)
@@ -543,7 +562,7 @@ class SingleTastePoissonDirichlet(ChangepointModel):
             # =====================
 
             # Weight stack to assign lambda's to point in time
-            weight_stack = tt.math.sigmoid(
+            weight_stack = sharp_sigmoid(
                 idx[np.newaxis, :] - tau[:, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((trials, 1, length)), weight_stack], axis=1)
@@ -655,7 +674,7 @@ class SingleTastePoisson(ChangepointModel):
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-            weight_stack = tt.math.sigmoid(
+            weight_stack = sharp_sigmoid(
                 idx[np.newaxis, :] - tau[:, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((trials, 1, length)), weight_stack], axis=1)
@@ -1121,7 +1140,7 @@ class AllTastePoisson(ChangepointModel):
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-            weight_stack = tt.math.sigmoid(
+            weight_stack = sharp_sigmoid(
                 idx[np.newaxis, :] - tau[:, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((tastes * trials, 1, length)), weight_stack], axis=1
@@ -1434,7 +1453,7 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
                 "tau_trial", trial_num * tau_trial_latent)
 
             trial_idx = np.arange(trial_num)
-            trial_selector = tt.math.sigmoid(
+            trial_selector = sharp_sigmoid(
                 trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, "x")
             )
 
@@ -1467,7 +1486,7 @@ class SingleTastePoissonTrialSwitch(ChangepointModel):
             idx = np.arange(time_bins)
 
             # tau : Trials x Changepoints
-            weight_stack = tt.math.sigmoid(
+            weight_stack = sharp_sigmoid(
                 idx[np.newaxis, :] - tau[:, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((trial_num, 1, time_bins)), weight_stack], axis=1
@@ -1631,7 +1650,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
                 "tau_trial", trial_num * tau_trial_latent)
 
             trial_idx = np.arange(trial_num)
-            trial_selector = tt.math.sigmoid(
+            trial_selector = sharp_sigmoid(
                 trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, "x")
             )
 
@@ -1662,7 +1681,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
             # First, we can "select" sets of emissions depending on trial_changepoints
             # =================================================
             trial_idx = np.arange(trial_num)
-            trial_selector = tt.math.sigmoid(
+            trial_selector = sharp_sigmoid(
                 trial_idx[np.newaxis, :] - tau_trial.dimshuffle(0, "x")
             )
 
@@ -1683,7 +1702,7 @@ class AllTastePoissonTrialSwitch(ChangepointModel):
             idx = np.arange(time_bins)
 
             # tau : Tastes x Trials x Changepoints
-            weight_stack = tt.math.sigmoid(
+            weight_stack = sharp_sigmoid(
                 idx[np.newaxis, :] - tau[:, :, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((tastes, trial_num, 1, time_bins)), weight_stack], axis=2
@@ -1805,7 +1824,7 @@ class CategoricalChangepoint2D(ChangepointModel):
             tau = pm.Deterministic(
                 "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
 
-            weight_stack = tt.math.sigmoid(
+            weight_stack = sharp_sigmoid(
                 idx[np.newaxis, :] - tau[:, :, np.newaxis])
             weight_stack = tt.concatenate(
                 [np.ones((trials, 1, length)), weight_stack], axis=1)
@@ -1965,7 +1984,7 @@ class PoissonChangepoint1D(ChangepointModel):
             )
 
             # Create weight matrix for smooth transitions between states
-            weight_stack = tt.math.sigmoid(
+            weight_stack = sharp_sigmoid(
                 idx[np.newaxis, :] - tau[:, np.newaxis]
             )
             weight_stack = tt.concatenate(
