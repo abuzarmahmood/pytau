@@ -15,13 +15,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python 3.11
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     - name: Install documentation dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements-docs.txt
+        pip install -e .[docs]
     - name: Test documentation build
       run: |
         mkdocs build
@@ -42,13 +42,13 @@ jobs:
       with:
         fetch-depth: 0
     - name: Set up Python 3.11
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     - name: Install documentation dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements-docs.txt
+        pip install -e .[docs]
     - name: Configure git
       run: |
         git config user.name "github-actions[bot]"
