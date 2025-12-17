@@ -36,7 +36,7 @@ Understanding how neural populations encode information often involves analyzing
 3. **Visualization tools**: Provides specialized plotting functions including raster plots with overlaid changepoints, state-dependent firing rate visualizations, and transition-aligned activity plots
 4. **Statistical analysis**: Includes tools for significance testing of state-dependent neural activity, such as ANOVA-based detection of neurons with significant state-dependent firing and pairwise t-tests for transition-triggered activity
 
-Its adoption in studies of taste processing [@Mahmood2023; @Mahmood2025; @Maigler2024], taste aversion learning [@Flores2023], and ingestive behavior [@BaasThomasInPrep] demonstrates its practical utility for researchers studying state transitions in neural activity. 
+Its adoption in studies of taste processing [@Mahmood2023; @Mahmood2025; @Maigler2024], taste aversion learning [@Flores2023], and ingestive behavior [@BaasThomasInPrep] demonstrates its practical utility for researchers studying state transitions in neural activity.
 
 
 ![**Spike rasters with changepoint overlays** visualize inferred changepoints across trials and neurons](figs/state_raster_overlay.png)
