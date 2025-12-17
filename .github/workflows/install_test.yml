@@ -5,17 +5,6 @@ on:
     paths:
       - 'requirements/**'
       - 'pyproject.toml'
-      - 'setup.py'
-      - 'setup.cfg'
-  push:
-    branches:
-      - main
-    paths:
-      - 'requirements/**'
-      - 'pyproject.toml'
-      - 'setup.py'
-      - 'setup.cfg'
-
 jobs:
   test-install:
     runs-on: ubuntu-latest
@@ -54,3 +43,7 @@ jobs:
       run: |
         pip install -e .[gui]
         python -c "print('gui dependencies installed successfully')"
+    - name: Install all dependencies and test
+      run: |
+        pip install -e .[all]
+        python -c "print('all dependencies installed successfully')"
