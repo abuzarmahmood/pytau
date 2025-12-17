@@ -45,41 +45,41 @@ class ChangepointModel:
 def check_data_quality(data_array, array_name="data_array"):
     """
     Check input data for infs and nans that could cause fitting issues.
-    
+
     Args:
         data_array (numpy.ndarray): Input data array to check
         array_name (str): Name of the array for error messages
-        
+
     Returns:
         bool: True if data is clean, False if issues found
     """
     data_array = np.asarray(data_array)
-    
+
     has_nan = np.any(np.isnan(data_array))
     has_inf = np.any(np.isinf(data_array))
-    
+
     if has_nan or has_inf:
         print("=" * 60)
         print("⚠️  WARNING: DATA QUALITY ISSUES DETECTED ⚠️")
         print("=" * 60)
-        
+
         if has_nan:
             nan_count = np.sum(np.isnan(data_array))
             print(f"❌ Found {nan_count} NaN values in {array_name}")
-            
+
         if has_inf:
             inf_count = np.sum(np.isinf(data_array))
             print(f"❌ Found {inf_count} infinite values in {array_name}")
-            
+
         print("\n🚨 MODEL FITTING MAY FAIL OR PRODUCE UNRELIABLE RESULTS!")
         print("\nRecommended actions:")
         print("  • Remove or interpolate NaN values")
         print("  • Replace infinite values with finite numbers")
         print("  • Check data preprocessing pipeline")
         print("=" * 60)
-        
+
         return False
-    
+
     return True
 
 
@@ -2178,7 +2178,7 @@ def advi_fit(model, fit, samples, convergence_tol=None):
     with model:
         inference = pm.ADVI("full-rank")
         approx = pm.fit(n=fit, method=inference, callbacks=callbacks)
-        
+
         # Check for inf/nan values in ELBO history
         if hasattr(approx, 'hist') and len(approx.hist) > 0:
             elbo_history = np.array(approx.hist)
@@ -2189,13 +2189,14 @@ def advi_fit(model, fit, samples, convergence_tol=None):
                 print("ELBO history contains NaN or infinite values!")
                 print("This suggests issues with either the model or the data.")
                 print("\nRecommended actions:")
-                print("  • Check your data for NaN/inf values using check_data_quality()")
+                print(
+                    "  • Check your data for NaN/inf values using check_data_quality()")
                 print("  • Try tracking parameters during fitting to diagnose issues")
                 print("  • See: https://www.pymc.io/projects/examples/en/2022.01.0/variational_inference/variational_api_quickstart.html#tracking-parameters")
                 print("  • Consider using different priors or model structure")
                 print("  • Try MCMC sampling instead of ADVI")
                 print("=" * 80)
-        
+
         idata = approx.sample(draws=samples)
 
     # Check if tau exists in posterior samples (PyMC5 uses InferenceData)
