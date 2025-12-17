@@ -2178,6 +2178,24 @@ def advi_fit(model, fit, samples, convergence_tol=None):
     with model:
         inference = pm.ADVI("full-rank")
         approx = pm.fit(n=fit, method=inference, callbacks=callbacks)
+        
+        # Check for inf/nan values in ELBO history
+        if hasattr(approx, 'hist') and len(approx.hist) > 0:
+            elbo_history = np.array(approx.hist)
+            if np.any(np.isnan(elbo_history)) or np.any(np.isinf(elbo_history)):
+                print("=" * 80)
+                print("⚠️  WARNING: ADVI FIT MAY HAVE FAILED ⚠️")
+                print("=" * 80)
+                print("ELBO history contains NaN or infinite values!")
+                print("This suggests issues with either the model or the data.")
+                print("\nRecommended actions:")
+                print("  • Check your data for NaN/inf values using check_data_quality()")
+                print("  • Try tracking parameters during fitting to diagnose issues")
+                print("  • See: https://www.pymc.io/projects/examples/en/2022.01.0/variational_inference/variational_api_quickstart.html#tracking-parameters")
+                print("  • Consider using different priors or model structure")
+                print("  • Try MCMC sampling instead of ADVI")
+                print("=" * 80)
+        
         idata = approx.sample(draws=samples)
 
     # Check if tau exists in posterior samples (PyMC5 uses InferenceData)
