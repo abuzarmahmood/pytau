@@ -1,0 +1,29 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: pytau
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Abuzar
+    family-names: Mahmood
+    email: abuzarmahmood@gmail.com
+    affiliation: Brandeis University
+    orcid: 'https://orcid.org/0000-0002-2448-4818'
+repository-code: 'https://github.com/abuzarmahmood/pytau'
+url: 'https://abuzarmahmood.github.io/pytau/'
+abstract: >-
+  PyTau is a Python package for detecting state changes in
+  time series data using Bayesian changepoint models. While
+  originally developed for neural data analysis, the methods
+  are applicable to any sequential data where identifying
+  state transitions is important.
+keywords:
+  - timeseries
+  - changepoint
+  - bayesian
+  - neuroscience
+license: MIT
