@@ -170,18 +170,20 @@
 <li><strong>DPP (Dirichlet Process Prior)</strong>: Used for models with a Dirichlet process prior to determine the number of states.</li>
 </ul>
 <h2 id="installation">Installation</h2>
-<p>To set up PyTau, follow these steps:</p>
+<h3 id="install-from-pypi-stable-release">Install from PyPI (Stable Release)</h3>
+<pre><code class="language-bash">pip install pytau
+</code></pre>
+<h3 id="install-from-github-latest-version">Install from GitHub (Latest Version)</h3>
 <pre><code class="language-bash"># Create and activate conda environment
 conda create -n &quot;pytau_env&quot; python=3.10 ipython notebook -y
 conda activate pytau_env
 
 # Clone repository
-cd ~/Desktop
 git clone https://github.com/abuzarmahmood/pytau.git
-
-# Install requirements from specified file
 cd pytau
-pip install -r requirements.txt
+
+# Install in development mode
+pip install -e .
 
 # Test everything is working by running notebook
 cd pytau/how_to
@@ -189,6 +191,20 @@ bash scripts/download_test_data.sh
 cd notebooks
 jupyter notebook
 # Run a notebook
+</code></pre>
+<h3 id="optional-dependencies">Optional Dependencies</h3>
+<p>PyTau supports several optional dependency groups for different use cases:</p>
+<pre><code class="language-bash"># Development dependencies (testing, linting, etc.)
+pip install -e .[dev]
+
+# Documentation dependencies
+pip install -e .[docs]
+
+# GUI dependencies
+pip install -e .[gui]
+
+# Install all optional dependencies
+pip install -e .[all]
 </code></pre>
 <h3 id="windows-users">Windows Users</h3>
 <p>On Windows, the bash script for downloading test data may encounter issues due to line ending differences and command availability. If you experience errors when running <code>bash scripts/download_test_data.sh</code>, use the following commands directly in your activated conda environment:</p>
@@ -341,5 +357,5 @@ model, approx, lambda_stack, tau_samples, data = advi_fit(model, fit=10000, samp
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2025-12-15 22:21:09.769294+00:00
+Build Date UTC : 2025-12-18 01:58:56.979897+00:00
 -->

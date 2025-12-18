@@ -286,6 +286,11 @@
 - Models categorical distributions
 - Detects changes in category probabilities
 - Useful for behavioral analysis</p>
+<p><strong>Known Issues</strong>:
+- ELBO values may become infinite during inference (<a href="https://github.com/abuzarmahmood/pytau/issues/186">Issue #186</a>)
+- This is a known issue and the model is being re-evaluated
+- Despite this issue, the model has been successfully used in research (see <a href="https://www.biorxiv.org/content/10.1101/2025.10.01.679845v1.full">Mahmood et al., 2025</a>)
+- If you encounter infinite ELBO values, consider tracking model parameters as described in the <a href="https://www.pymc.io/projects/examples/en/2022.01.0/variational_inference/variational_api_quickstart.html#tracking-parameters">PyMC documentation</a></p>
 <h2 id="model-naming-conventions">Model Naming Conventions</h2>
 <p>PyTau models follow consistent naming conventions:</p>
 <ul>
