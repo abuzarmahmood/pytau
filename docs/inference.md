@@ -325,9 +325,85 @@ with open('fitted_model.pkl', 'wb') as f:
 - Use ADVI instead of MCMC
 - Increase system swap space
 
+## Caveats and Limitations
+
+### Single Time-Series State Inference
+
+**Important Note**: Inferring the number of states for single time-series data can be unreliable when using both multi-model comparisons and Dirichlet process prior (DPP) fits.
+
+#### The Challenge
+
+When working with single time-series data (e.g., `PoissonChangepoint1D` with shape `(time,)`), determining the optimal number of states through model comparison can be particularly challenging. Both common approaches have significant limitations:
+
+1. **Multi-model ELBO comparison**: Fitting multiple models with different state numbers and comparing their ELBO values
+2. **Dirichlet process prior models**: Using models like `SingleTastePoissonDirichlet` or `GaussianChangepointMeanDirichlet` for automatic state detection
+
+#### Why This Matters
+
+Single time-series data lacks the hierarchical structure present in multi-trial or multi-neuron data. This makes the inference problem substantially more difficult because:
+
+- **Limited data**: A single time series provides less information for the model to distinguish between states
+- **Overfitting risk**: Models can easily overfit, assigning states to noise rather than true underlying structure
+- **Poor generalization**: ELBO values may not reliably indicate the true number of states
+- **Inconsistent results**: Different inference methods (ADVI vs MCMC) or random seeds can yield very different state number estimates
+
+#### Visual Examples
+
+The following images from [GitHub Issue #153](https://github.com/abuzarmahmood/pytau/issues/153) illustrate these challenges:
+
+**Example 1: Multi-model comparison showing poor ELBO discrimination**
+
+![State inference challenge 1](https://github.com/user-attachments/assets/ebeafd14-f52b-43cb-b2a5-4e6342ed38b4)
+
+**Example 2: Dirichlet process fit showing inconsistent state detection**
+
+![State inference challenge 2](https://github.com/user-attachments/assets/2e121bfe-4e30-4f7c-aaea-f4092b4e1c45)
+
+These examples demonstrate that both ELBO-based model selection and DPP-based automatic state detection can struggle with single time-series data, often failing to identify a clear optimal number of states.
+
+#### Recommendations for Better Decision-Making
+
+When working with single time-series data:
+
+1. **Use domain knowledge**: Let your experimental design and scientific hypotheses guide the choice of state numbers rather than relying solely on automated methods
+
+2. **Prefer multi-trial data**: Whenever possible, use multi-trial models (e.g., `SingleTastePoisson` with shape `(trials, time)`) which provide more robust inference through hierarchical structure
+
+3. **Cross-validate carefully**: If you must use single time-series data, consider:
+   - Splitting your time series into multiple segments for cross-validation
+   - Using held-out data to validate state assignments
+   - Comparing predictions across different model specifications
+
+4. **Be conservative**: When in doubt, prefer simpler models (fewer states) that align with your scientific understanding
+
+5. **Inspect results visually**: Always visually inspect the inferred changepoints and state assignments to ensure they make scientific sense
+
+6. **Use multiple inference approaches**: Compare results from both ADVI and MCMC, and examine consistency across multiple random initializations
+
+7. **Report uncertainty**: When publishing results from single time-series analyses, clearly report the limitations and uncertainty in state number selection
+
+#### Alternative Approaches
+
+Consider these alternatives when facing state inference challenges:
+
+- **Aggregate data**: If you have multiple similar time series, consider pooling them into a hierarchical model
+- **Fixed state models**: Specify the number of states based on experimental design rather than inferring it
+- **Sliding window analysis**: Break long time series into shorter segments and analyze consistency across segments
+- **Model averaging**: Rather than selecting a single "best" model, consider averaging predictions across models with different state numbers
+
+### General Model Selection Cautions
+
+Beyond single time-series issues, be aware that:
+
+- ELBO values can be sensitive to initialization and convergence
+- Cross-validation scores may be optimistic due to temporal dependencies
+- State number inference is fundamentally difficult in changepoint models due to label switching and identifiability issues
+
+Always combine automated model selection with scientific judgment and domain expertise.
+
 ## Next Steps
 
 - See [Available Models](models.md) for model descriptions
 - See [Data Formats](data_formats.md) for data preparation
-- See [Pipeline Architecture](pipeline.md) for batch processing
+- See [Examples and Tutorials](examples.md) for batch processing examples
 - Check the [API documentation](api.md) for detailed function signatures
