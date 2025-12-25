@@ -419,5 +419,5 @@ model, approx = advi_fit(model, fit=15000, samples=5000)
 
 - See [Available Models](models.md) for model selection
 - See [Inference Methods](inference.md) for fitting models
-- See [Pipeline Architecture](pipeline.md) for batch processing
+- See [Examples and Tutorials](examples.md) for batch processing examples
 - Check the [API documentation](api.md) for detailed function signatures
