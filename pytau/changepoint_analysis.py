@@ -49,7 +49,7 @@ def get_transition_snips(spike_array, tau_array, window_radius=300):
 
 def get_state_snippets(spike_array, tau_array):
     """Extract neural activity snippets for each state and trial without averaging
-    
+
     Returns raw neural activity for each state as a ragged array structure,
     where each state can have different durations across trials.
 
@@ -65,7 +65,7 @@ def get_state_snippets(spike_array, tau_array):
             - Inner list length: n_trials
             - Each element shape: (n_neurons, bins_in_state)
             Note: bins_in_state varies by trial and state
-    
+
     Example:
         >>> spike_array.shape  # (5 trials, 3 neurons, 100 bins)
         (5, 3, 100)
@@ -106,7 +106,7 @@ def get_state_snippets(spike_array, tau_array):
 
 def get_state_firing(spike_array, tau_array):
     """Calculate mean firing rates within states given changepoint positions
-    
+
     Computes average neural activity for each state by calling get_state_snippets
     and averaging over time bins within each state.
 
@@ -121,7 +121,7 @@ def get_state_firing(spike_array, tau_array):
             Shape: (n_trials, n_states, n_neurons)
             where n_states = n_changepoints + 1
             NaN values are replaced with 0
-    
+
     Example:
         >>> spike_array.shape
         (5, 3, 100)  # 5 trials, 3 neurons, 100 bins
@@ -133,7 +133,7 @@ def get_state_firing(spike_array, tau_array):
     """
     # Get state snippets
     state_snippets = get_state_snippets(spike_array, tau_array)
-    
+
     # Calculate mean firing rate for each state and trial
     state_firing = np.array(
         [
