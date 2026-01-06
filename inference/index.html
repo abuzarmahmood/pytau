@@ -131,6 +131,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-bs-level="2"><a href="#caveats-and-limitations" class="nav-link">Caveats and Limitations</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-bs-level="2"><a href="#next-steps" class="nav-link">Next Steps</a>
               <ul class="nav flex-column">
               </ul>
@@ -440,11 +444,81 @@ with open('fitted_model.pkl', 'wb') as f:
 <li>Use ADVI instead of MCMC</li>
 <li>Increase system swap space</li>
 </ul>
+<h2 id="caveats-and-limitations">Caveats and Limitations</h2>
+<h3 id="single-time-series-state-inference">Single Time-Series State Inference</h3>
+<p><strong>Important Note</strong>: Inferring the number of states for single time-series data can be unreliable when using both multi-model comparisons and Dirichlet process prior (DPP) fits.</p>
+<h4 id="the-challenge">The Challenge</h4>
+<p>When working with single time-series data (e.g., <code>PoissonChangepoint1D</code> with shape <code>(time,)</code>), determining the optimal number of states through model comparison can be particularly challenging. Both common approaches have significant limitations:</p>
+<ol>
+<li><strong>Multi-model ELBO comparison</strong>: Fitting multiple models with different state numbers and comparing their ELBO values</li>
+<li><strong>Dirichlet process prior models</strong>: Using models like <code>SingleTastePoissonDirichlet</code> or <code>GaussianChangepointMeanDirichlet</code> for automatic state detection</li>
+</ol>
+<h4 id="why-this-matters">Why This Matters</h4>
+<p>Single time-series data lacks the hierarchical structure present in multi-trial or multi-neuron data. This makes the inference problem substantially more difficult because:</p>
+<ul>
+<li><strong>Limited data</strong>: A single time series provides less information for the model to distinguish between states</li>
+<li><strong>Overfitting risk</strong>: Models can easily overfit, assigning states to noise rather than true underlying structure</li>
+<li><strong>Poor generalization</strong>: ELBO values may not reliably indicate the true number of states</li>
+<li><strong>Inconsistent results</strong>: Different inference methods (ADVI vs MCMC) or random seeds can yield very different state number estimates</li>
+</ul>
+<h4 id="visual-examples">Visual Examples</h4>
+<p>The following images from <a href="https://github.com/abuzarmahmood/pytau/issues/153">GitHub Issue #153</a> illustrate these challenges:</p>
+<p><strong>Example 1: Multi-model comparison showing poor ELBO discrimination</strong></p>
+<p><img alt="State inference challenge 1" src="https://github.com/user-attachments/assets/ebeafd14-f52b-43cb-b2a5-4e6342ed38b4" /></p>
+<p><strong>Example 2: Dirichlet process fit showing inconsistent state detection</strong></p>
+<p><img alt="State inference challenge 2" src="https://github.com/user-attachments/assets/2e121bfe-4e30-4f7c-aaea-f4092b4e1c45" /></p>
+<p>These examples demonstrate that both ELBO-based model selection and DPP-based automatic state detection can struggle with single time-series data, often failing to identify a clear optimal number of states.</p>
+<h4 id="recommendations-for-better-decision-making">Recommendations for Better Decision-Making</h4>
+<p>When working with single time-series data:</p>
+<ol>
+<li>
+<p><strong>Use domain knowledge</strong>: Let your experimental design and scientific hypotheses guide the choice of state numbers rather than relying solely on automated methods</p>
+</li>
+<li>
+<p><strong>Prefer multi-trial data</strong>: Whenever possible, use multi-trial models (e.g., <code>SingleTastePoisson</code> with shape <code>(trials, time)</code>) which provide more robust inference through hierarchical structure</p>
+</li>
+<li>
+<p><strong>Cross-validate carefully</strong>: If you must use single time-series data, consider:</p>
+</li>
+<li>Splitting your time series into multiple segments for cross-validation</li>
+<li>Using held-out data to validate state assignments</li>
+<li>
+<p>Comparing predictions across different model specifications</p>
+</li>
+<li>
+<p><strong>Be conservative</strong>: When in doubt, prefer simpler models (fewer states) that align with your scientific understanding</p>
+</li>
+<li>
+<p><strong>Inspect results visually</strong>: Always visually inspect the inferred changepoints and state assignments to ensure they make scientific sense</p>
+</li>
+<li>
+<p><strong>Use multiple inference approaches</strong>: Compare results from both ADVI and MCMC, and examine consistency across multiple random initializations</p>
+</li>
+<li>
+<p><strong>Report uncertainty</strong>: When publishing results from single time-series analyses, clearly report the limitations and uncertainty in state number selection</p>
+</li>
+</ol>
+<h4 id="alternative-approaches">Alternative Approaches</h4>
+<p>Consider these alternatives when facing state inference challenges:</p>
+<ul>
+<li><strong>Aggregate data</strong>: If you have multiple similar time series, consider pooling them into a hierarchical model</li>
+<li><strong>Fixed state models</strong>: Specify the number of states based on experimental design rather than inferring it</li>
+<li><strong>Sliding window analysis</strong>: Break long time series into shorter segments and analyze consistency across segments</li>
+<li><strong>Model averaging</strong>: Rather than selecting a single "best" model, consider averaging predictions across models with different state numbers</li>
+</ul>
+<h3 id="general-model-selection-cautions">General Model Selection Cautions</h3>
+<p>Beyond single time-series issues, be aware that:</p>
+<ul>
+<li>ELBO values can be sensitive to initialization and convergence</li>
+<li>Cross-validation scores may be optimistic due to temporal dependencies</li>
+<li>State number inference is fundamentally difficult in changepoint models due to label switching and identifiability issues</li>
+</ul>
+<p>Always combine automated model selection with scientific judgment and domain expertise.</p>
 <h2 id="next-steps">Next Steps</h2>
 <ul>
 <li>See <a href="../models/">Available Models</a> for model descriptions</li>
 <li>See <a href="../data_formats/">Data Formats</a> for data preparation</li>
-<li>See <a href="pipeline.md">Pipeline Architecture</a> for batch processing</li>
+<li>See <a href="../examples/">Examples and Tutorials</a> for batch processing examples</li>
 <li>Check the <a href="../api/">API documentation</a> for detailed function signatures</li>
 </ul></div>
             </div>
