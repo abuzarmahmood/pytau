@@ -15,7 +15,6 @@ classifiers = [
     "License :: OSI Approved",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Mathematics",
@@ -23,26 +22,14 @@ classifiers = [
     "Framework :: tox",
     "Framework :: Pytest",
 ]
+dynamic = ["dependencies", "optional-dependencies"]
 requires-python = ">=3.10,<3.12"
-dependencies = [
-    "pymc==5.16.2",
-    "numpyro==0.15.1",
-    "arviz==0.18.0",
-    "graphviz==0.20.3",
-    "easygui",
-    "tables",
-]
 
-[project.optional-dependencies]
-dev = [
-    "pre-commit",
-    "pytest",
-    "pytest-cov",
-    "nbmake",
-    "matplotlib",
-    "jupyter",
-    "nbconvert",
-]
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements/requirements.txt"]}
+optional-dependencies.dev = {file = ["requirements/requirements-dev.txt"]}
+optional-dependencies.docs = {file = ["requirements/requirements-docs.txt"]}
+optional-dependencies.gui = {file = ["requirements/requirements-gui.txt"]}
 
 [tool.setuptools]
 packages = ["pytau"]

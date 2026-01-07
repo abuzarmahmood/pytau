@@ -47,19 +47,40 @@ def get_transition_snips(spike_array, tau_array, window_radius=300):
     return transition_snips
 
 
-def get_state_firing(spike_array, tau_array):
-    """Calculate firing rates within states given changepoint positions on data
+def get_state_snippets(spike_array, tau_array):
+    """Extract neural activity snippets for each state and trial without averaging
+
+    Returns raw neural activity for each state as a ragged array structure,
+    where each state can have different durations across trials.
 
     Args:
-        spike_array (3D Numpy array): trials x nrns x bins
-        tau_array (2D Numpy array): trials x switchpoints
+        spike_array (np.ndarray): Neural activity data
+            Shape: (n_trials, n_neurons, n_bins)
+        tau_array (np.ndarray): Changepoint positions for each trial
+            Shape: (n_trials, n_changepoints)
 
     Returns:
-        state_firing (3D Numpy array): trials x states x nrns
-    """
+        list: Nested list structure organized as [state][trial]
+            - Outer list length: n_states (n_changepoints + 1)
+            - Inner list length: n_trials
+            - Each element shape: (n_neurons, bins_in_state)
+            Note: bins_in_state varies by trial and state
 
+    Example:
+        >>> spike_array.shape  # (5 trials, 3 neurons, 100 bins)
+        (5, 3, 100)
+        >>> tau_array.shape  # (5 trials, 2 changepoints)
+        (5, 2)
+        >>> snippets = get_state_snippets(spike_array, tau_array)
+        >>> len(snippets)  # 3 states (2 changepoints + 1)
+        3
+        >>> len(snippets[0])  # 5 trials
+        5
+        >>> snippets[0][0].shape  # First trial, first state
+        (3, 30)  # 3 neurons, 30 bins (from start to first changepoint)
+    """
     states = tau_array.shape[-1] + 1
-    # Get mean firing rate for each STATE using model
+    # Get state boundaries for each trial
     state_inds = np.hstack(
         [
             np.zeros((tau_array.shape[0], 1)),
@@ -71,11 +92,53 @@ def get_state_firing(spike_array, tau_array):
     state_lims = np.vectorize(int)(state_lims)
     state_lims = np.swapaxes(state_lims, 0, 1)
 
+    # Extract snippets for each state and trial
+    state_snippets = []
+    for state_idx in range(states):
+        trial_snippets = []
+        for trial_idx, (trial_dat, trial_lims) in enumerate(zip(spike_array, state_lims)):
+            start, end = trial_lims[state_idx]
+            trial_snippets.append(trial_dat[:, start:end])
+        state_snippets.append(trial_snippets)
+
+    return state_snippets
+
+
+def get_state_firing(spike_array, tau_array):
+    """Calculate mean firing rates within states given changepoint positions
+
+    Computes average neural activity for each state by calling get_state_snippets
+    and averaging over time bins within each state.
+
+    Args:
+        spike_array (np.ndarray): Neural activity data
+            Shape: (n_trials, n_neurons, n_bins)
+        tau_array (np.ndarray): Changepoint positions for each trial
+            Shape: (n_trials, n_changepoints)
+
+    Returns:
+        np.ndarray: Mean firing rates per state
+            Shape: (n_trials, n_states, n_neurons)
+            where n_states = n_changepoints + 1
+            NaN values are replaced with 0
+
+    Example:
+        >>> spike_array.shape
+        (5, 3, 100)  # 5 trials, 3 neurons, 100 bins
+        >>> tau_array.shape
+        (5, 2)  # 5 trials, 2 changepoints
+        >>> firing = get_state_firing(spike_array, tau_array)
+        >>> firing.shape
+        (5, 3, 3)  # 5 trials, 3 states, 3 neurons
+    """
+    # Get state snippets
+    state_snippets = get_state_snippets(spike_array, tau_array)
+
+    # Calculate mean firing rate for each state and trial
     state_firing = np.array(
         [
-            [np.mean(trial_dat[:, start:end], axis=-1)
-             for start, end in trial_lims]
-            for trial_dat, trial_lims in zip(spike_array, state_lims)
+            [np.mean(snippet, axis=-1) for snippet in trial_snippets]
+            for trial_snippets in zip(*state_snippets)
         ]
     )
 

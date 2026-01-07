@@ -1,0 +1,58 @@
+name: Test and Deploy Documentation
+
+on:
+  pull_request:
+    paths:
+      - 'mkdocs.yml'
+      - 'docs/**'
+      - 'requirements/requirements-docs.txt'
+    types: [opened, synchronize, reopened, closed]
+
+jobs:
+  test-docs:
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Install documentation dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[docs]
+    - name: Test documentation build
+      run: |
+        mkdocs build
+    - name: Upload built docs as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: built-docs
+        path: site/
+        retention-days: 7
+
+  deploy-docs:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Install documentation dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[docs]
+    - name: Configure git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+    - name: Deploy documentation to GitHub Pages
+      run: |
+        mkdocs gh-deploy --force
