@@ -13,7 +13,7 @@ authors:
 affiliations:
  - name: Swartz Foundation Computational Neuroscience Fellow, Volen Center for Complex Systems, Brandeis University, Waltham, MA, USA
    index: 1
- - name: Department of Psychology, Brandeis University, Waltham, MA, USA
+ - name: Department of Psychology, Brandeis University, Waltham, MA, United States of America
    index: 2
 date: 30 March 2025
 bibliography: paper.bib
@@ -39,11 +39,11 @@ Understanding how neural populations encode information often involves analyzing
 Its adoption in studies of taste processing [@Mahmood2023; @Mahmood2025; @Maigler2024], taste aversion learning [@Flores2023], and ingestive behavior [@BaasThomasInPrep] demonstrates its practical utility for researchers studying state transitions in neural activity.
 
 
-![**Spike rasters with changepoint overlays** visualize inferred changepoints across trials and neurons](figs/state_raster_overlay.png)
+![**Spike rasters with changepoint overlays** visualize inferred changepoints across trials and neurons.](figs/state_raster_overlay.png)
 
 # Implementation and architecture
 
-`pytau` is implemented in Python and built on NumPy, SciPy, PyMC3, and Matplotlib [@numpy; @pymc3]. The package is organized into several modules:
+`pytau` is implemented in Python and built on NumPy, SciPy, PyMC3, and Matplotlib [@numpy; @scipy; @pymc3; @matplotlib]. The package is organized into several modules:
 
 1. **changepoint_model.py**: Contains model definitions for various changepoint models including Poisson and Gaussian models (see [Available Models](https://abuzarmahmood.github.io/pytau/models/))
 2. **changepoint_io.py**: Handles data loading, preprocessing, and result storage through `FitHandler` and `DatabaseHandler` classes
@@ -95,7 +95,7 @@ significant_neurons = firing.anova_significant_neurons
 
 The package includes visualization tools for examining neural activity with overlaid changepoints, analyzing state-dependent firing rates, and visualizing transition-aligned activity. Comprehensive tutorials and detailed examples are available in the [documentation](https://abuzarmahmood.github.io/pytau/examples/), including Jupyter notebooks and example scripts with test datasets in the repository's `how_to` directory.
 
-![**State timing overview** shows state durations and transition time distributions across trials](figs/state_timing_overview.png)
+![**State timing overview** shows state durations and transition time distributions across trials.](figs/state_timing_overview.png)
 
 
 # State of the field
