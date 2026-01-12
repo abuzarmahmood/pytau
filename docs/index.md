@@ -117,6 +117,26 @@ model, approx, lambda_stack, tau_samples, data = advi_fit(model, fit=10000, samp
 # lambda_stack contains the emission rates
 ```
 
+### Loading Saved Models
+
+To load and analyze previously saved models:
+
+```python
+from pytau.changepoint_analysis import PklHandler
+
+# Load a saved model
+handler = PklHandler('/path/to/saved_model.pkl')
+
+# Access ELBO history (new in v0.1.3)
+last_elbo = handler.elbo_hist[-1]  # Get the final ELBO value
+all_elbo = handler.elbo_hist        # Get the complete ELBO history
+
+# Access other model components
+tau_samples = handler.tau_array
+lambda_samples = handler.lambda_array
+processed_data = handler.processed_spikes
+```
+
 For more detailed usage examples, refer to the notebooks in the `pytau/how_to/notebooks` directory.
 
 ## Workflows
@@ -132,6 +152,7 @@ PyTau also provides tools for batch processing and database management to stream
 
 - `FitHandler`: Handles the pipeline of model fitting including loading data, preprocessing, fitting models, and saving results.
 - `DatabaseHandler`: Manages transactions with the model database, allowing for efficient storage and retrieval of fitted models.
+- `PklHandler`: Loads and provides convenient access to saved model files, including the new `elbo_hist` property for easy access to ELBO values.
 
 ## Data Organization
 
