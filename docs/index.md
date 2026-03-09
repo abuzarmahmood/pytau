@@ -2,9 +2,8 @@
 
 This is a python package to perform streamlined, batched inference for changepoint models over parameter grids and datasets, and efficiently analyze sets of fitted models.
 
-## Talks
-
-- [PyMCon Talk: "The Only Constant is Change: Bespoke Changepoint Modelling in PyMC"](https://discourse.pymc.io/t/new-pymcon-talk-the-only-constant-is-change-bespoke-changepoint-modelling-in-pymc-by-abuzar-mahmood/13251)
+Learn more about the problem PyTau is trying to solve.
+[PyMCon Talk: "The Only Constant is Change: Bespoke Changepoint Modelling in PyMC"](https://discourse.pymc.io/t/new-pymcon-talk-the-only-constant-is-change-bespoke-changepoint-modelling-in-pymc-by-abuzar-mahmood/13251)
 
 ## Models
 
