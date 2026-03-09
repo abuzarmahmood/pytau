@@ -2,6 +2,10 @@
 
 This is a python package to perform streamlined, batched inference for changepoint models over parameter grids and datasets, and efficiently analyze sets of fitted models.
 
+## Talks
+
+- [PyMCon Talk: "The Only Constant is Change: Bespoke Changepoint Modelling in PyMC"](https://discourse.pymc.io/t/new-pymcon-talk-the-only-constant-is-change-bespoke-changepoint-modelling-in-pymc-by-abuzar-mahmood/13251)
+
 ## Models
 
 PyTau uses changepoint models to detect shifts in data distributions. These models are designed to identify points in time where the statistical properties of a sequence of observations change. The package supports various types of changepoint models, including Gaussian and Poisson models. Each model is optimized for different types of data and use cases.
