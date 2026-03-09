@@ -6,6 +6,7 @@
   [![status](https://joss.theoj.org/papers/e3e3d9ce5b59166cef17ee7e9bb9f53c/status.svg)](https://joss.theoj.org/papers/e3e3d9ce5b59166cef17ee7e9bb9f53c)
   [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/abuzarmahmood/pytau/master.svg)](https://results.pre-commit.ci/latest/github/abuzarmahmood/pytau/master)
   [![Pytest](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml/badge.svg)](https://github.com/abuzarmahmood/pytau/actions/workflows/pytest_workflow.yml)
+  [![PyMCon Talk](https://img.shields.io/badge/PyMCon-Talk-blue)](https://discourse.pymc.io/t/new-pymcon-talk-the-only-constant-is-change-bespoke-changepoint-modelling-in-pymc-by-abuzar-mahmood/13251)
 </div>
 
 ## 🚀 What is PyTau?
