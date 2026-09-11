@@ -13,6 +13,7 @@ PyTau provides a comprehensive suite of changepoint detection models designed fo
 | Categorical behavioral data | `CategoricalChangepoint2D` |
 | Unknown state number | `*Dirichlet` models |
 | Drifting/non-stationary 1D signal | `RandomWalkChangepointMeanVar1D` |
+| Behavioral signal with intermittent non-participation/missing data | `RandomWalkChangepointParticipation1D` |
 
 ## Poisson Models
 
@@ -195,6 +196,23 @@ Random walk models treat the observed data itself as a cumulative process (`x_t 
 - Models the observation process as a `GaussianRandomWalk` (PyMC), not i.i.d. emissions per state
 - Detects changes in both innovation mean (drift) and innovation variance
 - 1D only; multivariate support is tracked as a follow-up
+
+### RandomWalkChangepointParticipation1D
+
+**Purpose**: Detects changepoints in a 1D random walk where one or more states correspond to the underlying process being sparsely observed or absent (e.g. an animal disengaging from a behavior).
+
+**Use Case**: Behavioral timeseries (e.g. licking) where the animal periodically stops participating, producing missing/sparse observations, and you want non-participation itself to be identified as (part of) a state.
+
+**Data Shape**: `(time,)`, may contain `NaN` at unobserved/non-participating timepoints.
+
+**Key Features**:
+- Extends `RandomWalkChangepointMeanVar1D` with a per-state, changepoint-blended "participation probability"
+- Innovations are drawn from a continuous 2-component mixture (engaged vs. disengaged), avoiding any discrete latent variable so the model remains fully compatible with ADVI
+- `NaN` entries are handled by fitting a full-length latent random walk path and only evaluating the likelihood at observed (non-`NaN`) timepoints — no missing-data likelihood needs to be specified explicitly
+- 1D only, following the same scope as `RandomWalkChangepointMeanVar1D`
+
+**Known Issues**:
+- The random per-state segment boundaries used by the test-data generator (`gen_random_walk_participation_test_array`) can occasionally produce very short/imbalanced segments, which has been observed to cause numerically unstable ADVI fits (`NaN` in optimization) for some random seeds. This mirrors general noisiness already present in ADVI-based ELBO/parameter estimation for the sibling `RandomWalkChangepointMeanVar1D` model; use well-separated, adequately-sized segments and consider `full-rank` ADVI or more iterations if you see unstable fits.
 
 ## Categorical Models
 
