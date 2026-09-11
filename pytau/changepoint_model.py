@@ -2251,7 +2251,8 @@ class RandomWalkChangepointMeanVar1D(ChangepointModel):
 # For backward compatibility
 def random_walk_changepoint_mean_var_1d(data_array, n_states, **kwargs):
     """Wrapper function for backward compatibility"""
-    model_class = RandomWalkChangepointMeanVar1D(data_array, n_states, **kwargs)
+    model_class = RandomWalkChangepointMeanVar1D(
+        data_array, n_states, **kwargs)
     return model_class.generate_model()
 
 
