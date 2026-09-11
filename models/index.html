@@ -115,6 +115,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-bs-level="2"><a href="#random-walk-models" class="nav-link">Random Walk Models</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-bs-level="2"><a href="#categorical-models" class="nav-link">Categorical Models</a>
               <ul class="nav flex-column">
               </ul>
@@ -172,6 +176,10 @@
 <tr>
 <td>Unknown state number</td>
 <td><code>*Dirichlet</code> models</td>
+</tr>
+<tr>
+<td>Drifting/non-stationary 1D signal</td>
+<td><code>RandomWalkChangepointMeanVar1D</code></td>
 </tr>
 </tbody>
 </table>
@@ -276,6 +284,16 @@
 - Dirichlet process prior for state number
 - Detects changes in mean only
 - Requires MCMC sampling</p>
+<h2 id="random-walk-models">Random Walk Models</h2>
+<p>Random walk models treat the observed data itself as a cumulative process (<code>x_t = x_{t-1} + innovation_t</code>), and detect changepoints in the distribution of the <em>innovations</em> (steps) rather than in the raw signal levels. This is suited to non-stationary/drifting 1D signals where the raw values don't settle into stable levels within a state, only the step-to-step increments do.</p>
+<h3 id="randomwalkchangepointmeanvar1d">RandomWalkChangepointMeanVar1D</h3>
+<p><strong>Purpose</strong>: Detects changes in both the mean and variance of the innovation (step) distribution of a 1D random walk</p>
+<p><strong>Use Case</strong>: Drifting or non-stationary 1D time series (e.g. a wandering baseline) where you want to detect changes in drift rate and/or step volatility rather than in absolute signal level.</p>
+<p><strong>Data Shape</strong>: <code>(time,)</code></p>
+<p><strong>Key Features</strong>:
+- Models the observation process as a <code>GaussianRandomWalk</code> (PyMC), not i.i.d. emissions per state
+- Detects changes in both innovation mean (drift) and innovation variance
+- 1D only; multivariate support is tracked as a follow-up</p>
 <h2 id="categorical-models">Categorical Models</h2>
 <p>Categorical models are designed for discrete categorical data such as behavioral states or decoded neural states.</p>
 <h3 id="categoricalchangepoint2d">CategoricalChangepoint2D</h3>
