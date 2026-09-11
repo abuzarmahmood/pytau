@@ -12,6 +12,7 @@ PyTau provides a comprehensive suite of changepoint detection models designed fo
 | Continuous neural data | `GaussianChangepoint*` |
 | Categorical behavioral data | `CategoricalChangepoint2D` |
 | Unknown state number | `*Dirichlet` models |
+| Drifting/non-stationary 1D signal | `RandomWalkChangepointMeanVar1D` |
 
 ## Poisson Models
 
@@ -177,6 +178,23 @@ Gaussian models are designed for continuous neural data such as LFP signals, cal
 - Dirichlet process prior for state number
 - Detects changes in mean only
 - Requires MCMC sampling
+
+## Random Walk Models
+
+Random walk models treat the observed data itself as a cumulative process (`x_t = x_{t-1} + innovation_t`), and detect changepoints in the distribution of the *innovations* (steps) rather than in the raw signal levels. This is suited to non-stationary/drifting 1D signals where the raw values don't settle into stable levels within a state, only the step-to-step increments do.
+
+### RandomWalkChangepointMeanVar1D
+
+**Purpose**: Detects changes in both the mean and variance of the innovation (step) distribution of a 1D random walk
+
+**Use Case**: Drifting or non-stationary 1D time series (e.g. a wandering baseline) where you want to detect changes in drift rate and/or step volatility rather than in absolute signal level.
+
+**Data Shape**: `(time,)`
+
+**Key Features**:
+- Models the observation process as a `GaussianRandomWalk` (PyMC), not i.i.d. emissions per state
+- Detects changes in both innovation mean (drift) and innovation variance
+- 1D only; multivariate support is tracked as a follow-up
 
 ## Categorical Models
 

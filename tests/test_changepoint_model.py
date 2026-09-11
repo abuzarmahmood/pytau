@@ -15,6 +15,7 @@ from pytau.changepoint_model import (
     GaussianChangepointMeanDirichlet,
     GaussianChangepointMeanVar2D,
     PoissonChangepoint1D,
+    RandomWalkChangepointMeanVar1D,
     SingleTastePoisson,
     SingleTastePoissonDirichlet,
     SingleTastePoissonTrialSwitch,
@@ -22,7 +23,10 @@ from pytau.changepoint_model import (
     SingleTastePoissonVarsigFixed,
     advi_fit,
     extract_inferred_values,
+    find_best_states,
+    gen_random_walk_test_array,
     gen_test_array,
+    random_walk_changepoint_mean_var_1d,
 )
 
 
@@ -196,3 +200,62 @@ def test_module_import():
     import pytau.changepoint_model
 
     assert pytau.changepoint_model is not None
+
+
+def test_gen_random_walk_test_array():
+    """Test the gen_random_walk_test_array function."""
+    n_points = 100
+    n_states = 3
+    data = gen_random_walk_test_array(n_points, n_states)
+    assert data.shape == (n_points,)
+
+    # Test with too few time points
+    with pytest.raises(AssertionError):
+        gen_random_walk_test_array(3, n_states)
+
+
+@pytest.mark.slow
+def test_random_walk_changepoint_1d():
+    """Test the RandomWalkChangepointMeanVar1D model."""
+    # Generate 1D random walk test data
+    test_data = gen_random_walk_test_array(100, n_states=3)
+
+    # Test model creation
+    model_class = RandomWalkChangepointMeanVar1D(test_data, 3)
+    assert model_class.data_array.ndim == 1
+    assert model_class.n_states == 3
+
+    # Test model generation
+    model = model_class.generate_model()
+    assert model is not None
+
+    # Test that it raises error for non-1D data
+    with pytest.raises(ValueError):
+        RandomWalkChangepointMeanVar1D(np.random.normal(size=(10, 100)), 3)
+
+
+@pytest.mark.slow
+def test_random_walk_changepoint_elbo_state_selection():
+    """Test that ELBO comparison via find_best_states identifies a number of
+    states close to the true number of states used to generate the data.
+
+    ADVI-based ELBO comparisons are inherently noisy (this holds for the
+    existing Poisson/Gaussian models too, not just this one), so an exact
+    match is not asserted -- only that the selected number of states is
+    within 1 of the true value.
+    """
+    np.random.seed(0)
+    true_n_states = 3
+    data = gen_random_walk_test_array(150, n_states=true_n_states)
+
+    _, _, elbo_values = find_best_states(
+        data,
+        random_walk_changepoint_mean_var_1d,
+        n_fit=2000,
+        n_samples=100,
+        min_states=2,
+        max_states=5,
+    )
+
+    best_n_states = np.argmin(elbo_values) + 2
+    assert abs(best_n_states - true_n_states) <= 1

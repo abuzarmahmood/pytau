@@ -167,6 +167,57 @@ def gen_test_array(array_size, n_states, type="poisson"):
         return np.random.normal(loc=rate_array, scale=0.1)
 
 
+def gen_random_walk_test_array(
+    n_points, n_states, mean_range=(-2.0, 2.0), sigma_range=(0.2, 0.6)
+):
+    """
+    Generate a 1D random walk test array with known changepoints in the
+    innovation (step) distribution's mean and variance.
+
+    Args:
+        n_points (int): Length of the generated random walk.
+        n_states (int): Number of states (segments with distinct
+            innovation mean/variance) to generate.
+        mean_range (tuple): Range from which per-state innovation means
+            are drawn.
+        sigma_range (tuple): Range from which per-state innovation
+            standard deviations are drawn.
+
+    Returns:
+        numpy.ndarray: 1D array of length n_points.
+    """
+    assert n_points > n_states, "Array too small for states"
+
+    n_steps = n_points - 1
+
+    # Generate transition times for the innovation (step) series
+    transition_times = np.random.random(n_states)
+    transition_times = np.cumsum(transition_times)
+    transition_times = transition_times / transition_times.max()
+    transition_times *= n_steps
+    transition_times = transition_times.astype(int)
+
+    state_bounds = np.zeros(n_states + 1, dtype=int)
+    state_bounds[1:] = transition_times
+    state_bounds[-1] = n_steps
+
+    # Alternate signs across states to keep segments well separated,
+    # regardless of the randomly drawn magnitude
+    mean_vals = np.random.uniform(*mean_range, n_states)
+    mean_vals = np.abs(mean_vals) * np.resize([1, -1], n_states)
+    sigma_vals = np.random.uniform(*sigma_range, n_states)
+
+    innovations = np.zeros(n_steps)
+    for i in range(n_states):
+        start_idx = state_bounds[i]
+        end_idx = state_bounds[i + 1]
+        innovations[start_idx:end_idx] = np.random.normal(
+            loc=mean_vals[i], scale=sigma_vals[i], size=end_idx - start_idx
+        )
+
+    return np.concatenate([[0.0], np.cumsum(innovations)])
+
+
 ############################################################
 # Models
 ############################################################
@@ -1917,10 +1968,12 @@ def run_all_tests():
     test_data_2d = gen_test_array((10, 100), n_states=3, type="normal")
     test_data_3d = gen_test_array((5, 10, 100), n_states=3, type="poisson")
     test_data_4d = gen_test_array((2, 5, 10, 100), n_states=3, type="poisson")
+    test_data_random_walk = gen_random_walk_test_array(100, n_states=3)
 
     # Test each model class
     models_to_test = [
         PoissonChangepoint1D(test_data_1d, 3),
+        RandomWalkChangepointMeanVar1D(test_data_random_walk, 3),
         GaussianChangepointMeanVar2D(test_data_2d, 3),
         GaussianChangepointMeanDirichlet(test_data_2d, 5),
         GaussianChangepointMean2D(test_data_2d, 3),
@@ -2067,6 +2120,139 @@ class PoissonChangepoint1D(ChangepointModel):
 def poisson_changepoint_1d(data_array, n_states, **kwargs):
     """Wrapper function for backward compatibility"""
     model_class = PoissonChangepoint1D(data_array, n_states, **kwargs)
+    return model_class.generate_model()
+
+
+############################################################
+# 1D Random Walk Changepoint Model
+############################################################
+
+
+class RandomWalkChangepointMeanVar1D(ChangepointModel):
+    """Model for changepoint detection in 1D random walk time series
+
+    Treats the observed data as a random walk (x_t = x_{t-1} + innovation_t)
+    and detects changepoints in both the mean and variance of the
+    innovation (step) distribution.
+    """
+
+    def __init__(self, data_array, n_states, **kwargs):
+        """
+        Args:
+            data_array (1D Numpy array): Time series data
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = np.asarray(data_array)
+        if self.data_array.ndim != 1:
+            raise ValueError("data_array must be 1-dimensional")
+        check_data_quality(self.data_array, "data_array")
+        self.n_states = n_states
+
+    def generate_model(self):
+        """
+        Returns:
+            pymc model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        n_states = self.n_states
+
+        # Innovations (steps) of the random walk
+        diffs = np.diff(data_array)
+
+        # Calculate initial mean values by splitting innovations into segments
+        mean_vals = np.array([
+            np.mean(x) for x in np.array_split(diffs, n_states)
+        ])
+
+        idx = np.arange(len(diffs))
+        length = len(diffs)
+
+        with pm.Model() as model:
+            # Mean and variance of the innovation distribution per state
+            mu = pm.Normal("mu", mu=mean_vals, sigma=1, shape=n_states)
+            sigma = pm.HalfCauchy("sigma", 3.0, shape=n_states)
+
+            # Changepoint locations (over innovation/step indices)
+            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
+
+            # Initialize changepoints evenly across the innovation series
+            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
+            tau_latent = pm.Beta(
+                "tau_latent",
+                a_tau,
+                b_tau,
+                initval=even_switches,
+                shape=(n_states - 1)
+            ).sort(axis=-1)
+
+            # Convert to actual step indices
+            tau = pm.Deterministic(
+                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent
+            )
+
+            # Create weight matrix for smooth transitions between states
+            weight_stack = tt.math.sigmoid(
+                idx[np.newaxis, :] - tau[:, np.newaxis]
+            )
+            weight_stack = tt.concatenate(
+                [np.ones((1, length)), weight_stack], axis=0
+            )
+            inverse_stack = 1 - weight_stack[1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((1, length))], axis=0
+            )
+            weight_stack = weight_stack * inverse_stack
+
+            # Time-varying innovation mean and variance
+            mu_t = mu.dot(weight_stack)
+            sigma_t = sigma.dot(weight_stack)
+
+            # Random walk observation model
+            init_dist = pm.Normal.dist(mu=data_array[0], sigma=1)
+            observation = pm.GaussianRandomWalk(
+                "obs",
+                mu=mu_t,
+                sigma=sigma_t,
+                init_dist=init_dist,
+                steps=length,
+                observed=data_array,
+            )
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data - 1D random walk with 100 time points
+        test_data = gen_random_walk_test_array(100, n_states=self.n_states)
+
+        # Create model with test data
+        test_model = RandomWalkChangepointMeanVar1D(test_data, self.n_states)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "mu" in trace.varnames
+        assert "sigma" in trace.varnames
+        assert "tau" in trace.varnames
+
+        print("Test for RandomWalkChangepointMeanVar1D passed")
+        return True
+
+
+# For backward compatibility
+def random_walk_changepoint_mean_var_1d(data_array, n_states, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = RandomWalkChangepointMeanVar1D(
+        data_array, n_states, **kwargs)
     return model_class.generate_model()
 
 
