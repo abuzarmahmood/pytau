@@ -143,7 +143,7 @@
 <p>Learn more about the problem PyTau is trying to solve.
 <a href="https://discourse.pymc.io/t/new-pymcon-talk-the-only-constant-is-change-bespoke-changepoint-modelling-in-pymc-by-abuzar-mahmood/13251">PyMCon Talk: "The Only Constant is Change: Bespoke Changepoint Modelling in PyMC"</a></p>
 <h2 id="models">Models</h2>
-<p>PyTau uses changepoint models to detect shifts in data distributions. These models are designed to identify points in time where the statistical properties of a sequence of observations change. The package supports various types of changepoint models, including Gaussian and Poisson models. Each model is optimized for different types of data and use cases.</p>
+<p>PyTau uses changepoint models to detect shifts in data distributions. These models are designed to identify points in time where the statistical properties of a sequence of observations change. The package supports various types of changepoint models, including Gaussian, Poisson, and random walk models. Each model is optimized for different types of data and use cases.</p>
 <h3 id="available-models">Available Models</h3>
 <h4 id="gaussian-changepoint-models">Gaussian Changepoint Models</h4>
 <p>These models detect changes in both mean and variance or only in the mean for Gaussian data. They are suitable for continuous data where changes in statistical properties like mean and variance are of interest.</p>
@@ -163,6 +163,12 @@
 <li><code>all_taste_poisson_varsig_fixed</code>: Fits changepoints across multiple tastes with fixed sigmoid slope.</li>
 <li><code>single_taste_poisson_trial_switch</code>: Assumes only emissions change across trials.</li>
 <li><code>all_taste_poisson_trial_switch</code>: Fits changepoints across multiple tastes with trial switching.</li>
+</ul>
+<h4 id="random-walk-changepoint-models">Random Walk Changepoint Models</h4>
+<p>These models treat the observed 1D data itself as a random walk (<code>x_t = x_{t-1} + innovation_t</code>) and detect changepoints in the innovation (step) distribution rather than in the raw signal levels. They are suited to drifting/non-stationary 1D signals, such as behavioral timeseries, where the raw values don't settle into stable levels within a state.</p>
+<ul>
+<li><code>random_walk_changepoint_mean_var_1d</code>: Detects changes in both the mean and variance of the innovation distribution.</li>
+<li><code>random_walk_changepoint_participation_1d</code>: Extends the above with a per-state "participation" probability, allowing intermittent non-participation/missing data (e.g. an animal disengaging from a behavior) to be identified as a state.</li>
 </ul>
 <h3 id="fitting-methods">Fitting Methods</h3>
 <p>PyTau provides several fitting methods for these models:</p>
@@ -359,5 +365,5 @@ model, approx, lambda_stack, tau_samples, data = advi_fit(model, fit=10000, samp
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2026-09-11 22:55:26.955374+00:00
+Build Date UTC : 2026-09-11 23:09:39.132087+00:00
 -->
