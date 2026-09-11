@@ -7,7 +7,7 @@ Learn more about the problem PyTau is trying to solve.
 
 ## Models
 
-PyTau uses changepoint models to detect shifts in data distributions. These models are designed to identify points in time where the statistical properties of a sequence of observations change. The package supports various types of changepoint models, including Gaussian and Poisson models. Each model is optimized for different types of data and use cases.
+PyTau uses changepoint models to detect shifts in data distributions. These models are designed to identify points in time where the statistical properties of a sequence of observations change. The package supports various types of changepoint models, including Gaussian, Poisson, and random walk models. Each model is optimized for different types of data and use cases.
 
 ### Available Models
 
@@ -29,6 +29,12 @@ These models are used for spike train data, detecting changes in the rate of eve
 - `all_taste_poisson_varsig_fixed`: Fits changepoints across multiple tastes with fixed sigmoid slope.
 - `single_taste_poisson_trial_switch`: Assumes only emissions change across trials.
 - `all_taste_poisson_trial_switch`: Fits changepoints across multiple tastes with trial switching.
+
+#### Random Walk Changepoint Models
+These models treat the observed 1D data itself as a random walk (`x_t = x_{t-1} + innovation_t`) and detect changepoints in the innovation (step) distribution rather than in the raw signal levels. They are suited to drifting/non-stationary 1D signals, such as behavioral timeseries, where the raw values don't settle into stable levels within a state.
+
+- `random_walk_changepoint_mean_var_1d`: Detects changes in both the mean and variance of the innovation distribution.
+- `random_walk_changepoint_participation_1d`: Extends the above with a per-state "participation" probability, allowing intermittent non-participation/missing data (e.g. an animal disengaging from a behavior) to be identified as a state.
 
 ### Fitting Methods
 PyTau provides several fitting methods for these models:
