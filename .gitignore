@@ -49,3 +49,26 @@ Thumbs.db
 *.csv
 *.svg
 .aider*
+
+# Virtual environments #
+#########################
+venv/
+.venv/
+
+# Caches and coverage #
+########################
+.cache/
+.coverage
+.pytest_cache/
+
+# Jupyter #
+###########
+.ipynb_checkpoints/
+
+# Generated/scratch output directories #
+##########################################
+_experimental/
+saved_models/
+model_demos/
+test_data/
+parallel_temp/
