@@ -298,7 +298,8 @@ def gen_random_walk_participation_test_array(
     nan_candidates = np.where(participation_mask)[0] + 1
     n_to_drop = int(missing_frac * len(nan_candidates))
     if n_to_drop > 0:
-        drop_idx = np.random.choice(nan_candidates, size=n_to_drop, replace=False)
+        drop_idx = np.random.choice(
+            nan_candidates, size=n_to_drop, replace=False)
         data_array[drop_idx] = np.nan
 
     return data_array, participation_mask
@@ -2391,7 +2392,8 @@ class RandomWalkChangepointParticipation1D(ChangepointModel):
 
         observed_mask = ~np.isnan(data_array)
         observed_idx = np.where(observed_mask)[0]
-        assert len(observed_idx) > n_states, "Too few observed points for n_states"
+        assert len(
+            observed_idx) > n_states, "Too few observed points for n_states"
 
         finite_diffs = np.diff(data_array[observed_mask])
         mean_vals = np.array([
