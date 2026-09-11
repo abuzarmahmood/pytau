@@ -218,6 +218,93 @@ def gen_random_walk_test_array(
     return np.concatenate([[0.0], np.cumsum(innovations)])
 
 
+def gen_random_walk_participation_test_array(
+    n_points,
+    n_states,
+    mean_range=(-2.0, 2.0),
+    sigma_range=(0.2, 0.6),
+    disengaged_states=None,
+    sigma_disengaged=1.5,
+    missing_frac=0.85,
+):
+    """
+    Generate a 1D random walk test array containing one or more
+    "disengaged" (non-participating) states, whose innovations are
+    drawn from a zero-mean, high-variance distribution and which are
+    mostly missing (NaN) in the returned array.
+
+    Args:
+        n_points (int): Length of the generated random walk.
+        n_states (int): Number of states (segments) to generate.
+        mean_range (tuple): Range from which per-state innovation means
+            are drawn for participating (engaged) states.
+        sigma_range (tuple): Range from which per-state innovation
+            standard deviations are drawn for participating states.
+        disengaged_states (list[int] or None): Indices of states (0 to
+            n_states - 1) to mark as disengaged/non-participating. If
+            None, a single state is chosen at random.
+        sigma_disengaged (float): Std of the zero-mean innovation
+            distribution used for disengaged states.
+        missing_frac (float): Fraction of points within disengaged
+            segments to blank out to NaN.
+
+    Returns:
+        tuple:
+            numpy.ndarray: 1D array of length n_points, with NaNs in
+                disengaged segments.
+            numpy.ndarray: Boolean array of length n_points - 1 marking
+                which innovation steps belong to a disengaged state.
+    """
+    assert n_points > n_states, "Array too small for states"
+
+    n_steps = n_points - 1
+
+    transition_times = np.random.random(n_states)
+    transition_times = np.cumsum(transition_times)
+    transition_times = transition_times / transition_times.max()
+    transition_times *= n_steps
+    transition_times = transition_times.astype(int)
+
+    state_bounds = np.zeros(n_states + 1, dtype=int)
+    state_bounds[1:] = transition_times
+    state_bounds[-1] = n_steps
+
+    if disengaged_states is None:
+        disengaged_states = [np.random.randint(n_states)]
+
+    mean_vals = np.random.uniform(*mean_range, n_states)
+    mean_vals = np.abs(mean_vals) * np.resize([1, -1], n_states)
+    sigma_vals = np.random.uniform(*sigma_range, n_states)
+
+    innovations = np.zeros(n_steps)
+    participation_mask = np.zeros(n_steps, dtype=bool)
+    for i in range(n_states):
+        start_idx = state_bounds[i]
+        end_idx = state_bounds[i + 1]
+        if i in disengaged_states:
+            innovations[start_idx:end_idx] = np.random.normal(
+                loc=0.0, scale=sigma_disengaged, size=end_idx - start_idx
+            )
+            participation_mask[start_idx:end_idx] = True
+        else:
+            innovations[start_idx:end_idx] = np.random.normal(
+                loc=mean_vals[i], scale=sigma_vals[i], size=end_idx - start_idx
+            )
+
+    data_array = np.concatenate([[0.0], np.cumsum(innovations)])
+
+    # Blank out most points within disengaged segments (indices into the
+    # length n_points data array correspond to step index + 1)
+    nan_candidates = np.where(participation_mask)[0] + 1
+    n_to_drop = int(missing_frac * len(nan_candidates))
+    if n_to_drop > 0:
+        drop_idx = np.random.choice(
+            nan_candidates, size=n_to_drop, replace=False)
+        data_array[drop_idx] = np.nan
+
+    return data_array, participation_mask
+
+
 ############################################################
 # Models
 ############################################################
@@ -1969,11 +2056,14 @@ def run_all_tests():
     test_data_3d = gen_test_array((5, 10, 100), n_states=3, type="poisson")
     test_data_4d = gen_test_array((2, 5, 10, 100), n_states=3, type="poisson")
     test_data_random_walk = gen_random_walk_test_array(100, n_states=3)
+    test_data_participation, _ = gen_random_walk_participation_test_array(
+        150, n_states=3)
 
     # Test each model class
     models_to_test = [
         PoissonChangepoint1D(test_data_1d, 3),
         RandomWalkChangepointMeanVar1D(test_data_random_walk, 3),
+        RandomWalkChangepointParticipation1D(test_data_participation, 3),
         GaussianChangepointMeanVar2D(test_data_2d, 3),
         GaussianChangepointMeanDirichlet(test_data_2d, 5),
         GaussianChangepointMean2D(test_data_2d, 3),
@@ -2252,6 +2342,178 @@ class RandomWalkChangepointMeanVar1D(ChangepointModel):
 def random_walk_changepoint_mean_var_1d(data_array, n_states, **kwargs):
     """Wrapper function for backward compatibility"""
     model_class = RandomWalkChangepointMeanVar1D(
+        data_array, n_states, **kwargs)
+    return model_class.generate_model()
+
+
+class RandomWalkChangepointParticipation1D(ChangepointModel):
+    """Random walk changepoint model with a soft per-state "participation"
+    mixture weight.
+
+    Extends RandomWalkChangepointMeanVar1D to states where the underlying
+    process is intermittently absent or disengaged (e.g. an animal not
+    licking). Non-participation is modeled as a per-state, changepoint-
+    blended mixture weight between the state's normal innovation
+    distribution and a zero-mean "disengaged" distribution, rather than
+    a hard per-timestep indicator (a discrete latent would not be
+    compatible with ADVI, used throughout this module). Missing/sparse
+    observations (NaN in data_array) are handled by fitting a full-length
+    latent random walk path and only evaluating the likelihood at the
+    finite (observed) entries.
+    """
+
+    def __init__(self, data_array, n_states, **kwargs):
+        """
+        Args:
+            data_array (1D Numpy array): Time series data, may contain
+                NaN at unobserved/non-participating timepoints.
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = np.asarray(data_array, dtype=float)
+        if self.data_array.ndim != 1:
+            raise ValueError("data_array must be 1-dimensional")
+        # NaNs are expected here (missing = non-participation), so this
+        # class intentionally does not call check_data_quality, which
+        # warns/errors on NaNs.
+        self.n_states = n_states
+
+    def generate_model(self):
+        """
+        Returns:
+            pymc model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        n_states = self.n_states
+
+        length = len(data_array) - 1  # number of innovations
+        idx = np.arange(length)
+
+        observed_mask = ~np.isnan(data_array)
+        observed_idx = np.where(observed_mask)[0]
+        assert len(
+            observed_idx) > n_states, "Too few observed points for n_states"
+
+        finite_diffs = np.diff(data_array[observed_mask])
+        mean_vals = np.array([
+            np.mean(x) for x in np.array_split(finite_diffs, n_states)
+        ])
+        x0_val = float(data_array[observed_idx[0]])
+
+        with pm.Model() as model:
+            # Mean and variance of the innovation distribution per state
+            mu = pm.Normal("mu", mu=mean_vals, sigma=1, shape=n_states)
+            sigma = pm.HalfCauchy("sigma", 3.0, shape=n_states)
+
+            # Per-state probability of "participating" (soft mixture weight)
+            participation_prob = pm.Beta(
+                "participation_prob", 2.0, 2.0, shape=n_states)
+            # Innovation distribution used when disengaged/not participating
+            sigma_disengaged = pm.HalfCauchy("sigma_disengaged", 3.0)
+            # Small fixed observation noise linking the latent random walk
+            # path to the (partially observed) data. Kept fixed rather than
+            # inferred: the generative process is a random walk with no
+            # separate measurement noise, and letting ADVI infer this value
+            # (even under a tight HalfNormal prior) was found to inflate it
+            # to absorb the changepoint/participation signal instead of
+            # explaining it via mu/sigma/participation_prob.
+            obs_sigma = 0.15
+
+            # Changepoint locations (over innovation/step indices) - same
+            # pattern as RandomWalkChangepointMeanVar1D
+            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
+
+            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
+            tau_latent = pm.Beta(
+                "tau_latent",
+                a_tau,
+                b_tau,
+                initval=even_switches,
+                shape=(n_states - 1)
+            ).sort(axis=-1)
+
+            tau = pm.Deterministic(
+                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent
+            )
+
+            weight_stack = tt.math.sigmoid(
+                idx[np.newaxis, :] - tau[:, np.newaxis]
+            )
+            weight_stack = tt.concatenate(
+                [np.ones((1, length)), weight_stack], axis=0
+            )
+            inverse_stack = 1 - weight_stack[1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((1, length))], axis=0
+            )
+            weight_stack = weight_stack * inverse_stack
+
+            # Time-varying innovation mean, variance and participation weight
+            mu_t = mu.dot(weight_stack)
+            sigma_t = sigma.dot(weight_stack)
+            p_t = participation_prob.dot(weight_stack)
+
+            # Two-component continuous mixture over innovations: engaged
+            # (state-specific mean/variance) vs disengaged (zero-mean,
+            # separate variance)
+            engaged = pm.Normal.dist(mu=mu_t, sigma=sigma_t)
+            disengaged = pm.Normal.dist(mu=0.0, sigma=sigma_disengaged)
+            weights = tt.stack([p_t, 1 - p_t], axis=-1)
+            innovations = pm.Mixture(
+                "innovations", w=weights, comp_dists=[engaged, disengaged], shape=length
+            )
+
+            # Full-length latent random walk path, including gaps
+            x0 = pm.Normal("x0", mu=x0_val, sigma=1)
+            latent_path = pm.Deterministic(
+                "latent_path",
+                x0 + tt.concatenate([[0.0], tt.cumsum(innovations)]),
+            )
+
+            # Only evaluate the likelihood at observed (non-NaN) timepoints
+            observation = pm.Normal(
+                "obs",
+                mu=latent_path[observed_idx],
+                sigma=obs_sigma,
+                observed=data_array[observed_idx],
+            )
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        # Generate test data - 1D random walk with a disengaged segment
+        test_data, _ = gen_random_walk_participation_test_array(
+            150, n_states=self.n_states)
+
+        # Create model with test data
+        test_model = RandomWalkChangepointParticipation1D(
+            test_data, self.n_states)
+        model = test_model.generate_model()
+
+        # Run a minimal inference to verify model works
+        with model:
+            # Just do a few iterations to test functionality
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        # Check if expected variables are in the trace
+        assert "mu" in trace.varnames
+        assert "sigma" in trace.varnames
+        assert "tau" in trace.varnames
+        assert "participation_prob" in trace.varnames
+
+        print("Test for RandomWalkChangepointParticipation1D passed")
+        return True
+
+
+# For backward compatibility
+def random_walk_changepoint_participation_1d(data_array, n_states, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = RandomWalkChangepointParticipation1D(
         data_array, n_states, **kwargs)
     return model_class.generate_model()
 

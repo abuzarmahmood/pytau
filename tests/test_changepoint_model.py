@@ -16,6 +16,7 @@ from pytau.changepoint_model import (
     GaussianChangepointMeanVar2D,
     PoissonChangepoint1D,
     RandomWalkChangepointMeanVar1D,
+    RandomWalkChangepointParticipation1D,
     SingleTastePoisson,
     SingleTastePoissonDirichlet,
     SingleTastePoissonTrialSwitch,
@@ -24,9 +25,11 @@ from pytau.changepoint_model import (
     advi_fit,
     extract_inferred_values,
     find_best_states,
+    gen_random_walk_participation_test_array,
     gen_random_walk_test_array,
     gen_test_array,
     random_walk_changepoint_mean_var_1d,
+    random_walk_changepoint_participation_1d,
 )
 
 
@@ -259,3 +262,84 @@ def test_random_walk_changepoint_elbo_state_selection():
 
     best_n_states = np.argmin(elbo_values) + 2
     assert abs(best_n_states - true_n_states) <= 1
+
+
+def test_gen_random_walk_participation_test_array():
+    """Test the gen_random_walk_participation_test_array function."""
+    n_points = 100
+    n_states = 3
+    data, participation_mask = gen_random_walk_participation_test_array(
+        n_points, n_states)
+
+    assert data.shape == (n_points,)
+    assert participation_mask.shape == (n_points - 1,)
+    assert np.isnan(data).any()
+    # The initial point is never blanked out
+    assert not np.isnan(data[0])
+
+    # Test with too few time points
+    with pytest.raises(AssertionError):
+        gen_random_walk_participation_test_array(3, n_states)
+
+
+@pytest.mark.slow
+def test_random_walk_changepoint_participation_1d():
+    """Test the RandomWalkChangepointParticipation1D model."""
+    test_data, _ = gen_random_walk_participation_test_array(150, n_states=3)
+
+    # Test model creation
+    model_class = RandomWalkChangepointParticipation1D(test_data, 3)
+    assert model_class.data_array.ndim == 1
+    assert model_class.n_states == 3
+
+    # Test model generation
+    model = model_class.generate_model()
+    assert model is not None
+
+    # Test that it raises error for non-1D data
+    with pytest.raises(ValueError):
+        RandomWalkChangepointParticipation1D(
+            np.random.normal(size=(10, 100)), 3)
+
+
+@pytest.mark.slow
+def test_random_walk_changepoint_participation_recovery():
+    """Test that fitting RandomWalkChangepointParticipation1D on synthetic
+    data with a known disengaged (non-participating) segment recovers a
+    lower participation probability for the state(s) overlapping that
+    segment than for the other, engaged states.
+
+    A relative comparison (rather than an absolute threshold) is used to
+    keep the test robust to the inherent noisiness of short ADVI fits,
+    matching the tolerance philosophy used for the ELBO state-selection
+    test above.
+    """
+    import pymc as pm
+
+    np.random.seed(0)
+    n_states = 3
+    disengaged_state = 1
+    data, _ = gen_random_walk_participation_test_array(
+        300,
+        n_states=n_states,
+        disengaged_states=[disengaged_state],
+        mean_range=(2.0, 3.0),
+        sigma_range=(0.2, 0.4),
+        sigma_disengaged=2.0,
+    )
+
+    model_class = RandomWalkChangepointParticipation1D(data, n_states)
+    model = model_class.generate_model()
+
+    with model:
+        inference = pm.ADVI(random_seed=0)
+        approx = pm.fit(n=15000, method=inference, random_seed=0)
+        idata = approx.sample(draws=200, random_seed=0)
+
+    participation_prob = idata.posterior["participation_prob"].mean(
+        dim=["chain", "draw"]).values
+
+    other_states = [i for i in range(n_states) if i != disengaged_state]
+    assert participation_prob[disengaged_state] < min(
+        participation_prob[i] for i in other_states
+    )
