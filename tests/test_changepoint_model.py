@@ -17,6 +17,7 @@ from pytau.changepoint_model import (
     PoissonChangepoint1D,
     RandomWalkChangepointMeanVar1D,
     RandomWalkChangepointParticipation1D,
+    RandomWalkChangepointParticipationDirichlet,
     SingleTastePoisson,
     SingleTastePoissonDirichlet,
     SingleTastePoissonTrialSwitch,
@@ -343,3 +344,64 @@ def test_random_walk_changepoint_participation_recovery():
     assert participation_prob[disengaged_state] < min(
         participation_prob[i] for i in other_states
     )
+
+
+def test_random_walk_changepoint_participation_dirichlet_init():
+    """Test initialization and model generation for
+    RandomWalkChangepointParticipationDirichlet."""
+    test_data, _ = gen_random_walk_participation_test_array(100, n_states=3)
+
+    model_class = RandomWalkChangepointParticipationDirichlet(
+        test_data, max_states=5)
+    assert model_class.data_array.ndim == 1
+    assert model_class.max_states == 5
+
+    model = model_class.generate_model()
+    assert model is not None
+
+    with pytest.raises(ValueError):
+        RandomWalkChangepointParticipationDirichlet(
+            np.random.normal(size=(10, 100)), max_states=5)
+
+
+@pytest.mark.slow
+def test_random_walk_changepoint_participation_dirichlet_mcmc_smoke():
+    """Smoke-test that RandomWalkChangepointParticipationDirichlet can be
+    fit via many-chain NUTS without failing outright.
+
+    This is deliberately a sampling smoke test, not a strict state-count
+    recovery assertion: the participation mixture creates a per-timestep,
+    locally-multimodal posterior that is known to be difficult for any
+    single MCMC chain, which is why many-chain fitting is used in the
+    first place (see dpp_fit and docs/models.md). We only assert that
+    sampling completes and produces the expected posterior variables,
+    with a generous (not strict) bound on the divergence rate.
+    """
+    import pymc as pm
+
+    np.random.seed(0)
+    test_data, _ = gen_random_walk_participation_test_array(
+        40, n_states=3, disengaged_states=[1]
+    )
+
+    model_class = RandomWalkChangepointParticipationDirichlet(
+        test_data, max_states=3)
+    model = model_class.generate_model()
+
+    with model:
+        idata = pm.sample(
+            tune=50,
+            draws=50,
+            chains=2,
+            cores=1,
+            target_accept=0.9,
+            random_seed=0,
+            progressbar=False,
+        )
+
+    assert "w_latent" in idata.posterior.data_vars
+    assert "participation_prob" in idata.posterior.data_vars
+
+    n_total = idata.sample_stats.diverging.size
+    n_divergent = int(idata.sample_stats.diverging.sum())
+    assert n_divergent < 0.5 * n_total

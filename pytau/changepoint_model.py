@@ -2064,6 +2064,7 @@ def run_all_tests():
         PoissonChangepoint1D(test_data_1d, 3),
         RandomWalkChangepointMeanVar1D(test_data_random_walk, 3),
         RandomWalkChangepointParticipation1D(test_data_participation, 3),
+        RandomWalkChangepointParticipationDirichlet(test_data_participation, max_states=5),
         GaussianChangepointMeanVar2D(test_data_2d, 3),
         GaussianChangepointMeanDirichlet(test_data_2d, 5),
         GaussianChangepointMean2D(test_data_2d, 3),
@@ -2515,6 +2516,173 @@ def random_walk_changepoint_participation_1d(data_array, n_states, **kwargs):
     """Wrapper function for backward compatibility"""
     model_class = RandomWalkChangepointParticipation1D(
         data_array, n_states, **kwargs)
+    return model_class.generate_model()
+
+
+class RandomWalkChangepointParticipationDirichlet(ChangepointModel):
+    """Truncated Dirichlet-process version of RandomWalkChangepointParticipation1D.
+
+    Combines the stick-breaking changepoint/state-count prior used by
+    GaussianChangepointMeanDirichlet with the per-state participation
+    mixture and NaN-tolerant missing-data likelihood of
+    RandomWalkChangepointParticipation1D, so the number of active states
+    (including whether a disengaged/non-participating state is present)
+    is inferred rather than fixed in advance.
+
+    Unlike the fixed-n_states model, tau here is a cumulative sum of
+    nonnegative stick-breaking weights, so it is automatically
+    nondecreasing -- no separate sorted tau_latent/.sort() is needed.
+
+    This model is intended to be fit via many-chain MCMC (see dpp_fit),
+    not ADVI: the participation mixture creates a per-timestep,
+    locally-multimodal posterior (each innovation is a two-component
+    mixture) that ADVI's Gaussian approximations are not well suited to
+    represent, and that even NUTS may find difficult on any single
+    chain -- many chains are used so that different chains can settle
+    into different modes.
+    """
+
+    def __init__(self, data_array, max_states=10, **kwargs):
+        """
+        Args:
+            data_array (1D Numpy array): Time series data, may contain
+                NaN at unobserved/non-participating timepoints.
+            max_states (int): Maximum number of states to include in the
+                truncated Dirichlet process.
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = np.asarray(data_array, dtype=float)
+        if self.data_array.ndim != 1:
+            raise ValueError("data_array must be 1-dimensional")
+        # NaNs are expected here (missing = non-participation), so this
+        # class intentionally does not call check_data_quality.
+        self.max_states = max_states
+
+    def generate_model(self):
+        """
+        Returns:
+            pymc model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        max_states = self.max_states
+
+        length = len(data_array) - 1  # number of innovations
+        idx = np.arange(length)
+
+        observed_mask = ~np.isnan(data_array)
+        observed_idx = np.where(observed_mask)[0]
+        assert len(observed_idx) > max_states, "Too few observed points for max_states"
+
+        finite_diffs = np.diff(data_array[observed_mask])
+        mean_vals = np.array([
+            np.mean(x) for x in np.array_split(finite_diffs, max_states)
+        ])
+        x0_val = float(data_array[observed_idx[0]])
+
+        with pm.Model() as model:
+            # Mean and variance of the innovation distribution per state
+            mu = pm.Normal("mu", mu=mean_vals, sigma=1, shape=max_states)
+            sigma = pm.HalfCauchy("sigma", 3.0, shape=max_states)
+
+            # Per-state probability of "participating" (soft mixture weight)
+            participation_prob = pm.Beta(
+                "participation_prob", 2.0, 2.0, shape=max_states)
+            # Innovation distribution used when disengaged/not participating
+            sigma_disengaged = pm.HalfCauchy("sigma_disengaged", 3.0)
+            # Small fixed observation noise -- see RandomWalkChangepointParticipation1D
+            # for why this is fixed rather than inferred.
+            obs_sigma = 0.15
+
+            # Truncated Dirichlet process / stick-breaking prior over
+            # changepoint locations (same pattern as
+            # GaussianChangepointMeanDirichlet)
+            a_gamma = pm.Gamma("a_gamma", 10, 1)
+            b_gamma = pm.Gamma("b_gamma", 1.5, 1)
+            alpha = pm.Gamma("alpha", a_gamma, b_gamma)
+            beta = pm.Beta("beta", 1, alpha, shape=max_states)
+            w_raw = stick_breaking(beta)
+            w_latent = pm.Deterministic("w_latent", w_raw / w_raw.sum())
+
+            # Cumulative stick length is automatically nondecreasing, so
+            # no sorting is needed (unlike the fixed-n_states model's
+            # Beta-distributed tau_latent.sort()).
+            tau = pm.Deterministic("tau", tt.cumsum(w_latent * length)[:-1])
+
+            weight_stack = tt.math.sigmoid(
+                idx[np.newaxis, :] - tau[:, np.newaxis]
+            )
+            weight_stack = tt.concatenate(
+                [np.ones((1, length)), weight_stack], axis=0
+            )
+            inverse_stack = 1 - weight_stack[1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((1, length))], axis=0
+            )
+            weight_stack = weight_stack * inverse_stack
+
+            # Time-varying innovation mean, variance and participation weight
+            mu_t = mu.dot(weight_stack)
+            sigma_t = sigma.dot(weight_stack)
+            p_t = participation_prob.dot(weight_stack)
+
+            # Two-component continuous mixture over innovations: engaged
+            # (state-specific mean/variance) vs disengaged (zero-mean,
+            # separate variance)
+            engaged = pm.Normal.dist(mu=mu_t, sigma=sigma_t)
+            disengaged = pm.Normal.dist(mu=0.0, sigma=sigma_disengaged)
+            weights = tt.stack([p_t, 1 - p_t], axis=-1)
+            innovations = pm.Mixture(
+                "innovations", w=weights, comp_dists=[engaged, disengaged], shape=length
+            )
+
+            # Full-length latent random walk path, including gaps
+            x0 = pm.Normal("x0", mu=x0_val, sigma=1)
+            latent_path = pm.Deterministic(
+                "latent_path",
+                x0 + tt.concatenate([[0.0], tt.cumsum(innovations)]),
+            )
+
+            # Only evaluate the likelihood at observed (non-NaN) timepoints
+            observation = pm.Normal(
+                "obs",
+                mu=latent_path[observed_idx],
+                sigma=obs_sigma,
+                observed=data_array[observed_idx],
+            )
+
+        return model
+
+    def test(self):
+        """Fast ADVI smoke test (same convention as the other Dirichlet
+        models' test() methods) -- real fits should use MCMC, see dpp_fit.
+        """
+        test_data, _ = gen_random_walk_participation_test_array(
+            100, n_states=3)
+
+        test_model = RandomWalkChangepointParticipationDirichlet(
+            test_data, max_states=5)
+        model = test_model.generate_model()
+
+        with model:
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        assert "mu" in trace.varnames
+        assert "sigma" in trace.varnames
+        assert "w_latent" in trace.varnames
+        assert "participation_prob" in trace.varnames
+
+        print("Test for RandomWalkChangepointParticipationDirichlet passed")
+        return True
+
+
+# For backward compatibility
+def random_walk_changepoint_participation_dirichlet(data_array, max_states=10, **kwargs):
+    """Wrapper function for backward compatibility"""
+    model_class = RandomWalkChangepointParticipationDirichlet(
+        data_array, max_states, **kwargs)
     return model_class.generate_model()
 
 

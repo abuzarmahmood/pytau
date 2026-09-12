@@ -14,6 +14,7 @@ PyTau provides a comprehensive suite of changepoint detection models designed fo
 | Unknown state number | `*Dirichlet` models |
 | Drifting/non-stationary 1D signal | `RandomWalkChangepointMeanVar1D` |
 | Behavioral signal with intermittent non-participation/missing data | `RandomWalkChangepointParticipation1D` |
+| Behavioral signal with intermittent non-participation/missing data and unknown state count | `RandomWalkChangepointParticipationDirichlet` |
 
 ## Poisson Models
 
@@ -213,6 +214,22 @@ Random walk models treat the observed data itself as a cumulative process (`x_t 
 
 **Known Issues**:
 - The random per-state segment boundaries used by the test-data generator (`gen_random_walk_participation_test_array`) can occasionally produce very short/imbalanced segments, which has been observed to cause numerically unstable ADVI fits (`NaN` in optimization) for some random seeds. This mirrors general noisiness already present in ADVI-based ELBO/parameter estimation for the sibling `RandomWalkChangepointMeanVar1D` model; use well-separated, adequately-sized segments and consider `full-rank` ADVI or more iterations if you see unstable fits.
+
+### RandomWalkChangepointParticipationDirichlet
+
+**Purpose**: Truncated Dirichlet-process (stick-breaking) version of `RandomWalkChangepointParticipation1D` that infers the number of active states (including whether a disengaged/non-participating state is present) instead of requiring it to be fixed in advance.
+
+**Use Case**: Same as `RandomWalkChangepointParticipation1D`, but when the number of underlying behavioral states is unknown and should be discovered from the data rather than searched over externally via ELBO (`find_best_states`).
+
+**Data Shape**: `(time,)`, may contain `NaN` at unobserved/non-participating timepoints.
+
+**Key Features**:
+- Same participation-mixture / `NaN`-tolerant likelihood as `RandomWalkChangepointParticipation1D`, but changepoint locations (`tau`) are derived from a truncated stick-breaking process (`max_states` truncation) instead of a fixed number of sorted Beta-distributed changepoints
+- Active state count is read off the posterior of `w_latent` (stick-breaking weights): states with negligible weight are effectively unused
+- **Requires MCMC sampling (no ADVI support for real fits)** — the participation mixture creates a per-timestep, locally-multimodal posterior that ADVI's Gaussian approximations do not represent well; many-chain MCMC (see `dpp_fit`) is recommended so that different chains can settle into different modes
+
+**Known Issues**:
+- NUTS sampling on this model has been observed to be substantially slower than on the other Dirichlet-process models in this module, likely due to the combination of a per-timestep mixture likelihood and a per-timestep latent random walk path (both scale with data length). Budget for longer wall-clock time than the fixed-`n_states` ADVI-based model, especially at larger `max_states`/data lengths.
 
 ## Categorical Models
 
