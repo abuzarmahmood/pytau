@@ -185,6 +185,10 @@
 <td>Behavioral signal with intermittent non-participation/missing data</td>
 <td><code>RandomWalkChangepointParticipation1D</code></td>
 </tr>
+<tr>
+<td>Behavioral signal with intermittent non-participation/missing data and unknown state count</td>
+<td><code>RandomWalkChangepointParticipationDirichlet</code></td>
+</tr>
 </tbody>
 </table>
 <h2 id="poisson-models">Poisson Models</h2>
@@ -309,6 +313,16 @@
 - 1D only, following the same scope as <code>RandomWalkChangepointMeanVar1D</code></p>
 <p><strong>Known Issues</strong>:
 - The random per-state segment boundaries used by the test-data generator (<code>gen_random_walk_participation_test_array</code>) can occasionally produce very short/imbalanced segments, which has been observed to cause numerically unstable ADVI fits (<code>NaN</code> in optimization) for some random seeds. This mirrors general noisiness already present in ADVI-based ELBO/parameter estimation for the sibling <code>RandomWalkChangepointMeanVar1D</code> model; use well-separated, adequately-sized segments and consider <code>full-rank</code> ADVI or more iterations if you see unstable fits.</p>
+<h3 id="randomwalkchangepointparticipationdirichlet">RandomWalkChangepointParticipationDirichlet</h3>
+<p><strong>Purpose</strong>: Truncated Dirichlet-process (stick-breaking) version of <code>RandomWalkChangepointParticipation1D</code> that infers the number of active states (including whether a disengaged/non-participating state is present) instead of requiring it to be fixed in advance.</p>
+<p><strong>Use Case</strong>: Same as <code>RandomWalkChangepointParticipation1D</code>, but when the number of underlying behavioral states is unknown and should be discovered from the data rather than searched over externally via ELBO (<code>find_best_states</code>).</p>
+<p><strong>Data Shape</strong>: <code>(time,)</code>, may contain <code>NaN</code> at unobserved/non-participating timepoints.</p>
+<p><strong>Key Features</strong>:
+- Same participation-mixture / <code>NaN</code>-tolerant likelihood as <code>RandomWalkChangepointParticipation1D</code>, but changepoint locations (<code>tau</code>) are derived from a truncated stick-breaking process (<code>max_states</code> truncation) instead of a fixed number of sorted Beta-distributed changepoints
+- Active state count is read off the posterior of <code>w_latent</code> (stick-breaking weights): states with negligible weight are effectively unused
+- <strong>Requires MCMC sampling (no ADVI support for real fits)</strong> — the participation mixture creates a per-timestep, locally-multimodal posterior that ADVI's Gaussian approximations do not represent well; many-chain MCMC (see <code>dpp_fit</code>) is recommended so that different chains can settle into different modes</p>
+<p><strong>Known Issues</strong>:
+- NUTS sampling on this model has been observed to be substantially slower than on the other Dirichlet-process models in this module, likely due to the combination of a per-timestep mixture likelihood and a per-timestep latent random walk path (both scale with data length). Budget for longer wall-clock time than the fixed-<code>n_states</code> ADVI-based model, especially at larger <code>max_states</code>/data lengths.</p>
 <h2 id="categorical-models">Categorical Models</h2>
 <p>Categorical models are designed for discrete categorical data such as behavioral states or decoded neural states.</p>
 <h3 id="categoricalchangepoint2d">CategoricalChangepoint2D</h3>

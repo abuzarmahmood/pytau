@@ -207,6 +207,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-bs-level="2"><a href="#pytau.changepoint_model.RandomWalkChangepointParticipationDirichlet" class="nav-link">RandomWalkChangepointParticipationDirichlet</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-bs-level="2"><a href="#pytau.changepoint_model.SingleTastePoisson" class="nav-link">SingleTastePoisson</a>
               <ul class="nav flex-column">
               </ul>
@@ -296,6 +300,10 @@
               </ul>
             </li>
             <li class="nav-item" data-bs-level="2"><a href="#pytau.changepoint_model.random_walk_changepoint_participation_1d" class="nav-link">random_walk_changepoint_participation_1d</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#pytau.changepoint_model.random_walk_changepoint_participation_dirichlet" class="nav-link">random_walk_changepoint_participation_dirichlet</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -10266,9 +10274,7 @@ segments separated by changepoints.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2100</span>
-<span class="normal">2101</span>
-<span class="normal">2102</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2102</span>
 <span class="normal">2103</span>
 <span class="normal">2104</span>
 <span class="normal">2105</span>
@@ -10372,7 +10378,9 @@ segments separated by changepoints.</p>
 <span class="normal">2203</span>
 <span class="normal">2204</span>
 <span class="normal">2205</span>
-<span class="normal">2206</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PoissonChangepoint1D</span><span class="p">(</span><span class="n">ChangepointModel</span><span class="p">):</span>
+<span class="normal">2206</span>
+<span class="normal">2207</span>
+<span class="normal">2208</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PoissonChangepoint1D</span><span class="p">(</span><span class="n">ChangepointModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Model for changepoint detection in 1D Poisson time series</span>
 
 <span class="sd">    This model detects changepoints in 1D time series data using a Poisson likelihood.</span>
@@ -10572,9 +10580,7 @@ segments separated by changepoints.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2108</span>
-<span class="normal">2109</span>
-<span class="normal">2110</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2110</span>
 <span class="normal">2111</span>
 <span class="normal">2112</span>
 <span class="normal">2113</span>
@@ -10584,7 +10590,9 @@ segments separated by changepoints.</p>
 <span class="normal">2117</span>
 <span class="normal">2118</span>
 <span class="normal">2119</span>
-<span class="normal">2120</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_array</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="normal">2120</span>
+<span class="normal">2121</span>
+<span class="normal">2122</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_array</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Args:</span>
 <span class="sd">        data_array (1D Numpy array): Time series data</span>
@@ -10640,9 +10648,7 @@ segments separated by changepoints.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2122</span>
-<span class="normal">2123</span>
-<span class="normal">2124</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2124</span>
 <span class="normal">2125</span>
 <span class="normal">2126</span>
 <span class="normal">2127</span>
@@ -10701,7 +10707,9 @@ segments separated by changepoints.</p>
 <span class="normal">2180</span>
 <span class="normal">2181</span>
 <span class="normal">2182</span>
-<span class="normal">2183</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">2183</span>
+<span class="normal">2184</span>
+<span class="normal">2185</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Returns:</span>
 <span class="sd">        pymc model: Model class containing graph to run inference on</span>
@@ -10785,9 +10793,7 @@ segments separated by changepoints.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2185</span>
-<span class="normal">2186</span>
-<span class="normal">2187</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2187</span>
 <span class="normal">2188</span>
 <span class="normal">2189</span>
 <span class="normal">2190</span>
@@ -10806,7 +10812,9 @@ segments separated by changepoints.</p>
 <span class="normal">2203</span>
 <span class="normal">2204</span>
 <span class="normal">2205</span>
-<span class="normal">2206</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">2206</span>
+<span class="normal">2207</span>
+<span class="normal">2208</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Test the model with synthetic data"""</span>
     <span class="c1"># Generate test data - 1D array with 100 time points</span>
     <span class="n">test_data</span> <span class="o">=</span> <span class="n">gen_test_array</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_states</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_states</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"poisson"</span><span class="p">)</span>
@@ -10873,9 +10881,7 @@ innovation (step) distribution.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2221</span>
-<span class="normal">2222</span>
-<span class="normal">2223</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2223</span>
 <span class="normal">2224</span>
 <span class="normal">2225</span>
 <span class="normal">2226</span>
@@ -10990,7 +10996,9 @@ innovation (step) distribution.</p>
 <span class="normal">2335</span>
 <span class="normal">2336</span>
 <span class="normal">2337</span>
-<span class="normal">2338</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RandomWalkChangepointMeanVar1D</span><span class="p">(</span><span class="n">ChangepointModel</span><span class="p">):</span>
+<span class="normal">2338</span>
+<span class="normal">2339</span>
+<span class="normal">2340</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RandomWalkChangepointMeanVar1D</span><span class="p">(</span><span class="n">ChangepointModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Model for changepoint detection in 1D random walk time series</span>
 
 <span class="sd">    Treats the observed data as a random walk (x_t = x_{t-1} + innovation_t)</span>
@@ -11201,9 +11209,7 @@ innovation (step) distribution.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2229</span>
-<span class="normal">2230</span>
-<span class="normal">2231</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2231</span>
 <span class="normal">2232</span>
 <span class="normal">2233</span>
 <span class="normal">2234</span>
@@ -11213,7 +11219,9 @@ innovation (step) distribution.</p>
 <span class="normal">2238</span>
 <span class="normal">2239</span>
 <span class="normal">2240</span>
-<span class="normal">2241</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_array</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="normal">2241</span>
+<span class="normal">2242</span>
+<span class="normal">2243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_array</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Args:</span>
 <span class="sd">        data_array (1D Numpy array): Time series data</span>
@@ -11269,9 +11277,7 @@ innovation (step) distribution.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2243</span>
-<span class="normal">2244</span>
-<span class="normal">2245</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2245</span>
 <span class="normal">2246</span>
 <span class="normal">2247</span>
 <span class="normal">2248</span>
@@ -11340,7 +11346,9 @@ innovation (step) distribution.</p>
 <span class="normal">2311</span>
 <span class="normal">2312</span>
 <span class="normal">2313</span>
-<span class="normal">2314</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">2314</span>
+<span class="normal">2315</span>
+<span class="normal">2316</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Returns:</span>
 <span class="sd">        pymc model: Model class containing graph to run inference on</span>
@@ -11434,9 +11442,7 @@ innovation (step) distribution.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2316</span>
-<span class="normal">2317</span>
-<span class="normal">2318</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2318</span>
 <span class="normal">2319</span>
 <span class="normal">2320</span>
 <span class="normal">2321</span>
@@ -11456,7 +11462,9 @@ innovation (step) distribution.</p>
 <span class="normal">2335</span>
 <span class="normal">2336</span>
 <span class="normal">2337</span>
-<span class="normal">2338</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">2338</span>
+<span class="normal">2339</span>
+<span class="normal">2340</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Test the model with synthetic data"""</span>
     <span class="c1"># Generate test data - 1D random walk with 100 time points</span>
     <span class="n">test_data</span> <span class="o">=</span> <span class="n">gen_random_walk_test_array</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_states</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_states</span><span class="p">)</span>
@@ -11532,9 +11540,7 @@ finite (observed) entries.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2349</span>
-<span class="normal">2350</span>
-<span class="normal">2351</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2351</span>
 <span class="normal">2352</span>
 <span class="normal">2353</span>
 <span class="normal">2354</span>
@@ -11693,7 +11699,9 @@ finite (observed) entries.</p>
 <span class="normal">2507</span>
 <span class="normal">2508</span>
 <span class="normal">2509</span>
-<span class="normal">2510</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RandomWalkChangepointParticipation1D</span><span class="p">(</span><span class="n">ChangepointModel</span><span class="p">):</span>
+<span class="normal">2510</span>
+<span class="normal">2511</span>
+<span class="normal">2512</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RandomWalkChangepointParticipation1D</span><span class="p">(</span><span class="n">ChangepointModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Random walk changepoint model with a soft per-state "participation"</span>
 <span class="sd">    mixture weight.</span>
 
@@ -11949,9 +11957,7 @@ NaN at unobserved/non-participating timepoints.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2365</span>
-<span class="normal">2366</span>
-<span class="normal">2367</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2367</span>
 <span class="normal">2368</span>
 <span class="normal">2369</span>
 <span class="normal">2370</span>
@@ -11964,7 +11970,9 @@ NaN at unobserved/non-participating timepoints.</p>
 <span class="normal">2377</span>
 <span class="normal">2378</span>
 <span class="normal">2379</span>
-<span class="normal">2380</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_array</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="normal">2380</span>
+<span class="normal">2381</span>
+<span class="normal">2382</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_array</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Args:</span>
 <span class="sd">        data_array (1D Numpy array): Time series data, may contain</span>
@@ -12023,9 +12031,7 @@ NaN at unobserved/non-participating timepoints.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2382</span>
-<span class="normal">2383</span>
-<span class="normal">2384</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2384</span>
 <span class="normal">2385</span>
 <span class="normal">2386</span>
 <span class="normal">2387</span>
@@ -12124,7 +12130,9 @@ NaN at unobserved/non-participating timepoints.</p>
 <span class="normal">2480</span>
 <span class="normal">2481</span>
 <span class="normal">2482</span>
-<span class="normal">2483</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">2483</span>
+<span class="normal">2484</span>
+<span class="normal">2485</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Returns:</span>
 <span class="sd">        pymc model: Model class containing graph to run inference on</span>
@@ -12248,9 +12256,7 @@ NaN at unobserved/non-participating timepoints.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2485</span>
-<span class="normal">2486</span>
-<span class="normal">2487</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2487</span>
 <span class="normal">2488</span>
 <span class="normal">2489</span>
 <span class="normal">2490</span>
@@ -12273,7 +12279,9 @@ NaN at unobserved/non-participating timepoints.</p>
 <span class="normal">2507</span>
 <span class="normal">2508</span>
 <span class="normal">2509</span>
-<span class="normal">2510</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">2510</span>
+<span class="normal">2511</span>
+<span class="normal">2512</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Test the model with synthetic data"""</span>
     <span class="c1"># Generate test data - 1D random walk with a disengaged segment</span>
     <span class="n">test_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">gen_random_walk_participation_test_array</span><span class="p">(</span>
@@ -12298,6 +12306,803 @@ NaN at unobserved/non-participating timepoints.</p>
     <span class="k">assert</span> <span class="s2">"participation_prob"</span> <span class="ow">in</span> <span class="n">trace</span><span class="o">.</span><span class="n">varnames</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Test for RandomWalkChangepointParticipation1D passed"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="pytau.changepoint_model.RandomWalkChangepointParticipationDirichlet" class="doc doc-heading">
+            <code>RandomWalkChangepointParticipationDirichlet</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ChangepointModel (pytau.changepoint_model.ChangepointModel)" href="#pytau.changepoint_model.ChangepointModel">ChangepointModel</a></code></p>
+
+
+
+        <p>Truncated Dirichlet-process version of RandomWalkChangepointParticipation1D.</p>
+<p>Combines the stick-breaking changepoint/state-count prior used by
+GaussianChangepointMeanDirichlet with the per-state participation
+mixture and NaN-tolerant missing-data likelihood of
+RandomWalkChangepointParticipation1D, so the number of active states
+(including whether a disengaged/non-participating state is present)
+is inferred rather than fixed in advance.</p>
+<p>Unlike the fixed-n_states model, tau here is a cumulative sum of
+nonnegative stick-breaking weights, so it is automatically
+nondecreasing -- no separate sorted tau_latent/.sort() is needed.</p>
+<p>This model is intended to be fit via many-chain MCMC (see dpp_fit),
+not ADVI: the participation mixture creates a per-timestep,
+locally-multimodal posterior (each innovation is a two-component
+mixture) that ADVI's Gaussian approximations are not well suited to
+represent, and that even NUTS may find difficult on any single
+chain -- many chains are used so that different chains can settle
+into different modes.</p>
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2523</span>
+<span class="normal">2524</span>
+<span class="normal">2525</span>
+<span class="normal">2526</span>
+<span class="normal">2527</span>
+<span class="normal">2528</span>
+<span class="normal">2529</span>
+<span class="normal">2530</span>
+<span class="normal">2531</span>
+<span class="normal">2532</span>
+<span class="normal">2533</span>
+<span class="normal">2534</span>
+<span class="normal">2535</span>
+<span class="normal">2536</span>
+<span class="normal">2537</span>
+<span class="normal">2538</span>
+<span class="normal">2539</span>
+<span class="normal">2540</span>
+<span class="normal">2541</span>
+<span class="normal">2542</span>
+<span class="normal">2543</span>
+<span class="normal">2544</span>
+<span class="normal">2545</span>
+<span class="normal">2546</span>
+<span class="normal">2547</span>
+<span class="normal">2548</span>
+<span class="normal">2549</span>
+<span class="normal">2550</span>
+<span class="normal">2551</span>
+<span class="normal">2552</span>
+<span class="normal">2553</span>
+<span class="normal">2554</span>
+<span class="normal">2555</span>
+<span class="normal">2556</span>
+<span class="normal">2557</span>
+<span class="normal">2558</span>
+<span class="normal">2559</span>
+<span class="normal">2560</span>
+<span class="normal">2561</span>
+<span class="normal">2562</span>
+<span class="normal">2563</span>
+<span class="normal">2564</span>
+<span class="normal">2565</span>
+<span class="normal">2566</span>
+<span class="normal">2567</span>
+<span class="normal">2568</span>
+<span class="normal">2569</span>
+<span class="normal">2570</span>
+<span class="normal">2571</span>
+<span class="normal">2572</span>
+<span class="normal">2573</span>
+<span class="normal">2574</span>
+<span class="normal">2575</span>
+<span class="normal">2576</span>
+<span class="normal">2577</span>
+<span class="normal">2578</span>
+<span class="normal">2579</span>
+<span class="normal">2580</span>
+<span class="normal">2581</span>
+<span class="normal">2582</span>
+<span class="normal">2583</span>
+<span class="normal">2584</span>
+<span class="normal">2585</span>
+<span class="normal">2586</span>
+<span class="normal">2587</span>
+<span class="normal">2588</span>
+<span class="normal">2589</span>
+<span class="normal">2590</span>
+<span class="normal">2591</span>
+<span class="normal">2592</span>
+<span class="normal">2593</span>
+<span class="normal">2594</span>
+<span class="normal">2595</span>
+<span class="normal">2596</span>
+<span class="normal">2597</span>
+<span class="normal">2598</span>
+<span class="normal">2599</span>
+<span class="normal">2600</span>
+<span class="normal">2601</span>
+<span class="normal">2602</span>
+<span class="normal">2603</span>
+<span class="normal">2604</span>
+<span class="normal">2605</span>
+<span class="normal">2606</span>
+<span class="normal">2607</span>
+<span class="normal">2608</span>
+<span class="normal">2609</span>
+<span class="normal">2610</span>
+<span class="normal">2611</span>
+<span class="normal">2612</span>
+<span class="normal">2613</span>
+<span class="normal">2614</span>
+<span class="normal">2615</span>
+<span class="normal">2616</span>
+<span class="normal">2617</span>
+<span class="normal">2618</span>
+<span class="normal">2619</span>
+<span class="normal">2620</span>
+<span class="normal">2621</span>
+<span class="normal">2622</span>
+<span class="normal">2623</span>
+<span class="normal">2624</span>
+<span class="normal">2625</span>
+<span class="normal">2626</span>
+<span class="normal">2627</span>
+<span class="normal">2628</span>
+<span class="normal">2629</span>
+<span class="normal">2630</span>
+<span class="normal">2631</span>
+<span class="normal">2632</span>
+<span class="normal">2633</span>
+<span class="normal">2634</span>
+<span class="normal">2635</span>
+<span class="normal">2636</span>
+<span class="normal">2637</span>
+<span class="normal">2638</span>
+<span class="normal">2639</span>
+<span class="normal">2640</span>
+<span class="normal">2641</span>
+<span class="normal">2642</span>
+<span class="normal">2643</span>
+<span class="normal">2644</span>
+<span class="normal">2645</span>
+<span class="normal">2646</span>
+<span class="normal">2647</span>
+<span class="normal">2648</span>
+<span class="normal">2649</span>
+<span class="normal">2650</span>
+<span class="normal">2651</span>
+<span class="normal">2652</span>
+<span class="normal">2653</span>
+<span class="normal">2654</span>
+<span class="normal">2655</span>
+<span class="normal">2656</span>
+<span class="normal">2657</span>
+<span class="normal">2658</span>
+<span class="normal">2659</span>
+<span class="normal">2660</span>
+<span class="normal">2661</span>
+<span class="normal">2662</span>
+<span class="normal">2663</span>
+<span class="normal">2664</span>
+<span class="normal">2665</span>
+<span class="normal">2666</span>
+<span class="normal">2667</span>
+<span class="normal">2668</span>
+<span class="normal">2669</span>
+<span class="normal">2670</span>
+<span class="normal">2671</span>
+<span class="normal">2672</span>
+<span class="normal">2673</span>
+<span class="normal">2674</span>
+<span class="normal">2675</span>
+<span class="normal">2676</span>
+<span class="normal">2677</span>
+<span class="normal">2678</span>
+<span class="normal">2679</span>
+<span class="normal">2680</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RandomWalkChangepointParticipationDirichlet</span><span class="p">(</span><span class="n">ChangepointModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Truncated Dirichlet-process version of RandomWalkChangepointParticipation1D.</span>
+
+<span class="sd">    Combines the stick-breaking changepoint/state-count prior used by</span>
+<span class="sd">    GaussianChangepointMeanDirichlet with the per-state participation</span>
+<span class="sd">    mixture and NaN-tolerant missing-data likelihood of</span>
+<span class="sd">    RandomWalkChangepointParticipation1D, so the number of active states</span>
+<span class="sd">    (including whether a disengaged/non-participating state is present)</span>
+<span class="sd">    is inferred rather than fixed in advance.</span>
+
+<span class="sd">    Unlike the fixed-n_states model, tau here is a cumulative sum of</span>
+<span class="sd">    nonnegative stick-breaking weights, so it is automatically</span>
+<span class="sd">    nondecreasing -- no separate sorted tau_latent/.sort() is needed.</span>
+
+<span class="sd">    This model is intended to be fit via many-chain MCMC (see dpp_fit),</span>
+<span class="sd">    not ADVI: the participation mixture creates a per-timestep,</span>
+<span class="sd">    locally-multimodal posterior (each innovation is a two-component</span>
+<span class="sd">    mixture) that ADVI's Gaussian approximations are not well suited to</span>
+<span class="sd">    represent, and that even NUTS may find difficult on any single</span>
+<span class="sd">    chain -- many chains are used so that different chains can settle</span>
+<span class="sd">    into different modes.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_array</span><span class="p">,</span> <span class="n">max_states</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Args:</span>
+<span class="sd">            data_array (1D Numpy array): Time series data, may contain</span>
+<span class="sd">                NaN at unobserved/non-participating timepoints.</span>
+<span class="sd">            max_states (int): Maximum number of states to include in the</span>
+<span class="sd">                truncated Dirichlet process.</span>
+<span class="sd">            **kwargs: Additional arguments</span>
+<span class="sd">        """</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_array</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"data_array must be 1-dimensional"</span><span class="p">)</span>
+        <span class="c1"># NaNs are expected here (missing = non-participation), so this</span>
+        <span class="c1"># class intentionally does not call check_data_quality.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_states</span> <span class="o">=</span> <span class="n">max_states</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            pymc model: Model class containing graph to run inference on</span>
+<span class="sd">        """</span>
+        <span class="n">data_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_array</span>
+        <span class="n">max_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_states</span>
+
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_array</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># number of innovations</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">length</span><span class="p">)</span>
+
+        <span class="n">observed_mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data_array</span><span class="p">)</span>
+        <span class="n">observed_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">observed_mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span>
+            <span class="n">observed_idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_states</span><span class="p">,</span> <span class="s2">"Too few observed points for max_states"</span>
+
+        <span class="n">finite_diffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">data_array</span><span class="p">[</span><span class="n">observed_mask</span><span class="p">])</span>
+        <span class="n">mean_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">finite_diffs</span><span class="p">,</span> <span class="n">max_states</span><span class="p">)</span>
+        <span class="p">])</span>
+        <span class="n">x0_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data_array</span><span class="p">[</span><span class="n">observed_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+
+        <span class="k">with</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">()</span> <span class="k">as</span> <span class="n">model</span><span class="p">:</span>
+            <span class="c1"># Mean and variance of the innovation distribution per state</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="s2">"mu"</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="n">mean_vals</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">max_states</span><span class="p">)</span>
+            <span class="n">sigma</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">HalfCauchy</span><span class="p">(</span><span class="s2">"sigma"</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">max_states</span><span class="p">)</span>
+
+            <span class="c1"># Per-state probability of "participating" (soft mixture weight)</span>
+            <span class="n">participation_prob</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Beta</span><span class="p">(</span>
+                <span class="s2">"participation_prob"</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">max_states</span><span class="p">)</span>
+            <span class="c1"># Innovation distribution used when disengaged/not participating</span>
+            <span class="n">sigma_disengaged</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">HalfCauchy</span><span class="p">(</span><span class="s2">"sigma_disengaged"</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
+            <span class="c1"># Small fixed observation noise -- see RandomWalkChangepointParticipation1D</span>
+            <span class="c1"># for why this is fixed rather than inferred.</span>
+            <span class="n">obs_sigma</span> <span class="o">=</span> <span class="mf">0.15</span>
+
+            <span class="c1"># Truncated Dirichlet process / stick-breaking prior over</span>
+            <span class="c1"># changepoint locations (same pattern as</span>
+            <span class="c1"># GaussianChangepointMeanDirichlet)</span>
+            <span class="n">a_gamma</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Gamma</span><span class="p">(</span><span class="s2">"a_gamma"</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">b_gamma</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Gamma</span><span class="p">(</span><span class="s2">"b_gamma"</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Gamma</span><span class="p">(</span><span class="s2">"alpha"</span><span class="p">,</span> <span class="n">a_gamma</span><span class="p">,</span> <span class="n">b_gamma</span><span class="p">)</span>
+            <span class="n">beta</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Beta</span><span class="p">(</span><span class="s2">"beta"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">max_states</span><span class="p">)</span>
+            <span class="n">w_raw</span> <span class="o">=</span> <span class="n">stick_breaking</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
+            <span class="n">w_latent</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s2">"w_latent"</span><span class="p">,</span> <span class="n">w_raw</span> <span class="o">/</span> <span class="n">w_raw</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+
+            <span class="c1"># Cumulative stick length is automatically nondecreasing, so</span>
+            <span class="c1"># no sorting is needed (unlike the fixed-n_states model's</span>
+            <span class="c1"># Beta-distributed tau_latent.sort()).</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s2">"tau"</span><span class="p">,</span> <span class="n">tt</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">w_latent</span> <span class="o">*</span> <span class="n">length</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+            <span class="n">weight_stack</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span>
+                <span class="n">idx</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">tau</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">weight_stack</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">length</span><span class="p">)),</span> <span class="n">weight_stack</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+            <span class="p">)</span>
+            <span class="n">inverse_stack</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">weight_stack</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">inverse_stack</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">inverse_stack</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">length</span><span class="p">))],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+            <span class="p">)</span>
+            <span class="n">weight_stack</span> <span class="o">=</span> <span class="n">weight_stack</span> <span class="o">*</span> <span class="n">inverse_stack</span>
+
+            <span class="c1"># Time-varying innovation mean, variance and participation weight</span>
+            <span class="n">mu_t</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">weight_stack</span><span class="p">)</span>
+            <span class="n">sigma_t</span> <span class="o">=</span> <span class="n">sigma</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">weight_stack</span><span class="p">)</span>
+            <span class="n">p_t</span> <span class="o">=</span> <span class="n">participation_prob</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">weight_stack</span><span class="p">)</span>
+
+            <span class="c1"># Two-component continuous mixture over innovations: engaged</span>
+            <span class="c1"># (state-specific mean/variance) vs disengaged (zero-mean,</span>
+            <span class="c1"># separate variance)</span>
+            <span class="n">engaged</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="o">.</span><span class="n">dist</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="n">mu_t</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma_t</span><span class="p">)</span>
+            <span class="n">disengaged</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="o">.</span><span class="n">dist</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma_disengaged</span><span class="p">)</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">p_t</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">p_t</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">innovations</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Mixture</span><span class="p">(</span>
+                <span class="s2">"innovations"</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">comp_dists</span><span class="o">=</span><span class="p">[</span><span class="n">engaged</span><span class="p">,</span> <span class="n">disengaged</span><span class="p">],</span> <span class="n">shape</span><span class="o">=</span><span class="n">length</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Full-length latent random walk path, including gaps</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="s2">"x0"</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="n">x0_val</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">latent_path</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span>
+                <span class="s2">"latent_path"</span><span class="p">,</span>
+                <span class="n">x0</span> <span class="o">+</span> <span class="n">tt</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">],</span> <span class="n">tt</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">innovations</span><span class="p">)]),</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Only evaluate the likelihood at observed (non-NaN) timepoints</span>
+            <span class="n">observation</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span>
+                <span class="s2">"obs"</span><span class="p">,</span>
+                <span class="n">mu</span><span class="o">=</span><span class="n">latent_path</span><span class="p">[</span><span class="n">observed_idx</span><span class="p">],</span>
+                <span class="n">sigma</span><span class="o">=</span><span class="n">obs_sigma</span><span class="p">,</span>
+                <span class="n">observed</span><span class="o">=</span><span class="n">data_array</span><span class="p">[</span><span class="n">observed_idx</span><span class="p">],</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">model</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Fast ADVI smoke test (same convention as the other Dirichlet</span>
+<span class="sd">        models' test() methods) -- real fits should use MCMC, see dpp_fit.</span>
+<span class="sd">        """</span>
+        <span class="n">test_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">gen_random_walk_participation_test_array</span><span class="p">(</span>
+            <span class="mi">100</span><span class="p">,</span> <span class="n">n_states</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+        <span class="n">test_model</span> <span class="o">=</span> <span class="n">RandomWalkChangepointParticipationDirichlet</span><span class="p">(</span>
+            <span class="n">test_data</span><span class="p">,</span> <span class="n">max_states</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">test_model</span><span class="o">.</span><span class="n">generate_model</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="n">model</span><span class="p">:</span>
+            <span class="n">inference</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">ADVI</span><span class="p">()</span>
+            <span class="n">approx</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">inference</span><span class="p">)</span>
+            <span class="n">trace</span> <span class="o">=</span> <span class="n">approx</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">draws</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="s2">"mu"</span> <span class="ow">in</span> <span class="n">trace</span><span class="o">.</span><span class="n">varnames</span>
+        <span class="k">assert</span> <span class="s2">"sigma"</span> <span class="ow">in</span> <span class="n">trace</span><span class="o">.</span><span class="n">varnames</span>
+        <span class="k">assert</span> <span class="s2">"w_latent"</span> <span class="ow">in</span> <span class="n">trace</span><span class="o">.</span><span class="n">varnames</span>
+        <span class="k">assert</span> <span class="s2">"participation_prob"</span> <span class="ow">in</span> <span class="n">trace</span><span class="o">.</span><span class="n">varnames</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Test for RandomWalkChangepointParticipationDirichlet passed"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pytau.changepoint_model.RandomWalkChangepointParticipationDirichlet.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">max_states</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>data_array</code>
+            </td>
+            <td>
+                  <code>1D Numpy array</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Time series data, may contain
+NaN at unobserved/non-participating timepoints.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>max_states</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Maximum number of states to include in the
+truncated Dirichlet process.</p>
+              </div>
+            </td>
+            <td>
+                  <code>10</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>**kwargs</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional arguments</p>
+              </div>
+            </td>
+            <td>
+                  <code>{}</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2546</span>
+<span class="normal">2547</span>
+<span class="normal">2548</span>
+<span class="normal">2549</span>
+<span class="normal">2550</span>
+<span class="normal">2551</span>
+<span class="normal">2552</span>
+<span class="normal">2553</span>
+<span class="normal">2554</span>
+<span class="normal">2555</span>
+<span class="normal">2556</span>
+<span class="normal">2557</span>
+<span class="normal">2558</span>
+<span class="normal">2559</span>
+<span class="normal">2560</span>
+<span class="normal">2561</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_array</span><span class="p">,</span> <span class="n">max_states</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Args:</span>
+<span class="sd">        data_array (1D Numpy array): Time series data, may contain</span>
+<span class="sd">            NaN at unobserved/non-participating timepoints.</span>
+<span class="sd">        max_states (int): Maximum number of states to include in the</span>
+<span class="sd">            truncated Dirichlet process.</span>
+<span class="sd">        **kwargs: Additional arguments</span>
+<span class="sd">    """</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">data_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_array</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"data_array must be 1-dimensional"</span><span class="p">)</span>
+    <span class="c1"># NaNs are expected here (missing = non-participation), so this</span>
+    <span class="c1"># class intentionally does not call check_data_quality.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">max_states</span> <span class="o">=</span> <span class="n">max_states</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pytau.changepoint_model.RandomWalkChangepointParticipationDirichlet.generate_model" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">generate_model</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>pymc model: Model class containing graph to run inference on</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2563</span>
+<span class="normal">2564</span>
+<span class="normal">2565</span>
+<span class="normal">2566</span>
+<span class="normal">2567</span>
+<span class="normal">2568</span>
+<span class="normal">2569</span>
+<span class="normal">2570</span>
+<span class="normal">2571</span>
+<span class="normal">2572</span>
+<span class="normal">2573</span>
+<span class="normal">2574</span>
+<span class="normal">2575</span>
+<span class="normal">2576</span>
+<span class="normal">2577</span>
+<span class="normal">2578</span>
+<span class="normal">2579</span>
+<span class="normal">2580</span>
+<span class="normal">2581</span>
+<span class="normal">2582</span>
+<span class="normal">2583</span>
+<span class="normal">2584</span>
+<span class="normal">2585</span>
+<span class="normal">2586</span>
+<span class="normal">2587</span>
+<span class="normal">2588</span>
+<span class="normal">2589</span>
+<span class="normal">2590</span>
+<span class="normal">2591</span>
+<span class="normal">2592</span>
+<span class="normal">2593</span>
+<span class="normal">2594</span>
+<span class="normal">2595</span>
+<span class="normal">2596</span>
+<span class="normal">2597</span>
+<span class="normal">2598</span>
+<span class="normal">2599</span>
+<span class="normal">2600</span>
+<span class="normal">2601</span>
+<span class="normal">2602</span>
+<span class="normal">2603</span>
+<span class="normal">2604</span>
+<span class="normal">2605</span>
+<span class="normal">2606</span>
+<span class="normal">2607</span>
+<span class="normal">2608</span>
+<span class="normal">2609</span>
+<span class="normal">2610</span>
+<span class="normal">2611</span>
+<span class="normal">2612</span>
+<span class="normal">2613</span>
+<span class="normal">2614</span>
+<span class="normal">2615</span>
+<span class="normal">2616</span>
+<span class="normal">2617</span>
+<span class="normal">2618</span>
+<span class="normal">2619</span>
+<span class="normal">2620</span>
+<span class="normal">2621</span>
+<span class="normal">2622</span>
+<span class="normal">2623</span>
+<span class="normal">2624</span>
+<span class="normal">2625</span>
+<span class="normal">2626</span>
+<span class="normal">2627</span>
+<span class="normal">2628</span>
+<span class="normal">2629</span>
+<span class="normal">2630</span>
+<span class="normal">2631</span>
+<span class="normal">2632</span>
+<span class="normal">2633</span>
+<span class="normal">2634</span>
+<span class="normal">2635</span>
+<span class="normal">2636</span>
+<span class="normal">2637</span>
+<span class="normal">2638</span>
+<span class="normal">2639</span>
+<span class="normal">2640</span>
+<span class="normal">2641</span>
+<span class="normal">2642</span>
+<span class="normal">2643</span>
+<span class="normal">2644</span>
+<span class="normal">2645</span>
+<span class="normal">2646</span>
+<span class="normal">2647</span>
+<span class="normal">2648</span>
+<span class="normal">2649</span>
+<span class="normal">2650</span>
+<span class="normal">2651</span>
+<span class="normal">2652</span>
+<span class="normal">2653</span>
+<span class="normal">2654</span>
+<span class="normal">2655</span>
+<span class="normal">2656</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        pymc model: Model class containing graph to run inference on</span>
+<span class="sd">    """</span>
+    <span class="n">data_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_array</span>
+    <span class="n">max_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_states</span>
+
+    <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_array</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># number of innovations</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">length</span><span class="p">)</span>
+
+    <span class="n">observed_mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data_array</span><span class="p">)</span>
+    <span class="n">observed_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">observed_mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span>
+        <span class="n">observed_idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_states</span><span class="p">,</span> <span class="s2">"Too few observed points for max_states"</span>
+
+    <span class="n">finite_diffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">data_array</span><span class="p">[</span><span class="n">observed_mask</span><span class="p">])</span>
+    <span class="n">mean_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">finite_diffs</span><span class="p">,</span> <span class="n">max_states</span><span class="p">)</span>
+    <span class="p">])</span>
+    <span class="n">x0_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data_array</span><span class="p">[</span><span class="n">observed_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+
+    <span class="k">with</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">()</span> <span class="k">as</span> <span class="n">model</span><span class="p">:</span>
+        <span class="c1"># Mean and variance of the innovation distribution per state</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="s2">"mu"</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="n">mean_vals</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">max_states</span><span class="p">)</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">HalfCauchy</span><span class="p">(</span><span class="s2">"sigma"</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">max_states</span><span class="p">)</span>
+
+        <span class="c1"># Per-state probability of "participating" (soft mixture weight)</span>
+        <span class="n">participation_prob</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Beta</span><span class="p">(</span>
+            <span class="s2">"participation_prob"</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">max_states</span><span class="p">)</span>
+        <span class="c1"># Innovation distribution used when disengaged/not participating</span>
+        <span class="n">sigma_disengaged</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">HalfCauchy</span><span class="p">(</span><span class="s2">"sigma_disengaged"</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
+        <span class="c1"># Small fixed observation noise -- see RandomWalkChangepointParticipation1D</span>
+        <span class="c1"># for why this is fixed rather than inferred.</span>
+        <span class="n">obs_sigma</span> <span class="o">=</span> <span class="mf">0.15</span>
+
+        <span class="c1"># Truncated Dirichlet process / stick-breaking prior over</span>
+        <span class="c1"># changepoint locations (same pattern as</span>
+        <span class="c1"># GaussianChangepointMeanDirichlet)</span>
+        <span class="n">a_gamma</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Gamma</span><span class="p">(</span><span class="s2">"a_gamma"</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">b_gamma</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Gamma</span><span class="p">(</span><span class="s2">"b_gamma"</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Gamma</span><span class="p">(</span><span class="s2">"alpha"</span><span class="p">,</span> <span class="n">a_gamma</span><span class="p">,</span> <span class="n">b_gamma</span><span class="p">)</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Beta</span><span class="p">(</span><span class="s2">"beta"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">max_states</span><span class="p">)</span>
+        <span class="n">w_raw</span> <span class="o">=</span> <span class="n">stick_breaking</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
+        <span class="n">w_latent</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s2">"w_latent"</span><span class="p">,</span> <span class="n">w_raw</span> <span class="o">/</span> <span class="n">w_raw</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+
+        <span class="c1"># Cumulative stick length is automatically nondecreasing, so</span>
+        <span class="c1"># no sorting is needed (unlike the fixed-n_states model's</span>
+        <span class="c1"># Beta-distributed tau_latent.sort()).</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s2">"tau"</span><span class="p">,</span> <span class="n">tt</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">w_latent</span> <span class="o">*</span> <span class="n">length</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">weight_stack</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span>
+            <span class="n">idx</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">tau</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">weight_stack</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">length</span><span class="p">)),</span> <span class="n">weight_stack</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="n">inverse_stack</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">weight_stack</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">inverse_stack</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">inverse_stack</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">length</span><span class="p">))],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="n">weight_stack</span> <span class="o">=</span> <span class="n">weight_stack</span> <span class="o">*</span> <span class="n">inverse_stack</span>
+
+        <span class="c1"># Time-varying innovation mean, variance and participation weight</span>
+        <span class="n">mu_t</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">weight_stack</span><span class="p">)</span>
+        <span class="n">sigma_t</span> <span class="o">=</span> <span class="n">sigma</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">weight_stack</span><span class="p">)</span>
+        <span class="n">p_t</span> <span class="o">=</span> <span class="n">participation_prob</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">weight_stack</span><span class="p">)</span>
+
+        <span class="c1"># Two-component continuous mixture over innovations: engaged</span>
+        <span class="c1"># (state-specific mean/variance) vs disengaged (zero-mean,</span>
+        <span class="c1"># separate variance)</span>
+        <span class="n">engaged</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="o">.</span><span class="n">dist</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="n">mu_t</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma_t</span><span class="p">)</span>
+        <span class="n">disengaged</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="o">.</span><span class="n">dist</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma_disengaged</span><span class="p">)</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">p_t</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">p_t</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">innovations</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Mixture</span><span class="p">(</span>
+            <span class="s2">"innovations"</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">comp_dists</span><span class="o">=</span><span class="p">[</span><span class="n">engaged</span><span class="p">,</span> <span class="n">disengaged</span><span class="p">],</span> <span class="n">shape</span><span class="o">=</span><span class="n">length</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Full-length latent random walk path, including gaps</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="s2">"x0"</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="n">x0_val</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">latent_path</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span>
+            <span class="s2">"latent_path"</span><span class="p">,</span>
+            <span class="n">x0</span> <span class="o">+</span> <span class="n">tt</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">],</span> <span class="n">tt</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">innovations</span><span class="p">)]),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Only evaluate the likelihood at observed (non-NaN) timepoints</span>
+        <span class="n">observation</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span>
+            <span class="s2">"obs"</span><span class="p">,</span>
+            <span class="n">mu</span><span class="o">=</span><span class="n">latent_path</span><span class="p">[</span><span class="n">observed_idx</span><span class="p">],</span>
+            <span class="n">sigma</span><span class="o">=</span><span class="n">obs_sigma</span><span class="p">,</span>
+            <span class="n">observed</span><span class="o">=</span><span class="n">data_array</span><span class="p">[</span><span class="n">observed_idx</span><span class="p">],</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pytau.changepoint_model.RandomWalkChangepointParticipationDirichlet.test" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">test</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Fast ADVI smoke test (same convention as the other Dirichlet
+models' test() methods) -- real fits should use MCMC, see dpp_fit.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2658</span>
+<span class="normal">2659</span>
+<span class="normal">2660</span>
+<span class="normal">2661</span>
+<span class="normal">2662</span>
+<span class="normal">2663</span>
+<span class="normal">2664</span>
+<span class="normal">2665</span>
+<span class="normal">2666</span>
+<span class="normal">2667</span>
+<span class="normal">2668</span>
+<span class="normal">2669</span>
+<span class="normal">2670</span>
+<span class="normal">2671</span>
+<span class="normal">2672</span>
+<span class="normal">2673</span>
+<span class="normal">2674</span>
+<span class="normal">2675</span>
+<span class="normal">2676</span>
+<span class="normal">2677</span>
+<span class="normal">2678</span>
+<span class="normal">2679</span>
+<span class="normal">2680</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Fast ADVI smoke test (same convention as the other Dirichlet</span>
+<span class="sd">    models' test() methods) -- real fits should use MCMC, see dpp_fit.</span>
+<span class="sd">    """</span>
+    <span class="n">test_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">gen_random_walk_participation_test_array</span><span class="p">(</span>
+        <span class="mi">100</span><span class="p">,</span> <span class="n">n_states</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">test_model</span> <span class="o">=</span> <span class="n">RandomWalkChangepointParticipationDirichlet</span><span class="p">(</span>
+        <span class="n">test_data</span><span class="p">,</span> <span class="n">max_states</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">test_model</span><span class="o">.</span><span class="n">generate_model</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="n">model</span><span class="p">:</span>
+        <span class="n">inference</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">ADVI</span><span class="p">()</span>
+        <span class="n">approx</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">inference</span><span class="p">)</span>
+        <span class="n">trace</span> <span class="o">=</span> <span class="n">approx</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">draws</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="s2">"mu"</span> <span class="ow">in</span> <span class="n">trace</span><span class="o">.</span><span class="n">varnames</span>
+    <span class="k">assert</span> <span class="s2">"sigma"</span> <span class="ow">in</span> <span class="n">trace</span><span class="o">.</span><span class="n">varnames</span>
+    <span class="k">assert</span> <span class="s2">"w_latent"</span> <span class="ow">in</span> <span class="n">trace</span><span class="o">.</span><span class="n">varnames</span>
+    <span class="k">assert</span> <span class="s2">"participation_prob"</span> <span class="ow">in</span> <span class="n">trace</span><span class="o">.</span><span class="n">varnames</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Test for RandomWalkChangepointParticipationDirichlet passed"</span><span class="p">)</span>
     <span class="k">return</span> <span class="kc">True</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -16099,103 +16904,103 @@ Changepoint distribution remains constant</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2604</span>
-<span class="normal">2605</span>
-<span class="normal">2606</span>
-<span class="normal">2607</span>
-<span class="normal">2608</span>
-<span class="normal">2609</span>
-<span class="normal">2610</span>
-<span class="normal">2611</span>
-<span class="normal">2612</span>
-<span class="normal">2613</span>
-<span class="normal">2614</span>
-<span class="normal">2615</span>
-<span class="normal">2616</span>
-<span class="normal">2617</span>
-<span class="normal">2618</span>
-<span class="normal">2619</span>
-<span class="normal">2620</span>
-<span class="normal">2621</span>
-<span class="normal">2622</span>
-<span class="normal">2623</span>
-<span class="normal">2624</span>
-<span class="normal">2625</span>
-<span class="normal">2626</span>
-<span class="normal">2627</span>
-<span class="normal">2628</span>
-<span class="normal">2629</span>
-<span class="normal">2630</span>
-<span class="normal">2631</span>
-<span class="normal">2632</span>
-<span class="normal">2633</span>
-<span class="normal">2634</span>
-<span class="normal">2635</span>
-<span class="normal">2636</span>
-<span class="normal">2637</span>
-<span class="normal">2638</span>
-<span class="normal">2639</span>
-<span class="normal">2640</span>
-<span class="normal">2641</span>
-<span class="normal">2642</span>
-<span class="normal">2643</span>
-<span class="normal">2644</span>
-<span class="normal">2645</span>
-<span class="normal">2646</span>
-<span class="normal">2647</span>
-<span class="normal">2648</span>
-<span class="normal">2649</span>
-<span class="normal">2650</span>
-<span class="normal">2651</span>
-<span class="normal">2652</span>
-<span class="normal">2653</span>
-<span class="normal">2654</span>
-<span class="normal">2655</span>
-<span class="normal">2656</span>
-<span class="normal">2657</span>
-<span class="normal">2658</span>
-<span class="normal">2659</span>
-<span class="normal">2660</span>
-<span class="normal">2661</span>
-<span class="normal">2662</span>
-<span class="normal">2663</span>
-<span class="normal">2664</span>
-<span class="normal">2665</span>
-<span class="normal">2666</span>
-<span class="normal">2667</span>
-<span class="normal">2668</span>
-<span class="normal">2669</span>
-<span class="normal">2670</span>
-<span class="normal">2671</span>
-<span class="normal">2672</span>
-<span class="normal">2673</span>
-<span class="normal">2674</span>
-<span class="normal">2675</span>
-<span class="normal">2676</span>
-<span class="normal">2677</span>
-<span class="normal">2678</span>
-<span class="normal">2679</span>
-<span class="normal">2680</span>
-<span class="normal">2681</span>
-<span class="normal">2682</span>
-<span class="normal">2683</span>
-<span class="normal">2684</span>
-<span class="normal">2685</span>
-<span class="normal">2686</span>
-<span class="normal">2687</span>
-<span class="normal">2688</span>
-<span class="normal">2689</span>
-<span class="normal">2690</span>
-<span class="normal">2691</span>
-<span class="normal">2692</span>
-<span class="normal">2693</span>
-<span class="normal">2694</span>
-<span class="normal">2695</span>
-<span class="normal">2696</span>
-<span class="normal">2697</span>
-<span class="normal">2698</span>
-<span class="normal">2699</span>
-<span class="normal">2700</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">advi_fit</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">fit</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">convergence_tol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2774</span>
+<span class="normal">2775</span>
+<span class="normal">2776</span>
+<span class="normal">2777</span>
+<span class="normal">2778</span>
+<span class="normal">2779</span>
+<span class="normal">2780</span>
+<span class="normal">2781</span>
+<span class="normal">2782</span>
+<span class="normal">2783</span>
+<span class="normal">2784</span>
+<span class="normal">2785</span>
+<span class="normal">2786</span>
+<span class="normal">2787</span>
+<span class="normal">2788</span>
+<span class="normal">2789</span>
+<span class="normal">2790</span>
+<span class="normal">2791</span>
+<span class="normal">2792</span>
+<span class="normal">2793</span>
+<span class="normal">2794</span>
+<span class="normal">2795</span>
+<span class="normal">2796</span>
+<span class="normal">2797</span>
+<span class="normal">2798</span>
+<span class="normal">2799</span>
+<span class="normal">2800</span>
+<span class="normal">2801</span>
+<span class="normal">2802</span>
+<span class="normal">2803</span>
+<span class="normal">2804</span>
+<span class="normal">2805</span>
+<span class="normal">2806</span>
+<span class="normal">2807</span>
+<span class="normal">2808</span>
+<span class="normal">2809</span>
+<span class="normal">2810</span>
+<span class="normal">2811</span>
+<span class="normal">2812</span>
+<span class="normal">2813</span>
+<span class="normal">2814</span>
+<span class="normal">2815</span>
+<span class="normal">2816</span>
+<span class="normal">2817</span>
+<span class="normal">2818</span>
+<span class="normal">2819</span>
+<span class="normal">2820</span>
+<span class="normal">2821</span>
+<span class="normal">2822</span>
+<span class="normal">2823</span>
+<span class="normal">2824</span>
+<span class="normal">2825</span>
+<span class="normal">2826</span>
+<span class="normal">2827</span>
+<span class="normal">2828</span>
+<span class="normal">2829</span>
+<span class="normal">2830</span>
+<span class="normal">2831</span>
+<span class="normal">2832</span>
+<span class="normal">2833</span>
+<span class="normal">2834</span>
+<span class="normal">2835</span>
+<span class="normal">2836</span>
+<span class="normal">2837</span>
+<span class="normal">2838</span>
+<span class="normal">2839</span>
+<span class="normal">2840</span>
+<span class="normal">2841</span>
+<span class="normal">2842</span>
+<span class="normal">2843</span>
+<span class="normal">2844</span>
+<span class="normal">2845</span>
+<span class="normal">2846</span>
+<span class="normal">2847</span>
+<span class="normal">2848</span>
+<span class="normal">2849</span>
+<span class="normal">2850</span>
+<span class="normal">2851</span>
+<span class="normal">2852</span>
+<span class="normal">2853</span>
+<span class="normal">2854</span>
+<span class="normal">2855</span>
+<span class="normal">2856</span>
+<span class="normal">2857</span>
+<span class="normal">2858</span>
+<span class="normal">2859</span>
+<span class="normal">2860</span>
+<span class="normal">2861</span>
+<span class="normal">2862</span>
+<span class="normal">2863</span>
+<span class="normal">2864</span>
+<span class="normal">2865</span>
+<span class="normal">2866</span>
+<span class="normal">2867</span>
+<span class="normal">2868</span>
+<span class="normal">2869</span>
+<span class="normal">2870</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">advi_fit</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">fit</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">convergence_tol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Convenience function to perform ADVI fit on model</span>
 
 <span class="sd">    Args:</span>
@@ -16573,30 +17378,30 @@ Changepoint distribution remains constant</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2578</span>
-<span class="normal">2579</span>
-<span class="normal">2580</span>
-<span class="normal">2581</span>
-<span class="normal">2582</span>
-<span class="normal">2583</span>
-<span class="normal">2584</span>
-<span class="normal">2585</span>
-<span class="normal">2586</span>
-<span class="normal">2587</span>
-<span class="normal">2588</span>
-<span class="normal">2589</span>
-<span class="normal">2590</span>
-<span class="normal">2591</span>
-<span class="normal">2592</span>
-<span class="normal">2593</span>
-<span class="normal">2594</span>
-<span class="normal">2595</span>
-<span class="normal">2596</span>
-<span class="normal">2597</span>
-<span class="normal">2598</span>
-<span class="normal">2599</span>
-<span class="normal">2600</span>
-<span class="normal">2601</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">dpp_fit</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">n_chains</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tune</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">draws</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">use_numpyro</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2748</span>
+<span class="normal">2749</span>
+<span class="normal">2750</span>
+<span class="normal">2751</span>
+<span class="normal">2752</span>
+<span class="normal">2753</span>
+<span class="normal">2754</span>
+<span class="normal">2755</span>
+<span class="normal">2756</span>
+<span class="normal">2757</span>
+<span class="normal">2758</span>
+<span class="normal">2759</span>
+<span class="normal">2760</span>
+<span class="normal">2761</span>
+<span class="normal">2762</span>
+<span class="normal">2763</span>
+<span class="normal">2764</span>
+<span class="normal">2765</span>
+<span class="normal">2766</span>
+<span class="normal">2767</span>
+<span class="normal">2768</span>
+<span class="normal">2769</span>
+<span class="normal">2770</span>
+<span class="normal">2771</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">dpp_fit</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">n_chains</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tune</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">draws</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">use_numpyro</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Convenience function to fit DPP model"""</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">use_numpyro</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">model</span><span class="p">:</span>
@@ -16695,23 +17500,23 @@ Changepoint distribution remains constant</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2521</span>
-<span class="normal">2522</span>
-<span class="normal">2523</span>
-<span class="normal">2524</span>
-<span class="normal">2525</span>
-<span class="normal">2526</span>
-<span class="normal">2527</span>
-<span class="normal">2528</span>
-<span class="normal">2529</span>
-<span class="normal">2530</span>
-<span class="normal">2531</span>
-<span class="normal">2532</span>
-<span class="normal">2533</span>
-<span class="normal">2534</span>
-<span class="normal">2535</span>
-<span class="normal">2536</span>
-<span class="normal">2537</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_inferred_values</span><span class="p">(</span><span class="n">trace</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2691</span>
+<span class="normal">2692</span>
+<span class="normal">2693</span>
+<span class="normal">2694</span>
+<span class="normal">2695</span>
+<span class="normal">2696</span>
+<span class="normal">2697</span>
+<span class="normal">2698</span>
+<span class="normal">2699</span>
+<span class="normal">2700</span>
+<span class="normal">2701</span>
+<span class="normal">2702</span>
+<span class="normal">2703</span>
+<span class="normal">2704</span>
+<span class="normal">2705</span>
+<span class="normal">2706</span>
+<span class="normal">2707</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_inferred_values</span><span class="p">(</span><span class="n">trace</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Convenience function to extract inferred values from ADVI fit</span>
 
 <span class="sd">    Args:</span>
@@ -16917,42 +17722,42 @@ Changepoint distribution remains constant</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2540</span>
-<span class="normal">2541</span>
-<span class="normal">2542</span>
-<span class="normal">2543</span>
-<span class="normal">2544</span>
-<span class="normal">2545</span>
-<span class="normal">2546</span>
-<span class="normal">2547</span>
-<span class="normal">2548</span>
-<span class="normal">2549</span>
-<span class="normal">2550</span>
-<span class="normal">2551</span>
-<span class="normal">2552</span>
-<span class="normal">2553</span>
-<span class="normal">2554</span>
-<span class="normal">2555</span>
-<span class="normal">2556</span>
-<span class="normal">2557</span>
-<span class="normal">2558</span>
-<span class="normal">2559</span>
-<span class="normal">2560</span>
-<span class="normal">2561</span>
-<span class="normal">2562</span>
-<span class="normal">2563</span>
-<span class="normal">2564</span>
-<span class="normal">2565</span>
-<span class="normal">2566</span>
-<span class="normal">2567</span>
-<span class="normal">2568</span>
-<span class="normal">2569</span>
-<span class="normal">2570</span>
-<span class="normal">2571</span>
-<span class="normal">2572</span>
-<span class="normal">2573</span>
-<span class="normal">2574</span>
-<span class="normal">2575</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_best_states</span><span class="p">(</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2710</span>
+<span class="normal">2711</span>
+<span class="normal">2712</span>
+<span class="normal">2713</span>
+<span class="normal">2714</span>
+<span class="normal">2715</span>
+<span class="normal">2716</span>
+<span class="normal">2717</span>
+<span class="normal">2718</span>
+<span class="normal">2719</span>
+<span class="normal">2720</span>
+<span class="normal">2721</span>
+<span class="normal">2722</span>
+<span class="normal">2723</span>
+<span class="normal">2724</span>
+<span class="normal">2725</span>
+<span class="normal">2726</span>
+<span class="normal">2727</span>
+<span class="normal">2728</span>
+<span class="normal">2729</span>
+<span class="normal">2730</span>
+<span class="normal">2731</span>
+<span class="normal">2732</span>
+<span class="normal">2733</span>
+<span class="normal">2734</span>
+<span class="normal">2735</span>
+<span class="normal">2736</span>
+<span class="normal">2737</span>
+<span class="normal">2738</span>
+<span class="normal">2739</span>
+<span class="normal">2740</span>
+<span class="normal">2741</span>
+<span class="normal">2742</span>
+<span class="normal">2743</span>
+<span class="normal">2744</span>
+<span class="normal">2745</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_best_states</span><span class="p">(</span>
         <span class="n">data</span><span class="p">,</span>
         <span class="n">model_generator</span><span class="p">,</span>
         <span class="n">n_fit</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span>
@@ -18032,72 +18837,72 @@ Time will always be last dimension</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2703</span>
-<span class="normal">2704</span>
-<span class="normal">2705</span>
-<span class="normal">2706</span>
-<span class="normal">2707</span>
-<span class="normal">2708</span>
-<span class="normal">2709</span>
-<span class="normal">2710</span>
-<span class="normal">2711</span>
-<span class="normal">2712</span>
-<span class="normal">2713</span>
-<span class="normal">2714</span>
-<span class="normal">2715</span>
-<span class="normal">2716</span>
-<span class="normal">2717</span>
-<span class="normal">2718</span>
-<span class="normal">2719</span>
-<span class="normal">2720</span>
-<span class="normal">2721</span>
-<span class="normal">2722</span>
-<span class="normal">2723</span>
-<span class="normal">2724</span>
-<span class="normal">2725</span>
-<span class="normal">2726</span>
-<span class="normal">2727</span>
-<span class="normal">2728</span>
-<span class="normal">2729</span>
-<span class="normal">2730</span>
-<span class="normal">2731</span>
-<span class="normal">2732</span>
-<span class="normal">2733</span>
-<span class="normal">2734</span>
-<span class="normal">2735</span>
-<span class="normal">2736</span>
-<span class="normal">2737</span>
-<span class="normal">2738</span>
-<span class="normal">2739</span>
-<span class="normal">2740</span>
-<span class="normal">2741</span>
-<span class="normal">2742</span>
-<span class="normal">2743</span>
-<span class="normal">2744</span>
-<span class="normal">2745</span>
-<span class="normal">2746</span>
-<span class="normal">2747</span>
-<span class="normal">2748</span>
-<span class="normal">2749</span>
-<span class="normal">2750</span>
-<span class="normal">2751</span>
-<span class="normal">2752</span>
-<span class="normal">2753</span>
-<span class="normal">2754</span>
-<span class="normal">2755</span>
-<span class="normal">2756</span>
-<span class="normal">2757</span>
-<span class="normal">2758</span>
-<span class="normal">2759</span>
-<span class="normal">2760</span>
-<span class="normal">2761</span>
-<span class="normal">2762</span>
-<span class="normal">2763</span>
-<span class="normal">2764</span>
-<span class="normal">2765</span>
-<span class="normal">2766</span>
-<span class="normal">2767</span>
-<span class="normal">2768</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mcmc_fit</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">samples</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2873</span>
+<span class="normal">2874</span>
+<span class="normal">2875</span>
+<span class="normal">2876</span>
+<span class="normal">2877</span>
+<span class="normal">2878</span>
+<span class="normal">2879</span>
+<span class="normal">2880</span>
+<span class="normal">2881</span>
+<span class="normal">2882</span>
+<span class="normal">2883</span>
+<span class="normal">2884</span>
+<span class="normal">2885</span>
+<span class="normal">2886</span>
+<span class="normal">2887</span>
+<span class="normal">2888</span>
+<span class="normal">2889</span>
+<span class="normal">2890</span>
+<span class="normal">2891</span>
+<span class="normal">2892</span>
+<span class="normal">2893</span>
+<span class="normal">2894</span>
+<span class="normal">2895</span>
+<span class="normal">2896</span>
+<span class="normal">2897</span>
+<span class="normal">2898</span>
+<span class="normal">2899</span>
+<span class="normal">2900</span>
+<span class="normal">2901</span>
+<span class="normal">2902</span>
+<span class="normal">2903</span>
+<span class="normal">2904</span>
+<span class="normal">2905</span>
+<span class="normal">2906</span>
+<span class="normal">2907</span>
+<span class="normal">2908</span>
+<span class="normal">2909</span>
+<span class="normal">2910</span>
+<span class="normal">2911</span>
+<span class="normal">2912</span>
+<span class="normal">2913</span>
+<span class="normal">2914</span>
+<span class="normal">2915</span>
+<span class="normal">2916</span>
+<span class="normal">2917</span>
+<span class="normal">2918</span>
+<span class="normal">2919</span>
+<span class="normal">2920</span>
+<span class="normal">2921</span>
+<span class="normal">2922</span>
+<span class="normal">2923</span>
+<span class="normal">2924</span>
+<span class="normal">2925</span>
+<span class="normal">2926</span>
+<span class="normal">2927</span>
+<span class="normal">2928</span>
+<span class="normal">2929</span>
+<span class="normal">2930</span>
+<span class="normal">2931</span>
+<span class="normal">2932</span>
+<span class="normal">2933</span>
+<span class="normal">2934</span>
+<span class="normal">2935</span>
+<span class="normal">2936</span>
+<span class="normal">2937</span>
+<span class="normal">2938</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mcmc_fit</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">samples</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Convenience function to perform ADVI fit on model</span>
 
 <span class="sd">    Args:</span>
@@ -18185,10 +18990,10 @@ Time will always be last dimension</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2210</span>
-<span class="normal">2211</span>
-<span class="normal">2212</span>
-<span class="normal">2213</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">poisson_changepoint_1d</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2212</span>
+<span class="normal">2213</span>
+<span class="normal">2214</span>
+<span class="normal">2215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">poisson_changepoint_1d</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Wrapper function for backward compatibility"""</span>
     <span class="n">model_class</span> <span class="o">=</span> <span class="n">PoissonChangepoint1D</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">model_class</span><span class="o">.</span><span class="n">generate_model</span><span class="p">()</span>
@@ -18214,11 +19019,11 @@ Time will always be last dimension</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2342</span>
-<span class="normal">2343</span>
-<span class="normal">2344</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2344</span>
 <span class="normal">2345</span>
-<span class="normal">2346</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">random_walk_changepoint_mean_var_1d</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="normal">2346</span>
+<span class="normal">2347</span>
+<span class="normal">2348</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">random_walk_changepoint_mean_var_1d</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Wrapper function for backward compatibility"""</span>
     <span class="n">model_class</span> <span class="o">=</span> <span class="n">RandomWalkChangepointMeanVar1D</span><span class="p">(</span>
         <span class="n">data_array</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -18245,14 +19050,45 @@ Time will always be last dimension</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2514</span>
-<span class="normal">2515</span>
-<span class="normal">2516</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2516</span>
 <span class="normal">2517</span>
-<span class="normal">2518</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">random_walk_changepoint_participation_1d</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="normal">2518</span>
+<span class="normal">2519</span>
+<span class="normal">2520</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">random_walk_changepoint_participation_1d</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Wrapper function for backward compatibility"""</span>
     <span class="n">model_class</span> <span class="o">=</span> <span class="n">RandomWalkChangepointParticipation1D</span><span class="p">(</span>
         <span class="n">data_array</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model_class</span><span class="o">.</span><span class="n">generate_model</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pytau.changepoint_model.random_walk_changepoint_participation_dirichlet" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">random_walk_changepoint_participation_dirichlet</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">max_states</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Wrapper function for backward compatibility</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>pytau/changepoint_model.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2684</span>
+<span class="normal">2685</span>
+<span class="normal">2686</span>
+<span class="normal">2687</span>
+<span class="normal">2688</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">random_walk_changepoint_participation_dirichlet</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">max_states</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Wrapper function for backward compatibility"""</span>
+    <span class="n">model_class</span> <span class="o">=</span> <span class="n">RandomWalkChangepointParticipationDirichlet</span><span class="p">(</span>
+        <span class="n">data_array</span><span class="p">,</span> <span class="n">max_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">model_class</span><span class="o">.</span><span class="n">generate_model</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -18317,7 +19153,9 @@ Time will always be last dimension</p>
 <span class="normal">2089</span>
 <span class="normal">2090</span>
 <span class="normal">2091</span>
-<span class="normal">2092</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_all_tests</span><span class="p">():</span>
+<span class="normal">2092</span>
+<span class="normal">2093</span>
+<span class="normal">2094</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_all_tests</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">"""Run tests for all model classes"""</span>
     <span class="c1"># Create test data</span>
     <span class="n">test_data_1d</span> <span class="o">=</span> <span class="n">gen_test_array</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_states</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"poisson"</span><span class="p">)</span>
@@ -18333,6 +19171,8 @@ Time will always be last dimension</p>
         <span class="n">PoissonChangepoint1D</span><span class="p">(</span><span class="n">test_data_1d</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
         <span class="n">RandomWalkChangepointMeanVar1D</span><span class="p">(</span><span class="n">test_data_random_walk</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
         <span class="n">RandomWalkChangepointParticipation1D</span><span class="p">(</span><span class="n">test_data_participation</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+        <span class="n">RandomWalkChangepointParticipationDirichlet</span><span class="p">(</span>
+            <span class="n">test_data_participation</span><span class="p">,</span> <span class="n">max_states</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span>
         <span class="n">GaussianChangepointMeanVar2D</span><span class="p">(</span><span class="n">test_data_2d</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
         <span class="n">GaussianChangepointMeanDirichlet</span><span class="p">(</span><span class="n">test_data_2d</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
         <span class="n">GaussianChangepointMean2D</span><span class="p">(</span><span class="n">test_data_2d</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
