@@ -2064,7 +2064,8 @@ def run_all_tests():
         PoissonChangepoint1D(test_data_1d, 3),
         RandomWalkChangepointMeanVar1D(test_data_random_walk, 3),
         RandomWalkChangepointParticipation1D(test_data_participation, 3),
-        RandomWalkChangepointParticipationDirichlet(test_data_participation, max_states=5),
+        RandomWalkChangepointParticipationDirichlet(
+            test_data_participation, max_states=5),
         GaussianChangepointMeanVar2D(test_data_2d, 3),
         GaussianChangepointMeanDirichlet(test_data_2d, 5),
         GaussianChangepointMean2D(test_data_2d, 3),
@@ -2572,7 +2573,8 @@ class RandomWalkChangepointParticipationDirichlet(ChangepointModel):
 
         observed_mask = ~np.isnan(data_array)
         observed_idx = np.where(observed_mask)[0]
-        assert len(observed_idx) > max_states, "Too few observed points for max_states"
+        assert len(
+            observed_idx) > max_states, "Too few observed points for max_states"
 
         finite_diffs = np.diff(data_array[observed_mask])
         mean_vals = np.array([
