@@ -5,3 +5,4 @@ arviz==0.18.0
 graphviz==0.20.3
 notebook
 tables
+scikit-learn
