@@ -419,7 +419,8 @@ class FitHandler:
         analysis (pytau issues #33, #5, #7). No-ops if nothing numeric is
         available (e.g. mocked/partial inference_outs in tests).
         """
-        key_map = {"tau": "tau_array", "lambda": "lambda_array", "data": "processed_spikes"}
+        key_map = {"tau": "tau_array", "lambda": "lambda_array",
+                   "data": "processed_spikes"}
         arrays = {}
         for src_key, out_key in key_map.items():
             val = model_data.get(src_key)

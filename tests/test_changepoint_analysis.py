@@ -218,7 +218,8 @@ def test_pkl_handler_lightweight_auto_fallback(mock_ephys_data):
         np.testing.assert_array_equal(handler.tau_array, tau_array)
         np.testing.assert_array_equal(handler.lambda_array, lambda_array)
         np.testing.assert_array_equal(handler.processed_spikes, spike_array)
-        np.testing.assert_array_equal(handler.elbo_hist, np.array([10.0, 5.0, 1.0]))
+        np.testing.assert_array_equal(
+            handler.elbo_hist, np.array([10.0, 5.0, 1.0]))
         assert handler.tau is not None
         assert handler.firing is not None
 
