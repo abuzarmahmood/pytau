@@ -2714,6 +2714,7 @@ def find_best_states(
         min_states=2,
         max_states=10,
         convergence_tol=None,
+        n_repeats=1,
 ):
     """Convenience function to find best number of states for model
 
@@ -2725,22 +2726,39 @@ def find_best_states(
         min_states (int): Minimum number of states to test
         max_states (int): Maximum number of states to test
         convergence_tol (float): Tolerance for convergence. If None, will not check for convergence.
+        n_repeats (int): Number of independent ADVI fits to run per state
+            count. Since ADVI's random initialization can converge to
+            different local optima, fitting more than once per state count
+            and keeping the best (lowest final ELBO) reduces the chance of
+            picking a state count based on an unlucky fit. Defaults to 1
+            (previous behavior, unchanged).
 
     Returns:
         best_model: model with best number of states,
-        model_list: list of models with different number of states,
+        model_list: list of models with different number of states
+            (the best of n_repeats fits for each state count),
         elbo_values: list of elbo values for different number of states
+            (the best/lowest of n_repeats fits for each state count)
     """
     n_state_array = np.arange(min_states, max_states + 1)
     elbo_values = []
     model_list = []
     for n_states in tqdm(n_state_array):
-        print(f"Fitting model with {n_states} states")
-        # Have to use int instead of np.int64
-        model = model_generator(data, int(n_states))
-        model, approx = advi_fit(model, n_fit, n_samples, convergence_tol)[:2]
-        elbo_values.append(approx.hist[-1])
-        model_list.append(model)
+        repeat_models = []
+        repeat_elbos = []
+        for repeat_ind in range(n_repeats):
+            print(
+                f"Fitting model with {n_states} states"
+                + (f", repeat {repeat_ind + 1}/{n_repeats}" if n_repeats > 1 else "")
+            )
+            # Have to use int instead of np.int64
+            model = model_generator(data, int(n_states))
+            model, approx = advi_fit(model, n_fit, n_samples, convergence_tol)[:2]
+            repeat_models.append(model)
+            repeat_elbos.append(approx.hist[-1])
+        best_repeat_ind = np.argmin(repeat_elbos)
+        elbo_values.append(repeat_elbos[best_repeat_ind])
+        model_list.append(repeat_models[best_repeat_ind])
     best_model = model_list[np.argmin(elbo_values)]
     return best_model, model_list, elbo_values
 
