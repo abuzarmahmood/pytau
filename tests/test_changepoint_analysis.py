@@ -42,6 +42,29 @@ def test_get_state_firing():
     assert np.all(result >= 0)
 
 
+def test_get_state_firing_bin_width_conversion():
+    """Without bin_width_ms, result is mean spike count per bin. With
+    bin_width_ms, result must be that same count scaled to a rate in Hz."""
+    np.random.seed(42)
+    spike_array = np.random.rand(5, 10, 1000)
+    tau_array = np.array(
+        [[100, 300], [200, 400], [150, 350], [250, 450], [300, 500]])
+
+    counts_per_bin = get_state_firing(spike_array, tau_array)
+    bin_width_ms = 25
+    firing_rate_hz = get_state_firing(
+        spike_array, tau_array, bin_width_ms=bin_width_ms)
+
+    assert firing_rate_hz.shape == counts_per_bin.shape
+    np.testing.assert_allclose(
+        firing_rate_hz, counts_per_bin / (bin_width_ms / 1000.0))
+    # A smaller bin width should yield a larger inferred firing rate for the
+    # same raw spike counts.
+    smaller_bin_rate = get_state_firing(
+        spike_array, tau_array, bin_width_ms=bin_width_ms / 2)
+    assert np.all(smaller_bin_rate >= firing_rate_hz)
+
+
 def test_calc_significant_neurons_firing():
     """Test calc_significant_neurons_firing function with valid inputs."""
     np.random.seed(42)  # For reproducible tests
