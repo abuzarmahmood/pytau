@@ -333,7 +333,9 @@ class GaussianChangepointMeanVar2D(ChangepointModel):
             pymc model: Model class containing graph to run inference on
         """
         from .changepoint_components import (
-            ComposedChangepointModel, FixedCountChangepoint, NormalEmission,
+            ComposedChangepointModel,
+            FixedCountChangepoint,
+            NormalEmission,
         )
         even_switches = np.linspace(0, 1, self.n_states + 1)[1:-1]
         return ComposedChangepointModel(
@@ -408,7 +410,9 @@ class GaussianChangepointMeanDirichlet(ChangepointModel):
             pymc model: Model class containing graph to run inference on
         """
         from .changepoint_components import (
-            ComposedChangepointModel, DirichletProcessChangepoint, NormalEmission,
+            ComposedChangepointModel,
+            DirichletProcessChangepoint,
+            NormalEmission,
         )
         data_array = self.data_array
         max_states = self.max_states
@@ -485,7 +489,9 @@ class GaussianChangepointMean2D(ChangepointModel):
             pymc model: Model class containing graph to run inference on
         """
         from .changepoint_components import (
-            ComposedChangepointModel, FixedCountChangepoint, NormalEmission,
+            ComposedChangepointModel,
+            FixedCountChangepoint,
+            NormalEmission,
         )
         even_switches = np.linspace(0, 1, self.n_states + 1)[1:-1]
         return ComposedChangepointModel(
@@ -564,7 +570,9 @@ class SingleTastePoissonDirichlet(ChangepointModel):
             pymc model: Model class containing graph to run inference on
         """
         from .changepoint_components import (
-            ComposedChangepointModel, DirichletProcessChangepoint, PoissonEmission,
+            ComposedChangepointModel,
+            DirichletProcessChangepoint,
+            PoissonEmission,
         )
         trials = self.data_array.shape[0]
         return ComposedChangepointModel(
@@ -632,7 +640,9 @@ class SingleTastePoisson(ChangepointModel):
             pymc model: Model class containing graph to run inference on
         """
         from .changepoint_components import (
-            ComposedChangepointModel, FixedCountChangepoint, PoissonEmission,
+            ComposedChangepointModel,
+            FixedCountChangepoint,
+            PoissonEmission,
         )
         trials = self.data_array.shape[0]
         return ComposedChangepointModel(
@@ -1916,7 +1926,9 @@ class PoissonChangepoint1D(ChangepointModel):
             pymc model: Model class containing graph to run inference on
         """
         from .changepoint_components import (
-            ComposedChangepointModel, FixedCountChangepoint, PoissonEmission,
+            ComposedChangepointModel,
+            FixedCountChangepoint,
+            PoissonEmission,
         )
         even_switches = np.linspace(0, 1, self.n_states + 1)[1:-1]
         return ComposedChangepointModel(

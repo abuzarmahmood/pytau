@@ -10,7 +10,8 @@ import numpy as np
 import pymc as pm
 import pytensor.tensor as tt
 
-_HYPERPRIOR_FAMILIES = {"halfcauchy": pm.HalfCauchy, "halfnormal": pm.HalfNormal}
+_HYPERPRIOR_FAMILIES = {
+    "halfcauchy": pm.HalfCauchy, "halfnormal": pm.HalfNormal}
 
 
 class ChangepointPrior:

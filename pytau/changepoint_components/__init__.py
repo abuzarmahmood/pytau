@@ -8,9 +8,9 @@ random-walk emission families are a documented follow-up (see PR history
 and CLAUDE.md).
 """
 
-from .priors import ChangepointPrior, DirichletProcessChangepoint, FixedCountChangepoint
-from .emissions import EmissionModel, NormalEmission, PoissonEmission
 from .composed import ComposedChangepointModel
+from .emissions import EmissionModel, NormalEmission, PoissonEmission
+from .priors import ChangepointPrior, DirichletProcessChangepoint, FixedCountChangepoint
 from .transitions import blend_weights
 
 __all__ = [
