@@ -129,6 +129,10 @@ class FitHandler:
         else:
             self.set_preprocess_params(file_path=preprocess_params_path)
 
+    def _data_context_str(self):
+        """Short string identifying which region/taste a log message refers to"""
+        return f"region {self.region_name}, taste {self.taste_num}"
+
     ########################################
     # SET PARAMS
     ########################################
@@ -280,7 +284,7 @@ class FitHandler:
             self.data = full_spike_array
         print(
             f"Loading spike trains from {self.database_handler.data_basename}, "
-            f"dig_in {self.taste_num}, laser {str(self.laser_type)}"
+            f"{self._data_context_str()}, laser {str(self.laser_type)}"
         )
 
     def preprocess_data(self):
@@ -315,7 +319,8 @@ class FitHandler:
         # check that a similar entry doesn't exist
 
         print(
-            f"Generating Model, model func: <{self.model_template.__name__}>")
+            f"Generating Model, model func: <{self.model_template.__name__}>, "
+            f"{self._data_context_str()}")
         self.model = self.model_template(
             self.preprocessed_data,
             self.model_params["states"],
@@ -335,7 +340,8 @@ class FitHandler:
             self.inference_func_selector()
 
         print(
-            "Running inference, inference func: " f"<{self.inference_func.__name__}>")
+            "Running inference, inference func: "
+            f"<{self.inference_func.__name__}>, {self._data_context_str()}")
         temp_outs = self.inference_func(
             self.model, self.model_params["fit"], self.model_params["samples"]
         )
