@@ -533,6 +533,12 @@ class DatabaseHandler:
             file_list, mismatch_from_file) if y]
         for x in mismatched_files:
             os.remove(x)
+            # Also remove the sibling .info file saved alongside the .pkl
+            # (see save_fit_output), if present, to avoid leaving orphaned
+            # metadata files behind.
+            info_path = os.path.splitext(x)[0] + ".info"
+            if os.path.exists(info_path):
+                os.remove(info_path)
         print("==== Clearing Completed ====")
 
     def write_updated_database(self):
