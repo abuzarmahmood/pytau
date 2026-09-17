@@ -12,7 +12,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pytau.changepoint_io import DatabaseHandler, FitHandler
+import pytau.changepoint_io as changepoint_io
+from pytau.changepoint_io import DatabaseHandler, FitHandler, _default_model_save_dir
 
 # Mock easygui and theano before importing pytau modules
 sys.modules['easygui'] = Mock()
@@ -21,6 +22,38 @@ mock_theano.__version__ = '1.0.0'
 mock_theano.config = Mock()
 mock_theano.config.compiledir = '/tmp/theano'
 sys.modules['theano'] = mock_theano
+
+
+class TestDefaultModelSaveDir(unittest.TestCase):
+    """Test cases for _default_model_save_dir (issue #85)."""
+
+    def test_reads_configured_path_from_params_file(self):
+        """A real path in MODEL_SAVE_DIR.params should be used as-is."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            params_path = os.path.join(tmp_dir, "MODEL_SAVE_DIR.params")
+            configured_dir = os.path.join(tmp_dir, "configured_models")
+            with open(params_path, "w") as f:
+                f.write(configured_dir)
+            with patch.object(changepoint_io, "MODEL_SAVE_DIR_PARAMS_PATH", params_path):
+                self.assertEqual(_default_model_save_dir(), configured_dir)
+
+    def test_falls_back_when_params_file_missing(self):
+        """A missing params file should fall back to the default directory."""
+        with patch.object(
+                changepoint_io, "MODEL_SAVE_DIR_PARAMS_PATH", "/nonexistent/MODEL_SAVE_DIR.params"):
+            self.assertEqual(
+                _default_model_save_dir(), changepoint_io.DEFAULT_MODEL_SAVE_DIR)
+
+    def test_falls_back_when_params_file_is_placeholder(self):
+        """The checked-in "/path/to/directory" placeholder should not be
+        treated as a real configured path."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            params_path = os.path.join(tmp_dir, "MODEL_SAVE_DIR.params")
+            with open(params_path, "w") as f:
+                f.write("/path/to/directory")
+            with patch.object(changepoint_io, "MODEL_SAVE_DIR_PARAMS_PATH", params_path):
+                self.assertEqual(
+                    _default_model_save_dir(), changepoint_io.DEFAULT_MODEL_SAVE_DIR)
 
 
 class TestFitHandler(unittest.TestCase):
@@ -263,6 +296,18 @@ class TestDatabaseHandler(unittest.TestCase):
         handler = DatabaseHandler()
         self.assertIsNotNone(handler.model_database_path)
         self.assertTrue(hasattr(handler, 'fit_database'))
+
+    def test_model_save_dir_override(self):
+        """A user-supplied model_save_dir should be used as-is, overriding
+        the configured/default directory (issue #85)."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            custom_dir = os.path.join(tmp_dir, "custom_models")
+            handler = DatabaseHandler(model_save_dir=custom_dir)
+            self.assertEqual(handler.model_save_base_dir, custom_dir)
+            self.assertEqual(
+                handler.model_database_path,
+                os.path.join(custom_dir, "model_database.csv"))
+            self.assertTrue(os.path.isdir(custom_dir))
 
     @patch('os.path.exists')
     @patch('pytau.changepoint_io.pd.read_csv')

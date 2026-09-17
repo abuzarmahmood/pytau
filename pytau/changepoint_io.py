@@ -36,13 +36,31 @@ except ImportError:
     theano = MockTheano()
 
 MODULE_DIR = os.path.dirname(__file__)
-# Use a local directory for model saving instead of reading from a parameter file
-MODEL_SAVE_DIR = os.path.join(os.path.expanduser("~"), ".pytau", "models")
-if not os.path.exists(MODEL_SAVE_DIR):
-    os.makedirs(MODEL_SAVE_DIR)
-    print("Created directory: {}".format(MODEL_SAVE_DIR))
-else:
-    print("Using directory: {}".format(MODEL_SAVE_DIR))
+MODEL_SAVE_DIR_PARAMS_PATH = os.path.join(
+    MODULE_DIR, "config", "MODEL_SAVE_DIR.params")
+DEFAULT_MODEL_SAVE_DIR = os.path.join(
+    os.path.expanduser("~"), ".pytau", "models")
+
+
+def _default_model_save_dir():
+    """Determine the default model-save directory.
+
+    Reads pytau/config/MODEL_SAVE_DIR.params if it exists and contains a
+    real (non-placeholder) path, so users can configure a default without
+    editing code. Falls back to ~/.pytau/models if the params file is
+    missing, empty, or still set to the "/path/to/directory" placeholder.
+    """
+    try:
+        with open(MODEL_SAVE_DIR_PARAMS_PATH, "r") as f:
+            configured_path = f.read().strip()
+        if configured_path and configured_path != "/path/to/directory":
+            return os.path.expanduser(configured_path)
+    except OSError:
+        pass
+    return DEFAULT_MODEL_SAVE_DIR
+
+
+MODEL_SAVE_DIR = _default_model_save_dir()
 MODEL_DATABASE_PATH = os.path.join(MODEL_SAVE_DIR, "model_database.csv")
 
 
@@ -64,6 +82,7 @@ class FitHandler:
         experiment_name=None,
         model_params_path=None,
         preprocess_params_path=None,
+        model_save_dir=None,
     ):
         """Initialize FitHandler class
 
@@ -79,6 +98,11 @@ class FitHandler:
                     containing model parameters. Defaults to None.
             preprocess_params_path (str, optional): Path to json file
                     containing preprocessing parameters. Defaults to None.
+            model_save_dir (str, optional): Directory in which to save
+                    fitted models and the model database. Defaults to
+                    the value configured in
+                    pytau/config/MODEL_SAVE_DIR.params, or
+                    ~/.pytau/models if that file is unset.
 
         Raises:
             Exception: If "experiment_name" is None
@@ -116,7 +140,7 @@ class FitHandler:
                 [data_dir, experiment_name, taste_num, laser_type, region_name],
             )
         )
-        self.database_handler = DatabaseHandler()
+        self.database_handler = DatabaseHandler(model_save_dir=model_save_dir)
         self.database_handler.set_run_params(**data_handler_init_kwargs)
 
         if model_params_path is None:
@@ -449,11 +473,28 @@ class FitHandler:
 class DatabaseHandler:
     """Class to handle transactions with model database"""
 
-    def __init__(self):
-        """Initialize DatabaseHandler class"""
+    def __init__(self, model_save_dir=None):
+        """Initialize DatabaseHandler class
+
+        Args:
+            model_save_dir (str, optional): Directory in which to save
+                fitted models and the model database. Defaults to the
+                value configured in pytau/config/MODEL_SAVE_DIR.params,
+                or ~/.pytau/models if that file is unset.
+        """
         self.unique_cols = ["exp.model_id", "exp.save_path", "exp.fit_date"]
-        self.model_database_path = MODEL_DATABASE_PATH
-        self.model_save_base_dir = MODEL_SAVE_DIR
+        self.model_save_base_dir = (
+            os.path.expanduser(model_save_dir)
+            if model_save_dir is not None
+            else MODEL_SAVE_DIR
+        )
+        if not os.path.exists(self.model_save_base_dir):
+            os.makedirs(self.model_save_base_dir, exist_ok=True)
+            print("Created directory: {}".format(self.model_save_base_dir))
+        else:
+            print("Using directory: {}".format(self.model_save_base_dir))
+        self.model_database_path = os.path.join(
+            self.model_save_base_dir, "model_database.csv")
 
         if os.path.exists(self.model_database_path):
             self.fit_database = pd.read_csv(
