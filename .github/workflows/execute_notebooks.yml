@@ -28,13 +28,48 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -e .[dev]
+    - name: Determine which notebooks need re-execution
+      id: changed
+      run: |
+        CHANGED_FILES=$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}")
+        echo "Files changed in merged PR:"
+        echo "$CHANGED_FILES"
+
+        # Changes to core library code can affect every notebook's output,
+        # so treat them as "re-execute everything". Notebooks and how_to/
+        # example scripts don't count as library code for this purpose.
+        LIB_CHANGED=$(echo "$CHANGED_FILES" | grep -E '^pytau/[^/]+\.py$|^pytau/(utils|config)/' || true)
+
+        if [ -n "$LIB_CHANGED" ]; then
+          echo "Core library code changed:"
+          echo "$LIB_CHANGED"
+          echo "Re-executing all notebooks"
+          NOTEBOOKS=$(ls pytau/how_to/model_notebooks/*.ipynb)
+        else
+          NOTEBOOKS=$(echo "$CHANGED_FILES" | grep -E '^pytau/how_to/model_notebooks/.*\.ipynb$' || true)
+          if [ -z "$NOTEBOOKS" ]; then
+            echo "No notebook or core library changes in this PR — nothing to execute"
+          else
+            echo "Re-executing only the notebooks changed in this PR:"
+            echo "$NOTEBOOKS"
+          fi
+        fi
+
+        # Persist the (possibly empty) notebook list for the next step
+        {
+          echo "notebooks<<EOF"
+          echo "$NOTEBOOKS"
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
     - name: Execute notebooks and save outputs
+      if: steps.changed.outputs.notebooks != ''
       run: |
         echo "Executing model notebooks with outputs..."
-        for notebook in pytau/how_to/model_notebooks/*.ipynb; do
+        while IFS= read -r notebook; do
+          [ -z "$notebook" ] && continue
           echo "Executing $(basename "$notebook")..."
           jupyter nbconvert --to notebook --execute "$notebook" --inplace --ExecutePreprocessor.timeout=300
-        done
+        done <<< "${{ steps.changed.outputs.notebooks }}"
         echo "All notebooks executed successfully!"
     - name: Upload executed notebooks as artifacts
       uses: actions/upload-artifact@v4
