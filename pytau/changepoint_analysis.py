@@ -2,6 +2,7 @@
 Helper classes and functions to perform analysis on fitted models
 """
 
+import json
 import os
 
 import cloudpickle as pkl
@@ -323,17 +324,56 @@ class _tau:
 class PklHandler:
     """Helper class to handle metadata and fit data from pkl file"""
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, lightweight=False):
         """Initialize PklHandler class
 
         Args:
-            file_path (str): Path to pkl file
+            file_path (str): Path to pkl (or npz sidecar) file
+            lightweight (bool, optional): If True, force-load the small
+                numpy-only ``.npz``/``.info`` sidecar instead of the full
+                ``.pkl`` (see FitHandler.save_fit_output), even if a ``.pkl``
+                is present. If False (default), the full ``.pkl`` is used
+                when present, falling back to the lightweight sidecar only
+                if no ``.pkl`` exists. Defaults to False.
         """
         self.dir_name = os.path.dirname(file_path)
         file_name = os.path.basename(file_path)
         self.file_name_base = file_name.split(".")[0]
         self.pkl_file_path = os.path.join(
             self.dir_name, self.file_name_base + ".pkl")
+        self.npz_file_path = os.path.join(
+            self.dir_name, self.file_name_base + ".npz")
+        self.info_file_path = os.path.join(
+            self.dir_name, self.file_name_base + ".info")
+
+        pkl_exists = os.path.exists(self.pkl_file_path)
+        npz_exists = os.path.exists(self.npz_file_path)
+        use_lightweight = lightweight or (not pkl_exists and npz_exists)
+
+        if use_lightweight:
+            if not npz_exists or not os.path.exists(self.info_file_path):
+                raise FileNotFoundError(
+                    "Lightweight load requested/required but missing "
+                    f"{self.npz_file_path} and/or {self.info_file_path}"
+                )
+            self._load_lightweight()
+        else:
+            if not pkl_exists:
+                raise FileNotFoundError(
+                    f"No .pkl found at {self.pkl_file_path} "
+                    f"(and no .npz fallback at {self.npz_file_path})"
+                )
+            self._load_full_pkl()
+
+        # Get number of trials from processed_spikes for proper tau formatting
+        n_trials = self.processed_spikes.shape[0] if hasattr(
+            self.processed_spikes, 'shape') else None
+        self.tau = _tau(self.tau_array, self.metadata, n_trials)
+        self.firing = _firing(self.tau, self.processed_spikes, self.metadata)
+
+    def _load_full_pkl(self):
+        """Load the full-fidelity .pkl (model, approx, arrays) -- the
+        original, unchanged loading path."""
         with open(self.pkl_file_path, "rb") as this_file:
             self.data = pkl.load(this_file)
 
@@ -357,8 +397,32 @@ class PklHandler:
         self.metadata = self.data["metadata"]
         self.pretty_metadata = pd.json_normalize(self.data["metadata"]).T
 
-        # Get number of trials from processed_spikes for proper tau formatting
-        n_trials = self.processed_spikes.shape[0] if hasattr(
-            self.processed_spikes, 'shape') else None
-        self.tau = _tau(self.tau_array, self.metadata, n_trials)
-        self.firing = _firing(self.tau, self.processed_spikes, self.metadata)
+    def _load_lightweight(self):
+        """Load the small numpy-only .npz + .info sidecar -- no pymc/pytensor
+        import required. `_model_structure`/`_fit_model` are unavailable
+        (set to None) since the sidecar never contains the live model/approx.
+        """
+        with np.load(self.npz_file_path, allow_pickle=False) as npz:
+            self.tau_array = npz["tau_array"] if "tau_array" in npz.files else None
+            self.lambda_array = npz["lambda_array"] if "lambda_array" in npz.files else None
+            self.processed_spikes = npz["processed_spikes"] if "processed_spikes" in npz.files else None
+            self.elbo_hist = npz["elbo_hist"] if "elbo_hist" in npz.files else None
+        self._model_structure = None
+        self._fit_model = None
+
+        with open(self.info_file_path) as f:
+            self.metadata = json.load(f)
+        self.pretty_metadata = pd.json_normalize(self.metadata).T
+        # Keep `.data` shape-compatible with the full-pkl path so any code
+        # doing handler.data["model_data"]["approx"] gets a clear None
+        # instead of a KeyError.
+        self.data = {
+            "model_data": {
+                "model": None,
+                "approx": None,
+                "lambda": self.lambda_array,
+                "tau": self.tau_array,
+                "data": self.processed_spikes,
+            },
+            "metadata": self.metadata,
+        }

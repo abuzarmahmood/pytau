@@ -239,6 +239,166 @@ class TestFitHandler(unittest.TestCase):
                 handler.save_fit_output()
                 mock_db_handler.write_to_database.assert_called_once()
 
+            # No tau/lambda/data/approx in inference_outs -> no sidecar written
+            self.assertFalse(os.path.exists(
+                mock_db_handler.model_save_path + '.npz'))
+
+    @patch('pytau.changepoint_io.EphysData')
+    def test_save_fit_output_writes_numpy_sidecar(self, mock_ephys_data):
+        """save_fit_output should also write a lightweight .npz sidecar with
+        just the numpy-serializable arrays (tau/lambda/data/elbo history)."""
+        mock_ephys_data.return_value = Mock()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            handler = FitHandler(
+                data_dir='path/to/data',
+                taste_num=1,
+                region_name='region',
+                experiment_name='exp'
+            )
+
+            mock_db_handler = Mock()
+            model_save_path = os.path.join(temp_dir, 'test_model')
+            mock_db_handler.model_save_path = model_save_path
+            mock_db_handler.aggregate_metadata.return_value = {
+                'test': 'metadata'}
+            handler.database_handler = mock_db_handler
+
+            np.random.seed(0)
+            tau_array = np.random.rand(5, 2)
+            lambda_array = np.random.rand(5, 3, 10)
+            data_array = np.random.poisson(1, (5, 10, 100))
+            fake_approx = Mock()
+            fake_approx.hist = np.array([100.0, 50.0, 10.0])
+
+            handler.inference_outs = {
+                'model': 'fitted_model', 'approx': fake_approx,
+                'lambda': lambda_array, 'tau': tau_array, 'data': data_array,
+            }
+            handler.preprocess_params = {'bin_width': 10}
+            handler.model_params = {
+                'states': 3, 'model_kwargs': {'param1': 'value1'}}
+            handler.preprocessor = Mock()
+            handler.preprocessor.__name__ = 'mock_preprocessor'
+            handler.model_template = Mock()
+            handler.model_template.__name__ = 'MockModel'
+            handler.inference_func = Mock()
+            handler.inference_func.__name__ = 'mock_inference_func'
+
+            with patch('pytau.changepoint_io.pickle.dump'), \
+                    patch('builtins.open', create=True):
+                handler.save_fit_output()
+
+            npz_path = model_save_path + '.npz'
+            self.assertTrue(os.path.exists(npz_path))
+            with np.load(npz_path) as npz:
+                np.testing.assert_array_equal(npz['tau_array'], tau_array)
+                np.testing.assert_array_equal(
+                    npz['lambda_array'], lambda_array)
+                np.testing.assert_array_equal(
+                    npz['processed_spikes'], data_array)
+                np.testing.assert_array_equal(
+                    npz['elbo_hist'], fake_approx.hist)
+
+    @patch('pytau.changepoint_io.EphysData')
+    def test_save_fit_output_sidecar_skips_missing_arrays(self, mock_ephys_data):
+        """If only some keys (e.g. tau/data, no lambda, no approx) are
+        present, the sidecar should only contain what's available."""
+        mock_ephys_data.return_value = Mock()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            handler = FitHandler(
+                data_dir='path/to/data',
+                taste_num=1,
+                region_name='region',
+                experiment_name='exp'
+            )
+
+            mock_db_handler = Mock()
+            model_save_path = os.path.join(temp_dir, 'test_model')
+            mock_db_handler.model_save_path = model_save_path
+            mock_db_handler.aggregate_metadata.return_value = {
+                'test': 'metadata'}
+            handler.database_handler = mock_db_handler
+
+            np.random.seed(1)
+            tau_array = np.random.rand(5, 2)
+            data_array = np.random.poisson(1, (5, 10, 100))
+
+            handler.inference_outs = {
+                'model': 'fitted_model', 'tau': tau_array, 'data': data_array}
+            handler.preprocess_params = {'bin_width': 10}
+            handler.model_params = {'states': 3, 'model_kwargs': {}}
+            handler.preprocessor = Mock()
+            handler.preprocessor.__name__ = 'mock_preprocessor'
+            handler.model_template = Mock()
+            handler.model_template.__name__ = 'MockModel'
+            handler.inference_func = Mock()
+            handler.inference_func.__name__ = 'mock_inference_func'
+
+            with patch('pytau.changepoint_io.pickle.dump'), \
+                    patch('builtins.open', create=True):
+                handler.save_fit_output()
+
+            npz_path = model_save_path + '.npz'
+            self.assertTrue(os.path.exists(npz_path))
+            with np.load(npz_path) as npz:
+                self.assertEqual(
+                    set(npz.files), {'tau_array', 'processed_spikes'})
+
+    @patch('pytau.changepoint_io.EphysData')
+    def test_save_fit_output_sidecar_much_smaller_than_pickle(self, mock_ephys_data):
+        """The .npz sidecar should be a small fraction of the size of a
+        comparably-shaped full pickle (which also carries model/approx)."""
+        mock_ephys_data.return_value = Mock()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            handler = FitHandler(
+                data_dir='path/to/data',
+                taste_num=1,
+                region_name='region',
+                experiment_name='exp'
+            )
+
+            mock_db_handler = Mock()
+            model_save_path = os.path.join(temp_dir, 'test_model')
+            mock_db_handler.model_save_path = model_save_path
+            mock_db_handler.aggregate_metadata.return_value = {
+                'test': 'metadata'}
+            handler.database_handler = mock_db_handler
+
+            np.random.seed(2)
+            tau_array = np.random.rand(2000, 3)
+            lambda_array = np.random.rand(4, 2000, 30)
+            data_array = np.random.poisson(1, (30, 30, 40))
+            # Stand-in for a large, opaque pymc model/approx blob.
+            dummy_model_blob = np.random.rand(2_000_000)
+
+            handler.inference_outs = {
+                'model': dummy_model_blob, 'approx': dummy_model_blob,
+                'lambda': lambda_array, 'tau': tau_array, 'data': data_array,
+            }
+            handler.preprocess_params = {'bin_width': 10}
+            handler.model_params = {'states': 3, 'model_kwargs': {}}
+            handler.preprocessor = Mock()
+            handler.preprocessor.__name__ = 'mock_preprocessor'
+            handler.model_template = Mock()
+            handler.model_template.__name__ = 'MockModel'
+            handler.inference_func = Mock()
+            handler.inference_func.__name__ = 'mock_inference_func'
+
+            # Let the real pkl write happen this time (no mocking of
+            # pickle.dump/open), so we get a real file size to compare.
+            handler.save_fit_output()
+
+            pkl_path = model_save_path + '.pkl'
+            npz_path = model_save_path + '.npz'
+            self.assertTrue(os.path.exists(pkl_path))
+            self.assertTrue(os.path.exists(npz_path))
+            pkl_size = os.path.getsize(pkl_path)
+            npz_size = os.path.getsize(npz_path)
+            self.assertLess(npz_size, pkl_size / 5)
+
 
 class TestDatabaseHandler(unittest.TestCase):
     """Test cases for DatabaseHandler class."""
