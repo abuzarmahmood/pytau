@@ -20,13 +20,6 @@ from .utils import EphysData
 # Import theano for version info (used in aggregate_metadata)
 
 
-class SimpleApprox:
-    """Simple approximation object that only stores the hist attribute for ELBO plotting"""
-
-    def __init__(self, hist):
-        self.hist = hist
-
-
 try:
     import theano
 except ImportError:
@@ -384,7 +377,17 @@ class FitHandler:
         return {"model_data": self.inference_outs, "metadata": agg_metadata}
 
     def save_fit_output(self):
-        """Save fit output (fitted data + metadata) to pkl file"""
+        """Save fit output (fitted data + metadata) to disk.
+
+        Writes three files at ``<model_save_path>``:
+          - ``.pkl``: full-fidelity dict (model, approx, arrays) -- large,
+            version-locked to the pymc/pytensor install used to fit it.
+          - ``.npz``: lightweight numpy-only sidecar with just the posterior
+            arrays (tau/lambda/processed_spikes/elbo_hist) -- small, no
+            pymc/pytensor dependency to read back. See
+            changepoint_analysis.PklHandler.
+          - ``.info``: JSON metadata (unchanged).
+        """
         if "inference_outs" not in dir(self):
             self.run_inference()
         out_dict = self._return_fit_output()
@@ -395,42 +398,7 @@ class FitHandler:
         print(
             f"Saved full output to {self.database_handler.model_save_path}.pkl")
 
-        # # Create a copy without the model to avoid pickling issues with PyMC5
-        # picklable_dict = out_dict.copy()
-        # if "model_data" in picklable_dict and "model" in picklable_dict["model_data"]:
-        #     picklable_model_data = picklable_dict["model_data"].copy()
-        #     # Remove the model object as it contains unpicklable local functions in PyMC5
-        #     picklable_model_data.pop("model", None)
-        #     picklable_dict["model_data"] = picklable_model_data
-        #
-        # with open(self.database_handler.model_save_path + ".pkl", "wb") as buff:
-        #     try:
-        #         pickle.dump(picklable_dict, buff)
-        #     except (TypeError, AttributeError) as e:
-        #         print(
-        #             f"Warning: Full pickling failed ({e}). Saving metadata-only version.")
-        #         # If pickling fails, save only metadata and basic info
-        #         model_data_fallback = {
-        #             "tau_array": picklable_dict.get("model_data", {}).get("tau_array"),
-        #             "processed_spikes": picklable_dict.get("model_data", {}).get("processed_spikes"),
-        #         }
-        #
-        #         # Try to save approx.hist for ELBO plotting if available
-        #         approx_obj = picklable_dict.get("model_data", {}).get("approx")
-        #         if approx_obj and hasattr(approx_obj, 'hist'):
-        #             try:
-        #                 # Create a simple object with just the hist attribute
-        #                 model_data_fallback["approx"] = SimpleApprox(
-        #                     approx_obj.hist)
-        #             except Exception:
-        #                 # If even hist fails to pickle, skip it
-        #                 pass
-        #
-        #         metadata_only_dict = {
-        #             "metadata": picklable_dict.get("metadata", {}),
-        #             "model_data": model_data_fallback
-        #         }
-        #         pickle.dump(metadata_only_dict, buff)
+        self._save_numpy_sidecar(out_dict["model_data"])
 
         json_file_name = os.path.join(
             self.database_handler.model_save_path + ".info")
@@ -444,6 +412,32 @@ class FitHandler:
             f"{self.database_handler.model_save_dir}"
             "\n" + "================================" + "\n"
         )
+
+    def _save_numpy_sidecar(self, model_data):
+        """Write a small, pymc/pytensor-version-agnostic .npz alongside the
+        full pickle, containing just the arrays needed for tau/firing
+        analysis (pytau issues #33, #5, #7). No-ops if nothing numeric is
+        available (e.g. mocked/partial inference_outs in tests).
+        """
+        key_map = {"tau": "tau_array", "lambda": "lambda_array",
+                   "data": "processed_spikes"}
+        arrays = {}
+        for src_key, out_key in key_map.items():
+            val = model_data.get(src_key)
+            if val is not None:
+                arrays[out_key] = np.asarray(val)
+
+        approx_obj = model_data.get("approx")
+        if approx_obj is not None and hasattr(approx_obj, "hist"):
+            arrays["elbo_hist"] = np.asarray(approx_obj.hist)
+
+        if not arrays:
+            print("No numpy-serializable arrays found; skipping .npz sidecar")
+            return
+
+        npz_path = self.database_handler.model_save_path + ".npz"
+        np.savez_compressed(npz_path, **arrays)
+        print(f"Saved lightweight numpy output to {npz_path}")
 
 
 class DatabaseHandler:

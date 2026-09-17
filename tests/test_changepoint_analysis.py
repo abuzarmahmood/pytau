@@ -1,7 +1,9 @@
+import json
 import os
 import tempfile
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
+import cloudpickle as pkl
 import numpy as np
 import pytest
 
@@ -122,7 +124,7 @@ def test_pkl_handler():
     # Test that we can inspect the class without instantiating it
     import inspect
     init_signature = inspect.signature(PklHandler.__init__)
-    expected_params = ['self', 'file_path']
+    expected_params = ['self', 'file_path', 'lightweight']
     actual_params = list(init_signature.parameters.keys())
     assert actual_params == expected_params
 
@@ -134,6 +136,170 @@ def test_pkl_handler():
 
     assert handler.dir_name == "/path/to"
     assert handler.file_name_base == "test_file"
+
+
+def _pkl_handler_metadata():
+    """Shared metadata fixture for PklHandler load-path tests.
+
+    bin_width=1 keeps scaled_tau == raw_tau, and tau values below are kept
+    within [window_radius, n_bins - window_radius] (default window_radius
+    is 300 in get_transition_snips, called internally by _firing) so
+    transition-snippet extraction doesn't hit the trial-window-bounds check.
+    """
+    return {
+        "preprocess": {"time_lims": [0, 1000], "bin_width": 1},
+        "data": {"data_dir": "/tmp/fake_data_dir", "region_name": "region", "taste_num": "all"},
+    }
+
+
+def _mock_ephys_return_spikes(mock_ephys_data, spike_array):
+    mock_ephys_instance = Mock()
+    mock_ephys_instance.return_region_spikes.return_value = spike_array
+    mock_ephys_data.return_value = mock_ephys_instance
+
+
+@patch('pytau.changepoint_analysis.EphysData')
+def test_pkl_handler_full_pkl_backward_compat(mock_ephys_data):
+    """A .pkl-only save (no .npz) should load via the original full-fidelity
+    path unchanged, populating _model_structure/_fit_model from the pickle."""
+    np.random.seed(0)
+    tau_array = np.array([[400, 600], [420, 620], [440, 640]], dtype=float)
+    spike_array = np.random.poisson(1, (3, 5, 1000))
+    _mock_ephys_return_spikes(mock_ephys_data, spike_array)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        base_path = os.path.join(tmp_dir, "fit")
+        out_dict = {
+            "model_data": {
+                "model": "dummy_model",
+                "approx": "dummy_approx",
+                "lambda": np.random.rand(3, 5),
+                "tau": tau_array,
+                "data": spike_array,
+            },
+            "metadata": _pkl_handler_metadata(),
+        }
+        with open(base_path + ".pkl", "wb") as f:
+            pkl.dump(out_dict, f)
+
+        handler = PklHandler(base_path)
+
+        assert handler._model_structure == "dummy_model"
+        assert handler._fit_model == "dummy_approx"
+        np.testing.assert_array_equal(handler.tau_array, tau_array)
+        assert handler.tau is not None
+        assert handler.firing is not None
+
+
+@patch('pytau.changepoint_analysis.EphysData')
+def test_pkl_handler_lightweight_auto_fallback(mock_ephys_data):
+    """When only .npz + .info exist (no .pkl), PklHandler should
+    auto-detect and use the lightweight path with no flag needed."""
+    np.random.seed(1)
+    tau_array = np.array([[400, 600], [420, 620], [440, 640]], dtype=float)
+    lambda_array = np.random.rand(3, 5)
+    spike_array = np.random.poisson(1, (3, 5, 1000))
+    _mock_ephys_return_spikes(mock_ephys_data, spike_array)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        base_path = os.path.join(tmp_dir, "fit")
+        np.savez_compressed(
+            base_path + ".npz",
+            tau_array=tau_array, lambda_array=lambda_array,
+            processed_spikes=spike_array, elbo_hist=np.array([10.0, 5.0, 1.0]),
+        )
+        with open(base_path + ".info", "w") as f:
+            json.dump(_pkl_handler_metadata(), f)
+
+        handler = PklHandler(base_path)
+
+        assert handler._model_structure is None
+        assert handler._fit_model is None
+        np.testing.assert_array_equal(handler.tau_array, tau_array)
+        np.testing.assert_array_equal(handler.lambda_array, lambda_array)
+        np.testing.assert_array_equal(handler.processed_spikes, spike_array)
+        np.testing.assert_array_equal(
+            handler.elbo_hist, np.array([10.0, 5.0, 1.0]))
+        assert handler.tau is not None
+        assert handler.firing is not None
+
+
+@patch('pytau.changepoint_analysis.EphysData')
+def test_pkl_handler_prefers_pkl_by_default(mock_ephys_data):
+    """When both .pkl and .npz exist, the default (no flag) should prefer
+    the full .pkl, proving the new fallback doesn't change existing default
+    behavior."""
+    np.random.seed(2)
+    tau_array = np.array([[400, 600], [420, 620], [440, 640]], dtype=float)
+    spike_array = np.random.poisson(1, (3, 5, 1000))
+    _mock_ephys_return_spikes(mock_ephys_data, spike_array)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        base_path = os.path.join(tmp_dir, "fit")
+        out_dict = {
+            "model_data": {
+                "model": "dummy_model", "approx": "dummy_approx",
+                "lambda": np.random.rand(3, 5), "tau": tau_array, "data": spike_array,
+            },
+            "metadata": _pkl_handler_metadata(),
+        }
+        with open(base_path + ".pkl", "wb") as f:
+            pkl.dump(out_dict, f)
+        np.savez_compressed(
+            base_path + ".npz", tau_array=tau_array * 0,  # deliberately different
+            lambda_array=np.zeros((3, 5)), processed_spikes=spike_array,
+        )
+        with open(base_path + ".info", "w") as f:
+            json.dump(_pkl_handler_metadata(), f)
+
+        handler = PklHandler(base_path)
+
+        assert handler._model_structure == "dummy_model"
+        np.testing.assert_array_equal(handler.tau_array, tau_array)
+
+
+@patch('pytau.changepoint_analysis.EphysData')
+def test_pkl_handler_lightweight_explicit_override(mock_ephys_data):
+    """lightweight=True should force the sidecar path even when a .pkl
+    exists."""
+    np.random.seed(3)
+    tau_array = np.array([[400, 600], [420, 620], [440, 640]], dtype=float)
+    # Deliberately different from tau_array, but still within safe bounds
+    # for get_transition_snips' default window_radius=300 check.
+    npz_tau_array = tau_array + 50
+    spike_array = np.random.poisson(1, (3, 5, 1000))
+    _mock_ephys_return_spikes(mock_ephys_data, spike_array)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        base_path = os.path.join(tmp_dir, "fit")
+        out_dict = {
+            "model_data": {
+                "model": "dummy_model", "approx": "dummy_approx",
+                "lambda": np.random.rand(3, 5), "tau": tau_array, "data": spike_array,
+            },
+            "metadata": _pkl_handler_metadata(),
+        }
+        with open(base_path + ".pkl", "wb") as f:
+            pkl.dump(out_dict, f)
+        np.savez_compressed(
+            base_path + ".npz", tau_array=npz_tau_array,
+            lambda_array=np.zeros((3, 5)), processed_spikes=spike_array,
+        )
+        with open(base_path + ".info", "w") as f:
+            json.dump(_pkl_handler_metadata(), f)
+
+        handler = PklHandler(base_path, lightweight=True)
+
+        assert handler._model_structure is None
+        np.testing.assert_array_equal(handler.tau_array, npz_tau_array)
+
+
+def test_pkl_handler_missing_everything_raises():
+    """No .pkl and no .npz/.info sidecar should raise FileNotFoundError."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        base_path = os.path.join(tmp_dir, "nonexistent")
+        with pytest.raises(FileNotFoundError):
+            PklHandler(base_path)
 
 
 def test_get_transition_snips_edge_cases():
@@ -217,7 +383,7 @@ def test_firing_class_attributes():
 def test_tau_class_attributes():
     """Test _tau class has all expected attributes and correct calculations."""
     np.random.seed(42)
-    tau_array = np.array([[100, 300], [200, 400], [150, 350]], dtype=float)
+    tau_array = np.array([[400, 600], [420, 620], [440, 640]], dtype=float)
     metadata = {"preprocess": {"time_lims": [500, 2000], "bin_width": 2}}
 
     tau_instance = _tau(tau_array, metadata)
