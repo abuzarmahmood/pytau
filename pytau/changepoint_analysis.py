@@ -104,7 +104,7 @@ def get_state_snippets(spike_array, tau_array):
     return state_snippets
 
 
-def get_state_firing(spike_array, tau_array):
+def get_state_firing(spike_array, tau_array, bin_width_ms=None):
     """Calculate mean firing rates within states given changepoint positions
 
     Computes average neural activity for each state by calling get_state_snippets
@@ -115,9 +115,15 @@ def get_state_firing(spike_array, tau_array):
             Shape: (n_trials, n_neurons, n_bins)
         tau_array (np.ndarray): Changepoint positions for each trial
             Shape: (n_trials, n_changepoints)
+        bin_width_ms (float, optional): Width, in milliseconds, of each bin in
+            spike_array. If provided, the result is converted from mean
+            spike count per bin to an actual firing rate in Hz (spikes/sec).
+            If None (default), the result is the mean spike count per bin,
+            NOT a firing rate in Hz — pass bin_width_ms to get real rates.
 
     Returns:
-        np.ndarray: Mean firing rates per state
+        np.ndarray: Mean firing rate (Hz) per state if bin_width_ms is given,
+            otherwise mean spike count per bin.
             Shape: (n_trials, n_states, n_neurons)
             where n_states = n_changepoints + 1
             NaN values are replaced with 0
@@ -127,14 +133,14 @@ def get_state_firing(spike_array, tau_array):
         (5, 3, 100)  # 5 trials, 3 neurons, 100 bins
         >>> tau_array.shape
         (5, 2)  # 5 trials, 2 changepoints
-        >>> firing = get_state_firing(spike_array, tau_array)
+        >>> firing = get_state_firing(spike_array, tau_array, bin_width_ms=25)
         >>> firing.shape
         (5, 3, 3)  # 5 trials, 3 states, 3 neurons
     """
     # Get state snippets
     state_snippets = get_state_snippets(spike_array, tau_array)
 
-    # Calculate mean firing rate for each state and trial
+    # Calculate mean spike count per bin for each state and trial
     state_firing = np.array(
         [
             [np.mean(snippet, axis=-1) for snippet in trial_snippets]
@@ -143,6 +149,11 @@ def get_state_firing(spike_array, tau_array):
     )
 
     state_firing = np.nan_to_num(state_firing)
+
+    if bin_width_ms is not None:
+        # Convert mean spike count per bin -> spikes per second (Hz)
+        state_firing = state_firing / (bin_width_ms / 1000.0)
+
     return state_firing
 
 
@@ -233,7 +244,8 @@ class _firing:
         # Handle case where tau attributes are None (e.g., from fallback pickling)
         if self.tau.raw_mode_tau is not None and self.tau.scaled_mode_tau is not None:
             self.state_firing = get_state_firing(
-                self.processed_spikes, self.tau.raw_mode_tau)
+                self.processed_spikes, self.tau.raw_mode_tau,
+                bin_width_ms=self.metadata["preprocess"]["bin_width"])
             self.transition_snips = get_transition_snips(
                 self.raw_spikes, self.tau.scaled_mode_tau)
             (
