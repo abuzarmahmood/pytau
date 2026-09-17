@@ -301,6 +301,29 @@ class TestDatabaseHandler(unittest.TestCase):
         self.assertIsInstance(result, tuple)
         self.assertEqual(len(result), 3)  # Should return 3 items
 
+    @patch('os.remove')
+    @patch('pytau.changepoint_io.glob')
+    @patch('os.path.exists')
+    @patch('pytau.changepoint_io.pd.read_csv')
+    def test_clear_mismatched_paths_removes_info_file(
+            self, mock_read_csv, mock_exists, mock_glob, mock_remove):
+        """clear_mismatched_paths should remove the sibling .info file
+        alongside an orphaned .pkl file, not just the .pkl itself."""
+        mock_exists.return_value = True
+        sample_data = pd.DataFrame({
+            'exp.save_path': ['/models/exp1/model1']
+        })
+        mock_read_csv.return_value = sample_data
+        orphaned_pkl = '/models/exp1/orphaned_model.pkl'
+        mock_glob.return_value = [orphaned_pkl]
+
+        handler = DatabaseHandler()
+        handler.clear_mismatched_paths()
+
+        mock_remove.assert_any_call(orphaned_pkl)
+        mock_remove.assert_any_call('/models/exp1/orphaned_model.info')
+        self.assertEqual(mock_remove.call_count, 2)
+
     @patch('os.path.exists')
     def test_ingest_fit_data(self, mock_exists):
         """Test ingesting fit data."""
