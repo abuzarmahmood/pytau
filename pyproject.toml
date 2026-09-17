@@ -31,5 +31,5 @@ optional-dependencies.dev = {file = ["requirements/requirements-dev.txt"]}
 optional-dependencies.docs = {file = ["requirements/requirements-docs.txt"]}
 optional-dependencies.gui = {file = ["requirements/requirements-gui.txt"]}
 
-[tool.setuptools]
-packages = ["pytau"]
+[tool.setuptools.packages.find]
+include = ["pytau", "pytau.*"]
