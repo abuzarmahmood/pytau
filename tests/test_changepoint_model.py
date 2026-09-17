@@ -2,6 +2,8 @@
 Tests for the changepoint_model module.
 """
 
+from unittest.mock import MagicMock, patch
+
 import numpy as np
 import pytest
 
@@ -263,6 +265,45 @@ def test_random_walk_changepoint_elbo_state_selection():
 
     best_n_states = np.argmin(elbo_values) + 2
     assert abs(best_n_states - true_n_states) <= 1
+
+
+def test_find_best_states_n_repeats():
+    """With n_repeats > 1, find_best_states should run that many independent
+    fits per state count and keep only the best (lowest ELBO) of each, since
+    ADVI's random initialization can land in different local optima."""
+    # elbo values per call, in order: state=2 repeat1, state=2 repeat2,
+    # state=2 repeat3, state=3 repeat1, state=3 repeat2, state=3 repeat3
+    elbo_sequence = [10.0, 5.0, 8.0, 3.0, 9.0, 1.0]
+    models = [MagicMock(name=f"model_{i}") for i in range(len(elbo_sequence))]
+
+    def fake_advi_fit(model, n_fit, n_samples, convergence_tol):
+        idx = fake_advi_fit.call_count
+        fake_advi_fit.call_count += 1
+        approx = MagicMock()
+        approx.hist = [elbo_sequence[idx]]
+        return model, approx
+    fake_advi_fit.call_count = 0
+
+    model_generator = MagicMock(
+        side_effect=lambda data, n_states: models.pop(0))
+
+    with patch("pytau.changepoint_model.advi_fit", side_effect=fake_advi_fit):
+        best_model, model_list, elbo_values = find_best_states(
+            data=None,
+            model_generator=model_generator,
+            n_fit=10,
+            n_samples=10,
+            min_states=2,
+            max_states=3,
+            n_repeats=3,
+        )
+
+    assert fake_advi_fit.call_count == 6
+    # Best of [10, 5, 8] is 5.0 (state=2); best of [3, 9, 1] is 1.0 (state=3)
+    assert elbo_values == [5.0, 1.0]
+    assert len(model_list) == 2
+    # Overall best across states is the elbo=1.0 fit
+    assert best_model is model_list[1]
 
 
 def test_gen_random_walk_participation_test_array():
