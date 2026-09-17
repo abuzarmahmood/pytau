@@ -10,6 +10,7 @@ PyTau provides a comprehensive suite of changepoint detection models designed fo
 | Multiple trials, single taste | `SingleTastePoisson*` |
 | Multiple tastes | `AllTastePoisson*` |
 | Continuous neural data | `GaussianChangepoint*` |
+| Continuous neural data with outliers | `TChangepoint*` |
 | Categorical behavioral data | `CategoricalChangepoint2D` |
 | Unknown state number | `*Dirichlet` models |
 | Drifting/non-stationary 1D signal | `RandomWalkChangepointMeanVar1D` |
@@ -180,6 +181,60 @@ Gaussian models are designed for continuous neural data such as LFP signals, cal
 - Dirichlet process prior for state number
 - Detects changes in mean only
 - Requires MCMC sampling
+
+### GaussianChangepointMean3D
+
+**Purpose**: Multi-trial changepoint detection in mean
+
+**Use Case**: Continuous data recorded across multiple trials, analogous to `SingleTastePoisson` but for Gaussian data.
+
+**Data Shape**: `(trials, dimensions, time)`
+
+**Key Features**:
+- Detects changes in mean only across trials
+- No hierarchical structure for emissions
+- Assumes constant variance
+
+### GaussianChangepointMeanTrialSwitch
+
+**Purpose**: Models trial-to-trial mean changes for multi-trial Gaussian data
+
+**Use Case**: Continuous data where emissions drift across trials but changepoint timing is shared.
+
+**Data Shape**: `(trials, dimensions, time)`
+
+**Key Features**:
+- Assumes only emissions change across trials
+- Changepoint distribution remains constant across trials
+
+## Student's t-Distribution Models
+
+Student's t-distribution models are designed for continuous data with outliers, offering more robust changepoint detection than the Gaussian models when the data has heavy tails.
+
+### TChangepointMean2D
+
+**Purpose**: Robust changepoint detection in mean using a t-distribution
+
+**Use Case**: Continuous data prone to outliers where Gaussian models may be overly sensitive to extreme values.
+
+**Data Shape**: `(dimensions, time)`
+
+**Key Features**:
+- Uses Student's t-distribution instead of Gaussian
+- More robust to outliers than `GaussianChangepointMean2D`
+
+### TChangepointMean3D
+
+**Purpose**: Multi-trial robust changepoint detection using a t-distribution
+
+**Use Case**: Multi-trial continuous data prone to outliers, analogous to `GaussianChangepointMean3D` but robust to heavy-tailed noise.
+
+**Data Shape**: `(trials, dimensions, time)`
+
+**Key Features**:
+- Uses Student's t-distribution instead of Gaussian
+- Detects changes in mean only across trials
+- More robust to outliers than `GaussianChangepointMean3D`
 
 ## Random Walk Models
 
