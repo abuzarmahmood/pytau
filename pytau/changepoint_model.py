@@ -2753,7 +2753,8 @@ def find_best_states(
             )
             # Have to use int instead of np.int64
             model = model_generator(data, int(n_states))
-            model, approx = advi_fit(model, n_fit, n_samples, convergence_tol)[:2]
+            model, approx = advi_fit(
+                model, n_fit, n_samples, convergence_tol)[:2]
             repeat_models.append(model)
             repeat_elbos.append(approx.hist[-1])
         best_repeat_ind = np.argmin(repeat_elbos)

@@ -284,7 +284,8 @@ def test_find_best_states_n_repeats():
         return model, approx
     fake_advi_fit.call_count = 0
 
-    model_generator = MagicMock(side_effect=lambda data, n_states: models.pop(0))
+    model_generator = MagicMock(
+        side_effect=lambda data, n_states: models.pop(0))
 
     with patch("pytau.changepoint_model.advi_fit", side_effect=fake_advi_fit):
         best_model, model_list, elbo_values = find_best_states(
