@@ -115,6 +115,29 @@ class TestFitHandler(unittest.TestCase):
         self.assertIsNotNone(handler.data)
         mock_ephys_instance.return_region_spikes.assert_called_once()
 
+    @patch('builtins.print')
+    @patch('pytau.changepoint_io.EphysData')
+    def test_load_spike_trains_logs_region_and_taste(self, mock_ephys_data, mock_print):
+        """load_spike_trains' log message should identify region and taste,
+        not just the data basename, so users can tell datasets apart."""
+        mock_ephys_instance = Mock()
+        mock_ephys_instance.return_region_spikes.return_value = np.random.poisson(
+            1, (5, 10, 100))
+        mock_ephys_data.return_value = mock_ephys_instance
+
+        handler = FitHandler(
+            data_dir='path/to/data',
+            taste_num=2,
+            region_name='gc',
+            experiment_name='exp'
+        )
+        handler.load_spike_trains()
+
+        logged_messages = ''.join(str(c.args[0])
+                                  for c in mock_print.call_args_list)
+        self.assertIn('region gc', logged_messages)
+        self.assertIn('taste 2', logged_messages)
+
     @patch('pytau.changepoint_io.EphysData')
     def test_preprocess_data(self, mock_ephys_data):
         """Test data preprocessing."""
