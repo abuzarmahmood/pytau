@@ -133,7 +133,8 @@ class TestFitHandler(unittest.TestCase):
         )
         handler.load_spike_trains()
 
-        logged_messages = ''.join(str(c.args[0]) for c in mock_print.call_args_list)
+        logged_messages = ''.join(str(c.args[0])
+                                  for c in mock_print.call_args_list)
         self.assertIn('region gc', logged_messages)
         self.assertIn('taste 2', logged_messages)
 
