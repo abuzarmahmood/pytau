@@ -332,50 +332,19 @@ class GaussianChangepointMeanVar2D(ChangepointModel):
         Returns:
             pymc model: Model class containing graph to run inference on
         """
-        data_array = self.data_array
-        n_states = self.n_states
-
-        mean_vals = np.array(
-            [np.mean(x, axis=-1)
-             for x in np.array_split(data_array, n_states, axis=-1)]
-        ).T
-        mean_vals += 0.01  # To avoid zero starting prob
-
-        y_dim = data_array.shape[0]
-        idx = np.arange(data_array.shape[-1])
-        length = idx.max() + 1
-
-        with pm.Model() as model:
-            mu = pm.Normal("mu", mu=mean_vals, sigma=1,
-                           shape=(y_dim, n_states))
-            sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim, n_states))
-
-            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
-            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
-
-            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
-            tau_latent = pm.Beta(
-                "tau_latent", a_tau, b_tau, initval=even_switches, shape=(n_states - 1)
-            ).sort(axis=-1)
-
-            tau = pm.Deterministic(
-                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
-
-            weight_stack = tt.math.sigmoid(
-                idx[np.newaxis, :] - tau[:, np.newaxis])
-            weight_stack = tt.concatenate(
-                [np.ones((1, length)), weight_stack], axis=0)
-            inverse_stack = 1 - weight_stack[1:]
-            inverse_stack = tt.concatenate(
-                [inverse_stack, np.ones((1, length))], axis=0)
-            weight_stack = np.multiply(weight_stack, inverse_stack)
-
-            mu_latent = mu.dot(weight_stack)
-            sigma_latent = sigma.dot(weight_stack)
-            observation = pm.Normal(
-                "obs", mu=mu_latent, sigma=sigma_latent, observed=data_array)
-
-        return model
+        from .changepoint_components import (
+            ComposedChangepointModel, FixedCountChangepoint, NormalEmission,
+        )
+        even_switches = np.linspace(0, 1, self.n_states + 1)[1:-1]
+        return ComposedChangepointModel(
+            self.data_array,
+            changepoint_prior=FixedCountChangepoint(
+                self.n_states, hyperprior="halfcauchy",
+                tau_latent_initval=even_switches),
+            emission_model=NormalEmission(
+                self.n_states, include_variance=True),
+            batch_shape=(),
+        ).generate_model()
 
     def test(self):
         """Test the model with synthetic data"""
@@ -438,70 +407,22 @@ class GaussianChangepointMeanDirichlet(ChangepointModel):
         Returns:
             pymc model: Model class containing graph to run inference on
         """
+        from .changepoint_components import (
+            ComposedChangepointModel, DirichletProcessChangepoint, NormalEmission,
+        )
         data_array = self.data_array
         max_states = self.max_states
-
-        y_dim = data_array.shape[0]
-        idx = np.arange(data_array.shape[-1])
-        length = idx.max() + 1
-
-        mean_vals = np.array(
-            [np.mean(x, axis=-1)
-             for x in np.array_split(data_array, max_states, axis=-1)]
-        ).T
-        mean_vals += 0.01  # To avoid zero starting prob
         test_std = np.std(data_array, axis=-1)
 
-        with pm.Model() as model:
-            # ===================
-            # Emissions Variables
-            # ===================
-            lambda_latent = pm.Normal(
-                "lambda", mu=mean_vals, sigma=10, shape=(y_dim, max_states))
-            # One variance for each dimension
-            sigma = pm.HalfCauchy("sigma", test_std, shape=(y_dim))
-
-            # =====================
-            # Changepoint Variables
-            # =====================
-
-            # Hyperpriors on alpha
-            a_gamma = pm.Gamma("a_gamma", 10, 1)
-            b_gamma = pm.Gamma("b_gamma", 1.5, 1)
-
-            # Concentration parameter for beta
-            alpha = pm.Gamma("alpha", a_gamma, b_gamma)
-
-            # Draw beta's to calculate stick lengths
-            beta = pm.Beta("beta", 1, alpha, shape=max_states)
-
-            # Calculate stick lengths using stick_breaking process
-            w_raw = pm.Deterministic("w_raw", stick_breaking(beta))
-
-            # Make sure lengths add to 1, and scale to length of data
-            w_latent = pm.Deterministic("w_latent", w_raw / w_raw.sum())
-            tau = pm.Deterministic("tau", tt.cumsum(w_latent * length)[:-1])
-
-            # Weight stack to assign lambda's to point in time
-            weight_stack = tt.math.sigmoid(
-                idx[np.newaxis, :] - tau[:, np.newaxis])
-            weight_stack = tt.concatenate(
-                [np.ones((1, length)), weight_stack], axis=0)
-            inverse_stack = 1 - weight_stack[1:]
-            inverse_stack = tt.concatenate(
-                [inverse_stack, np.ones((1, length))], axis=0)
-            weight_stack = np.multiply(weight_stack, inverse_stack)
-
-            # Create timeseries for latent variable (mean emission)
-            lambda_ = pm.Deterministic(
-                "lambda_", tt.tensordot(
-                    lambda_latent, weight_stack, axes=(1, 0))
-            )
-            sigma_latent = sigma.dimshuffle(0, "x")
-
-            # Likelihood for observations
-            observation = pm.Normal(
-                "obs", mu=lambda_, sigma=sigma_latent, observed=data_array)
+        model = ComposedChangepointModel(
+            data_array,
+            changepoint_prior=DirichletProcessChangepoint(max_states),
+            emission_model=NormalEmission(
+                max_states, include_variance=False, mean_param_name="lambda",
+                mu_prior_sigma=10.0, sigma_prior_scale=test_std,
+                combined_mean_name="lambda_"),
+            batch_shape=(),
+        ).generate_model()
         return model
 
     def test(self):
@@ -563,51 +484,18 @@ class GaussianChangepointMean2D(ChangepointModel):
         Returns:
             pymc model: Model class containing graph to run inference on
         """
-        data_array = self.data_array
-        n_states = self.n_states
-
-        mean_vals = np.array(
-            [np.mean(x, axis=-1)
-             for x in np.array_split(data_array, n_states, axis=-1)]
-        ).T
-        mean_vals += 0.01  # To avoid zero starting prob
-
-        y_dim = data_array.shape[0]
-        idx = np.arange(data_array.shape[-1])
-        length = idx.max() + 1
-
-        with pm.Model() as model:
-            mu = pm.Normal("mu", mu=mean_vals, sigma=1,
-                           shape=(y_dim, n_states))
-            # One variance for each dimension
-            sigma = pm.HalfCauchy("sigma", 3.0, shape=(y_dim))
-
-            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
-            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
-
-            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
-            tau_latent = pm.Beta(
-                "tau_latent", a_tau, b_tau, initval=even_switches, shape=(n_states - 1)
-            ).sort(axis=-1)
-
-            tau = pm.Deterministic(
-                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
-
-            weight_stack = tt.math.sigmoid(
-                idx[np.newaxis, :] - tau[:, np.newaxis])
-            weight_stack = tt.concatenate(
-                [np.ones((1, length)), weight_stack], axis=0)
-            inverse_stack = 1 - weight_stack[1:]
-            inverse_stack = tt.concatenate(
-                [inverse_stack, np.ones((1, length))], axis=0)
-            weight_stack = np.multiply(weight_stack, inverse_stack)
-
-            mu_latent = mu.dot(weight_stack)
-            sigma_latent = sigma.dimshuffle(0, "x")
-            observation = pm.Normal(
-                "obs", mu=mu_latent, sigma=sigma_latent, observed=data_array)
-
-        return model
+        from .changepoint_components import (
+            ComposedChangepointModel, FixedCountChangepoint, NormalEmission,
+        )
+        even_switches = np.linspace(0, 1, self.n_states + 1)[1:-1]
+        return ComposedChangepointModel(
+            self.data_array,
+            changepoint_prior=FixedCountChangepoint(
+                self.n_states, hyperprior="halfcauchy",
+                tau_latent_initval=even_switches),
+            emission_model=NormalEmission(self.n_states),
+            batch_shape=(),
+        ).generate_model()
 
     def test(self):
         """Test the model with synthetic data"""
@@ -675,79 +563,17 @@ class SingleTastePoissonDirichlet(ChangepointModel):
         Returns:
             pymc model: Model class containing graph to run inference on
         """
-        data_array = self.data_array
-        max_states = self.max_states
-
-        mean_vals = np.array(
-            [np.mean(x, axis=-1)
-             for x in np.array_split(data_array, max_states, axis=-1)]
-        ).T
-        mean_vals = np.mean(mean_vals, axis=1)
-        mean_vals += 0.01  # To avoid zero starting prob
-
-        nrns = data_array.shape[1]
-        trials = data_array.shape[0]
-        idx = np.arange(data_array.shape[-1])
-        length = idx.max() + 1
-
-        with pm.Model() as model:
-            # ===================
-            # Emissions Variables
-            # ===================
-            lambda_latent = pm.Exponential(
-                "lambda", 1 / mean_vals, shape=(nrns, max_states))
-
-            # =====================
-            # Changepoint Variables
-            # =====================
-
-            # Hyperpriors on alpha
-            a_gamma = pm.Gamma("a_gamma", 10, 1)
-            b_gamma = pm.Gamma("b_gamma", 1.5, 1)
-
-            # Concentration parameter for beta
-            alpha = pm.Gamma("alpha", a_gamma, b_gamma)
-
-            # Draw beta's to calculate stick lengths
-            beta = pm.Beta("beta", 1, alpha, shape=(trials, max_states))
-
-            # Calculate stick lengths using stick_breaking process
-            w_raw = pm.Deterministic(
-                "w_raw", stick_breaking_trial(beta, trials))
-
-            # Make sure lengths add to 1, and scale to length of data
-            w_latent = pm.Deterministic(
-                "w_latent", w_raw / w_raw.sum(axis=-1)[:, None])
-            tau = pm.Deterministic("tau", tt.cumsum(
-                w_latent * length, axis=-1)[:, :-1])
-
-            # =====================
-            # Rate over time
-            # =====================
-
-            # Weight stack to assign lambda's to point in time
-            weight_stack = tt.math.sigmoid(
-                idx[np.newaxis, :] - tau[:, :, np.newaxis])
-            weight_stack = tt.concatenate(
-                [np.ones((trials, 1, length)), weight_stack], axis=1)
-            inverse_stack = 1 - weight_stack[:, 1:]
-            inverse_stack = tt.concatenate(
-                [inverse_stack, np.ones((trials, 1, length))], axis=1)
-            # Trials x States x Time
-            weight_stack = np.multiply(weight_stack, inverse_stack)
-
-            lambda_ = pm.Deterministic(
-                "lambda_",
-                tt.tensordot(weight_stack, lambda_latent,
-                             [1, 1]).swapaxes(1, 2),
-            )
-
-            # =====================
-            # Likelihood
-            # =====================
-            observation = pm.Poisson("obs", lambda_, observed=data_array)
-
-        return model
+        from .changepoint_components import (
+            ComposedChangepointModel, DirichletProcessChangepoint, PoissonEmission,
+        )
+        trials = self.data_array.shape[0]
+        return ComposedChangepointModel(
+            self.data_array,
+            changepoint_prior=DirichletProcessChangepoint(self.max_states),
+            emission_model=PoissonEmission(
+                self.max_states, combined_rate_name="lambda_"),
+            batch_shape=(trials,),
+        ).generate_model()
 
     def test(self):
         """Test the model with synthetic data"""
@@ -805,54 +631,17 @@ class SingleTastePoisson(ChangepointModel):
         Returns:
             pymc model: Model class containing graph to run inference on
         """
-        data_array = self.data_array
-        n_states = self.n_states
-
-        mean_vals = np.array(
-            [np.mean(x, axis=-1)
-             for x in np.array_split(data_array, n_states, axis=-1)]
-        ).T
-        mean_vals = np.mean(mean_vals, axis=1)
-        mean_vals += 0.01  # To avoid zero starting prob
-
-        nrns = data_array.shape[1]
-        trials = data_array.shape[0]
-        idx = np.arange(data_array.shape[-1])
-        length = idx.max() + 1
-
-        with pm.Model() as model:
-            lambda_latent = pm.Exponential(
-                "lambda", 1 / mean_vals, shape=(nrns, n_states))
-
-            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
-            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
-
-            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
-            tau_latent = pm.Beta(
-                "tau_latent",
-                a_tau,
-                b_tau,
-                # initval=even_switches,
-                shape=(trials, n_states - 1),
-            ).sort(axis=-1)
-
-            tau = pm.Deterministic(
-                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent)
-
-            weight_stack = tt.math.sigmoid(
-                idx[np.newaxis, :] - tau[:, :, np.newaxis])
-            weight_stack = tt.concatenate(
-                [np.ones((trials, 1, length)), weight_stack], axis=1)
-            inverse_stack = 1 - weight_stack[:, 1:]
-            inverse_stack = tt.concatenate(
-                [inverse_stack, np.ones((trials, 1, length))], axis=1)
-            weight_stack = np.multiply(weight_stack, inverse_stack)
-
-            lambda_ = tt.tensordot(weight_stack, lambda_latent, [
-                                   1, 1]).swapaxes(1, 2)
-            observation = pm.Poisson("obs", lambda_, observed=data_array)
-
-        return model
+        from .changepoint_components import (
+            ComposedChangepointModel, FixedCountChangepoint, PoissonEmission,
+        )
+        trials = self.data_array.shape[0]
+        return ComposedChangepointModel(
+            self.data_array,
+            changepoint_prior=FixedCountChangepoint(
+                self.n_states, hyperprior="halfcauchy"),
+            emission_model=PoissonEmission(self.n_states),
+            batch_shape=(trials,),
+        ).generate_model()
 
     def test(self):
         """Test the model with synthetic data"""
@@ -2126,63 +1915,18 @@ class PoissonChangepoint1D(ChangepointModel):
         Returns:
             pymc model: Model class containing graph to run inference on
         """
-        data_array = self.data_array
-        n_states = self.n_states
-
-        # Calculate initial lambda values by splitting data into segments
-        mean_vals = np.array([
-            np.mean(x) for x in np.array_split(data_array, n_states)
-        ])
-        mean_vals += 0.01  # To avoid zero starting prob
-
-        idx = np.arange(len(data_array))
-        length = len(data_array)
-
-        with pm.Model() as model:
-            # Lambda parameters for each state (Poisson rates)
-            lambda_latent = pm.Exponential(
-                "lambda", 1 / mean_vals, shape=n_states
-            )
-
-            # Changepoint locations
-            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
-            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
-
-            # Initialize changepoints evenly across the time series
-            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
-            tau_latent = pm.Beta(
-                "tau_latent",
-                a_tau,
-                b_tau,
-                initval=even_switches,
-                shape=(n_states - 1)
-            ).sort(axis=-1)
-
-            # Convert to actual time indices
-            tau = pm.Deterministic(
-                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent
-            )
-
-            # Create weight matrix for smooth transitions between states
-            weight_stack = tt.math.sigmoid(
-                idx[np.newaxis, :] - tau[:, np.newaxis]
-            )
-            weight_stack = tt.concatenate(
-                [np.ones((1, length)), weight_stack], axis=0
-            )
-            inverse_stack = 1 - weight_stack[1:]
-            inverse_stack = tt.concatenate(
-                [inverse_stack, np.ones((1, length))], axis=0
-            )
-            weight_stack = weight_stack * inverse_stack
-
-            # Calculate time-varying lambda
-            lambda_t = lambda_latent.dot(weight_stack)
-
-            # Observation model
-            observation = pm.Poisson("obs", lambda_t, observed=data_array)
-
-        return model
+        from .changepoint_components import (
+            ComposedChangepointModel, FixedCountChangepoint, PoissonEmission,
+        )
+        even_switches = np.linspace(0, 1, self.n_states + 1)[1:-1]
+        return ComposedChangepointModel(
+            self.data_array,
+            changepoint_prior=FixedCountChangepoint(
+                self.n_states, hyperprior="halfcauchy",
+                tau_latent_initval=even_switches),
+            emission_model=PoissonEmission(self.n_states),
+            batch_shape=(),
+        ).generate_model()
 
     def test(self):
         """Test the model with synthetic data"""
