@@ -294,7 +294,8 @@ def test_calc_state_trial_uniformity_detects_confined_state():
     tau = np.zeros((n_trials, 1))
     tau[:10, 0] = 2       # state 0 absent (duration 2 < 5% of 100 = 5)
     tau[10:, 0] = 60      # state 0 present (duration 60)
-    _, nonuniform_states = calc_state_trial_uniformity(tau, n_bins, n_trial_blocks=4)
+    _, nonuniform_states = calc_state_trial_uniformity(
+        tau, n_bins, n_trial_blocks=4)
     assert 0 in nonuniform_states
 
 
@@ -304,7 +305,8 @@ def test_calc_state_trial_uniformity_no_flag_when_uniform():
     np.random.seed(3)
     n_bins, n_trials = 100, 40
     tau = np.random.uniform(30, 70, size=(n_trials, 1))
-    _, nonuniform_states = calc_state_trial_uniformity(tau, n_bins, n_trial_blocks=4)
+    _, nonuniform_states = calc_state_trial_uniformity(
+        tau, n_bins, n_trial_blocks=4)
     assert len(nonuniform_states) == 0
 
 

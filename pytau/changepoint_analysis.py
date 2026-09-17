@@ -261,7 +261,7 @@ def calc_firing_drift_anova(spike_array, n_trial_bins=4, p_val=0.05, chance_p_va
 
 
 def calc_state_trial_uniformity(tau_array, n_bins, n_trial_blocks=4,
-                                 min_state_frac=0.05, p_val=0.05):
+                                min_state_frac=0.05, p_val=0.05):
     """Detect states whose presence is confined to a specific subset of
     trials (in recording order), which suggests the "state" is capturing a
     session-level drift event rather than a real, recurring behavioral
@@ -326,7 +326,7 @@ def calc_state_trial_uniformity(tau_array, n_bins, n_trial_blocks=4,
 
 
 def calc_collapsed_transitions(tau_array, n_bins, edge_frac=0.05, gap_frac=0.05,
-                                collapse_frac_thresh=0.1):
+                               collapse_frac_thresh=0.1):
     """Detect changepoints collapsed to the edges of the trial window, or
     adjacent changepoints collapsed ("merged") together (issue #38).
 
@@ -385,7 +385,7 @@ def calc_collapsed_transitions(tau_array, n_bins, edge_frac=0.05, gap_frac=0.05,
 
 
 def calc_transition_randomness(tau_array, n_bins, n_hist_bins=10, method="chisquare",
-                                uniform_p_val=0.05, entropy_ratio_thresh=0.9):
+                               uniform_p_val=0.05, entropy_ratio_thresh=0.9):
     """Test whether tau values for each transition look like they were
     drawn from Uniform(0, n_bins), which would suggest the model isn't
     finding a consistent transition but scattering changepoints randomly
