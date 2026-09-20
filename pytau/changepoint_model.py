@@ -2066,6 +2066,8 @@ def run_all_tests():
         RandomWalkChangepointParticipation1D(test_data_participation, 3),
         RandomWalkChangepointParticipationBernoulli1D(
             test_data_participation, 3),
+        RandomWalkChangepointParticipationBernoulliStickbreak1D(
+            test_data_participation, 3),
         GaussianChangepointMeanVar2D(test_data_2d, 3),
         GaussianChangepointMeanDirichlet(test_data_2d, 5),
         GaussianChangepointMean2D(test_data_2d, 3),
@@ -2701,6 +2703,155 @@ class RandomWalkChangepointParticipationBernoulli1D(ChangepointModel):
 
         print("Test for RandomWalkChangepointParticipationBernoulli1D passed")
         return True
+
+
+class RandomWalkChangepointParticipationBernoulliStickbreak1D(
+        RandomWalkChangepointParticipationBernoulli1D):
+    """RandomWalkChangepointParticipationBernoulli1D with a Dirichlet
+    stick-breaking `tau` construction instead of sorted independent Betas.
+
+    Prototype for pytau#235: the base class (and 12 other changepoint
+    model classes in this module) build `tau` by giving each pre-sort
+    position its own `Beta(a_tau[i], b_tau[i])` and then calling
+    `.sort(axis=-1)`. Because each position has a private hyperprior,
+    which underlying draw ends up in which sorted slot is itself
+    ambiguous -- a label-switching-style multimodality on top of
+    whatever genuine segmentation ambiguity the data has. Empirically
+    this produced 4 NUTS chains converging to 4 different changepoint
+    configurations on real data (see pytau#235 and the
+    norri_stochastic_generative_2026 project's analysis card for the
+    full diagnosis).
+
+    Here, segment-length proportions are drawn from a single shared
+    `pm.Dirichlet(alpha * ones(n_states))` and cumulatively summed --
+    monotonic by construction (no sort op at all), one shared prior (no
+    per-position hyperparameter), and `alpha` gives a single, principled
+    knob for how evenly-sized segments are expected to be a priori
+    (larger alpha also suppresses near-zero-length degenerate segments,
+    a separate pathology observed in 2 of the 4 non-mixing chains
+    above -- see the `STICKBREAK_ALPHA` module constant below for the
+    empirical basis for the default).
+    """
+
+    def generate_model(self):
+        data_array = self.data_array
+        n_states = self.n_states
+        n_trials = len(data_array)
+
+        length = n_trials - 1
+        idx = np.arange(length)
+        trial_idx = np.arange(n_trials)
+
+        observed_mask = ~np.isnan(data_array)
+        observed_idx = np.where(observed_mask)[0]
+        assert len(
+            observed_idx) > n_states, "Too few observed points for n_states"
+
+        finite_diffs = np.diff(data_array[observed_mask])
+        mean_vals = np.array([
+            np.mean(x) for x in np.array_split(finite_diffs, n_states)
+        ])
+        x0_val = float(data_array[observed_idx[0]])
+
+        def state_weights(positions, tau):
+            n_positions = len(positions)
+            weight_stack = tt.math.sigmoid(
+                positions[np.newaxis, :] - tau[:, np.newaxis]
+            )
+            weight_stack = tt.concatenate(
+                [np.ones((1, n_positions)), weight_stack], axis=0
+            )
+            inverse_stack = 1 - weight_stack[1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((1, n_positions))], axis=0
+            )
+            return weight_stack * inverse_stack
+
+        with pm.Model() as model:
+            mu = pm.Normal("mu", mu=mean_vals, sigma=1, shape=n_states)
+            sigma = pm.HalfCauchy("sigma", 3.0, shape=n_states)
+
+            participation_prob = pm.Beta(
+                "participation_prob", 2.0, 2.0, shape=n_states)
+
+            obs_sigma = 0.15
+
+            # Dirichlet stick-breaking changepoint construction (pytau#235):
+            # segment_props sums to 1 by construction; cumsum gives
+            # monotonically increasing changepoints with no sort op and
+            # no per-position hyperprior. STICKBREAK_ALPHA=5 empirically
+            # keeps the smallest segment >= ~10 trials with ~99.9%
+            # probability for n_states=5 over a ~450-trial series (see
+            # pytau#235's discussion) -- tuned for this dataset scale,
+            # not a universal constant.
+            segment_props = pm.Dirichlet(
+                "segment_props", a=STICKBREAK_ALPHA * np.ones(n_states))
+            tau = pm.Deterministic(
+                "tau",
+                idx.min() + (idx.max() - idx.min())
+                * tt.cumsum(segment_props)[:-1],
+            )
+
+            weight_stack = state_weights(idx, tau)
+            trial_weight_stack = state_weights(trial_idx, tau)
+
+            mu_t = mu.dot(weight_stack)
+            sigma_t = sigma.dot(weight_stack)
+            p_trial = participation_prob.dot(trial_weight_stack)
+
+            innovations = pm.Normal(
+                "innovations", mu=mu_t, sigma=sigma_t, shape=length)
+
+            x0 = pm.Normal("x0", mu=x0_val, sigma=1)
+            latent_path = pm.Deterministic(
+                "latent_path",
+                x0 + tt.concatenate([[0.0], tt.cumsum(innovations)]),
+            )
+
+            participate = pm.Bernoulli(
+                "participate",
+                p=p_trial,
+                observed=observed_mask.astype(int),
+            )
+
+            observation = pm.Normal(
+                "obs",
+                mu=latent_path[observed_idx],
+                sigma=obs_sigma,
+                observed=data_array[observed_idx],
+            )
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        test_data, _ = gen_random_walk_participation_test_array(
+            150, n_states=self.n_states)
+
+        test_model = RandomWalkChangepointParticipationBernoulliStickbreak1D(
+            test_data, self.n_states)
+        model = test_model.generate_model()
+
+        with model:
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        assert "mu" in trace.varnames
+        assert "sigma" in trace.varnames
+        assert "tau" in trace.varnames
+        assert "segment_props" in trace.varnames
+        assert "participation_prob" in trace.varnames
+
+        print("Test for RandomWalkChangepointParticipationBernoulliStickbreak1D passed")
+        return True
+
+
+# Dirichlet concentration for RandomWalkChangepointParticipationBernoulliStickbreak1D.
+# See that class' docstring / pytau#235 for the empirical basis (larger
+# alpha -> more evenly-sized segments -> fewer degenerate near-zero-length
+# segments, at the cost of biasing against genuinely short states).
+STICKBREAK_ALPHA = 5.0
 
 
 def extract_inferred_values(trace):
