@@ -17,6 +17,7 @@ from pytau.changepoint_model import (
     PoissonChangepoint1D,
     RandomWalkChangepointMeanVar1D,
     RandomWalkChangepointParticipation1D,
+    RandomWalkChangepointParticipationBernoulli1D,
     SingleTastePoisson,
     SingleTastePoissonDirichlet,
     SingleTastePoissonTrialSwitch,
@@ -329,6 +330,67 @@ def test_random_walk_changepoint_participation_recovery():
     )
 
     model_class = RandomWalkChangepointParticipation1D(data, n_states)
+    model = model_class.generate_model()
+
+    with model:
+        inference = pm.ADVI(random_seed=0)
+        approx = pm.fit(n=15000, method=inference, random_seed=0)
+        idata = approx.sample(draws=200, random_seed=0)
+
+    participation_prob = idata.posterior["participation_prob"].mean(
+        dim=["chain", "draw"]).values
+
+    other_states = [i for i in range(n_states) if i != disengaged_state]
+    assert participation_prob[disengaged_state] < min(
+        participation_prob[i] for i in other_states
+    )
+
+
+@pytest.mark.slow
+def test_random_walk_changepoint_participation_bernoulli_1d():
+    """Test the RandomWalkChangepointParticipationBernoulli1D model."""
+    test_data, _ = gen_random_walk_participation_test_array(150, n_states=3)
+
+    model_class = RandomWalkChangepointParticipationBernoulli1D(
+        test_data, 3)
+    assert model_class.data_array.ndim == 1
+    assert model_class.n_states == 3
+
+    model = model_class.generate_model()
+    assert model is not None
+
+    with pytest.raises(ValueError):
+        RandomWalkChangepointParticipationBernoulli1D(
+            np.random.normal(size=(10, 100)), 3)
+
+
+@pytest.mark.slow
+def test_random_walk_changepoint_participation_bernoulli_recovery():
+    """Test that fitting RandomWalkChangepointParticipationBernoulli1D on
+    synthetic data with a known disengaged (mostly-missing) segment
+    recovers a lower participation probability for the state(s)
+    overlapping that segment than for the other, engaged states -- here
+    `participation_prob` is fit directly against `observed_mask` (unlike
+    RandomWalkChangepointParticipation1D's version of this test, which
+    fits it against the innovation pattern instead), so this also checks
+    that the Bernoulli sub-model actually tracks trial-level missingness.
+    """
+    import pymc as pm
+
+    np.random.seed(0)
+    n_states = 3
+    disengaged_state = 1
+    data, _ = gen_random_walk_participation_test_array(
+        300,
+        n_states=n_states,
+        disengaged_states=[disengaged_state],
+        mean_range=(2.0, 3.0),
+        sigma_range=(0.2, 0.4),
+        sigma_disengaged=2.0,
+    )
+
+    model_class = RandomWalkChangepointParticipationBernoulli1D(
+        data, n_states)
     model = model_class.generate_model()
 
     with model:

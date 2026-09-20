@@ -2064,6 +2064,8 @@ def run_all_tests():
         PoissonChangepoint1D(test_data_1d, 3),
         RandomWalkChangepointMeanVar1D(test_data_random_walk, 3),
         RandomWalkChangepointParticipation1D(test_data_participation, 3),
+        RandomWalkChangepointParticipationBernoulli1D(
+            test_data_participation, 3),
         GaussianChangepointMeanVar2D(test_data_2d, 3),
         GaussianChangepointMeanDirichlet(test_data_2d, 5),
         GaussianChangepointMean2D(test_data_2d, 3),
@@ -2516,6 +2518,189 @@ def random_walk_changepoint_participation_1d(data_array, n_states, **kwargs):
     model_class = RandomWalkChangepointParticipation1D(
         data_array, n_states, **kwargs)
     return model_class.generate_model()
+
+
+class RandomWalkChangepointParticipationBernoulli1D(ChangepointModel):
+    """Random walk changepoint model with an explicit Bernoulli
+    participation sub-model, sharing changepoint locations with the
+    continuous random-walk innovations.
+
+    Prototype for option 1 in
+    https://github.com/abuzarmahmood/pytau/issues/218. Unlike
+    RandomWalkChangepointParticipation1D (a continuous mixture over
+    "engaged"/"disengaged" innovation distributions, decoupled by
+    construction from which trials are actually recorded),
+    `participation_prob` here is fit directly against the observed/
+    missing pattern of `data_array` via an explicit
+    `pm.Bernoulli(..., observed=observed_mask)` likelihood, sharing the
+    same per-state changepoints (`tau`) as the continuous side. The
+    continuous innovations use a single per-state `Normal(mu, sigma)`
+    (no mixture), since non-participation is now explained entirely by
+    the Bernoulli sub-model rather than by switching the innovation's
+    generating distribution -- this also removes the discontinuity
+    artifact discussed on that issue: in the mixture version, an
+    unconstrained (NaN/missing) trial's innovation could be drawn from
+    either mixture component with nothing in the likelihood to
+    arbitrate between them, producing spurious jumps in the
+    reconstructed path across gaps. Not a drop-in replacement for
+    RandomWalkChangepointParticipation1D -- kept as a separate class so
+    existing consumers of that model are unaffected.
+    """
+
+    def __init__(self, data_array, n_states, **kwargs):
+        """
+        Args:
+            data_array (1D Numpy array): Time series data, may contain
+                NaN at unobserved/non-participating timepoints.
+            n_states (int): Number of states to model
+            **kwargs: Additional arguments
+        """
+        super().__init__(**kwargs)
+        self.data_array = np.asarray(data_array, dtype=float)
+        if self.data_array.ndim != 1:
+            raise ValueError("data_array must be 1-dimensional")
+        self.n_states = n_states
+
+    def generate_model(self):
+        """
+        Returns:
+            pymc model: Model class containing graph to run inference on
+        """
+        data_array = self.data_array
+        n_states = self.n_states
+        n_trials = len(data_array)
+
+        length = n_trials - 1  # number of innovations
+        idx = np.arange(length)
+        trial_idx = np.arange(n_trials)
+
+        observed_mask = ~np.isnan(data_array)
+        observed_idx = np.where(observed_mask)[0]
+        assert len(
+            observed_idx) > n_states, "Too few observed points for n_states"
+
+        finite_diffs = np.diff(data_array[observed_mask])
+        mean_vals = np.array([
+            np.mean(x) for x in np.array_split(finite_diffs, n_states)
+        ])
+        x0_val = float(data_array[observed_idx[0]])
+
+        def state_weights(positions, tau):
+            """Per-state changepoint-blended weight at arbitrary index
+            positions, sharing `tau` (fit in innovation-index units)
+            across both the innovation-level and trial-level call
+            sites."""
+            n_positions = len(positions)
+            weight_stack = tt.math.sigmoid(
+                positions[np.newaxis, :] - tau[:, np.newaxis]
+            )
+            weight_stack = tt.concatenate(
+                [np.ones((1, n_positions)), weight_stack], axis=0
+            )
+            inverse_stack = 1 - weight_stack[1:]
+            inverse_stack = tt.concatenate(
+                [inverse_stack, np.ones((1, n_positions))], axis=0
+            )
+            return weight_stack * inverse_stack
+
+        with pm.Model() as model:
+            # Mean and variance of the (single, non-mixture) innovation
+            # distribution per state
+            mu = pm.Normal("mu", mu=mean_vals, sigma=1, shape=n_states)
+            sigma = pm.HalfCauchy("sigma", 3.0, shape=n_states)
+
+            # Per-state probability that a trial is recorded (fit
+            # directly against observed_mask below, not against the
+            # innovation pattern)
+            participation_prob = pm.Beta(
+                "participation_prob", 2.0, 2.0, shape=n_states)
+
+            # Small fixed observation noise linking the latent random walk
+            # path to the (partially observed) data -- same rationale as
+            # RandomWalkChangepointParticipation1D (see that class'
+            # docstring/comments): letting ADVI infer this instead
+            # inflates it to absorb signal that belongs in mu/sigma.
+            obs_sigma = 0.15
+
+            # Changepoint locations (over innovation/step indices) - same
+            # pattern as RandomWalkChangepointParticipation1D
+            a_tau = pm.HalfCauchy("a_tau", 3.0, shape=n_states - 1)
+            b_tau = pm.HalfCauchy("b_tau", 3.0, shape=n_states - 1)
+
+            even_switches = np.linspace(0, 1, n_states + 1)[1:-1]
+            tau_latent = pm.Beta(
+                "tau_latent",
+                a_tau,
+                b_tau,
+                initval=even_switches,
+                shape=(n_states - 1)
+            ).sort(axis=-1)
+
+            tau = pm.Deterministic(
+                "tau", idx.min() + (idx.max() - idx.min()) * tau_latent
+            )
+
+            # Innovation-level (length = n_trials - 1) and trial-level
+            # (length = n_trials) blends of the same per-state
+            # parameters, sharing one `tau`.
+            weight_stack = state_weights(idx, tau)
+            trial_weight_stack = state_weights(trial_idx, tau)
+
+            mu_t = mu.dot(weight_stack)
+            sigma_t = sigma.dot(weight_stack)
+            p_trial = participation_prob.dot(trial_weight_stack)
+
+            # Single-component (no mixture) time-varying innovation
+            innovations = pm.Normal(
+                "innovations", mu=mu_t, sigma=sigma_t, shape=length)
+
+            # Full-length latent random walk path, including gaps
+            x0 = pm.Normal("x0", mu=x0_val, sigma=1)
+            latent_path = pm.Deterministic(
+                "latent_path",
+                x0 + tt.concatenate([[0.0], tt.cumsum(innovations)]),
+            )
+
+            # Explicit participation likelihood: fits participation_prob
+            # directly to which trials are actually recorded.
+            participate = pm.Bernoulli(
+                "participate",
+                p=p_trial,
+                observed=observed_mask.astype(int),
+            )
+
+            # Only evaluate the value likelihood at observed (non-NaN)
+            # timepoints
+            observation = pm.Normal(
+                "obs",
+                mu=latent_path[observed_idx],
+                sigma=obs_sigma,
+                observed=data_array[observed_idx],
+            )
+
+        return model
+
+    def test(self):
+        """Test the model with synthetic data"""
+        test_data, _ = gen_random_walk_participation_test_array(
+            150, n_states=self.n_states)
+
+        test_model = RandomWalkChangepointParticipationBernoulli1D(
+            test_data, self.n_states)
+        model = test_model.generate_model()
+
+        with model:
+            inference = pm.ADVI()
+            approx = pm.fit(n=10, method=inference)
+            trace = approx.sample(draws=10)
+
+        assert "mu" in trace.varnames
+        assert "sigma" in trace.varnames
+        assert "tau" in trace.varnames
+        assert "participation_prob" in trace.varnames
+
+        print("Test for RandomWalkChangepointParticipationBernoulli1D passed")
+        return True
 
 
 def extract_inferred_values(trace):
